@@ -12,6 +12,13 @@
 
 namespace kAway2 {
   const unsigned int net = 667;
+  const int ignoredNets[] = {
+    plugsNET::konnferencja,
+    plugsNET::checky,
+    plugsNET::klan,
+    plugsNET::actio
+  };
+  const bool debug = true;
   const char poweredBy[64] = "Louis Armstrong and The Presage";
 
   namespace ui {
@@ -32,8 +39,8 @@ namespace kAway2 {
     const unsigned int logoSmall = ico + 1;
     const unsigned int logoBig = ico + 2;
 
-    const unsigned int enabled = ico + 3;
-    const unsigned int disabled = ico + 4;
+    const unsigned int enable = ico + 3;
+    const unsigned int disable = ico + 4;
   }
 
   namespace act {

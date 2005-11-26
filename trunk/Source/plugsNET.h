@@ -2,7 +2,7 @@
  * Konnekt SDK (Software Development Kit)
  *
  * Nag³ówek: wartoœci NET wszystkich wtyczek
- * Modyfikowany: 2005-11-24
+ * Modyfikowany: 2005-11-26
  * Zgodny z wersj¹: 0.6.x.x
  * Info: namespace zawieraj¹cy wartoœci NET wszystkich wtyczek
  *
@@ -40,6 +40,7 @@ namespace plugsNET {
   const int yahoo = 61; ///< kJabber transport
   const int msn = 62; ///< kJabber transport
   const int dwutlenek = 63;
+  const int actio = 64;
   const int gadacz = 78;
   const int irc = 80;
   const int checky = 82;
