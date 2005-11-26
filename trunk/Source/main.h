@@ -1,8 +1,8 @@
 /*
- *  kAway
- *  
+ *  kAway2
+ *
  *  Please READ /License.txt FIRST! 
- * 
+ *
  *  Copyright (C)2005 Sijawusz Pur Rahnama
  *
  *  $Id: $
@@ -10,7 +10,7 @@
 
 #pragma once
 
-namespace kAway {
+namespace kAway2 {
   const unsigned int net = 667;
   const char poweredBy[64] = "Louis Armstrong and The Presage";
 
@@ -99,8 +99,8 @@ namespace kAway {
     }
   }
 
-	// dynamiczne akcje
-	namespace dynAct {
-		const int dynAct = net * 1000 + 500;
-	}
+  // dynamiczne akcje
+  namespace dynAct {
+    const int dynAct = net * 1000 + 500;
+  }
 }
