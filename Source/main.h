@@ -81,6 +81,8 @@ namespace kAway {
     const unsigned int forwardNet = cfg + 28;
     const unsigned int forwardTo = cfg + 29;
 
+    const unsigned int netChange = cfg + 30;
+
     namespace tpl {
       const unsigned int tpl = cfg + 100;
 
@@ -92,6 +94,13 @@ namespace kAway {
 
       const unsigned int sms = tpl + 5;
       const unsigned int email = tpl + 6;
+
+      const unsigned int status = tpl + 7;
     }
   }
+
+	// dynamiczne akcje
+	namespace dynAct {
+		const int dynAct = net * 1000 + 500;
+	}
 }

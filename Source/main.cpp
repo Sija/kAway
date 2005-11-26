@@ -10,7 +10,20 @@
 
 #include "stdafx.h"
 #include <konnekt/lib.h>
+
 #include "main.h"
+#include "plugsNET.h"
+#include "functions.h"
+
+#include <Stamina/Time64.h>
+#include <Stamina/Time64.cpp>
+
+#include "Status.h"
+#include "Status.cpp"
+#include "Control.h"
+#include "Control.cpp"
+
+kAway::Control *pCtrl = NULL;
 
 int __stdcall DllMain(void * hinstDLL, unsigned long fdwReason, void * lpvReserved) {
   return(true);
@@ -24,14 +37,21 @@ namespace kAway {
   }
 
   int IEnd() {
+	  delete pCtrl;
+	  pCtrl = NULL;
+
     return(1);
   }
 
   int ISetCols() {
+	  Ctrl->SetColumn(DTCFG, kAway::cfg::netChange, DT_CT_STR, "", "kAway2/netChange");
+
     return(1);
   }
 
   int IPrepare() {
+	  pCtrl = new kAway::Control();
+
 	  /* Configuration */
 	  UIGroupInsert(IMIG_CFG_PLUGS, kAway::ui::cfgGroup, -1, ACTR_SAVE, "kAway", kAway::ico::logoSmall);
 	  UIGroupInsert(kAway::ui::cfgGroup, kAway::ui::replyCfgGroup, -1, ACTR_SAVE, "Autoresponder", 0x50000010);
@@ -40,7 +60,8 @@ namespace kAway {
     char header[400];
     sprintf(header, "<span class='note'>Powered by: <b>%s</b></span><br/>"
       "<span class='note'>Skompilowano: <b>%s</b> [<b>%s</b>]</span><br/>"
-      "Informacje o wtyczce i Ÿród³a na stronie projektu (http://kplugins.net/)<br/><br/>"
+      "Informacje o wtyczce i Ÿród³a na stronie projektu "
+      "<b>KPlugins</b> (http://kplugins.net/)<br/><br/>"
       "Copyright © 2004-2005 <b>Sijawusz Pur Rahnama</b><br/>"
       "Copyright © 2004-2005 <b>KPlugins Team</b>",
       kAway::poweredBy, __DATE__, __TIME__);
@@ -61,6 +82,11 @@ namespace kAway {
     UIActionCfgAdd(kAway::ui::cfgGroup, 0, ACTT_CHECK, "Pokazuj przycisk w menu tray'a", kAway::cfg::btnInTrayMenu);
     UIActionCfgAdd(kAway::ui::cfgGroup, 0, ACTT_CHECK, "Pokazuj przycisk w g³ównym oknie", kAway::cfg::btnInMainWindow);
     UIActionCfgAdd(kAway::ui::cfgGroup, 0, ACTT_CHECK, "Pokazuj przycisk w oknie rozmowy", kAway::cfg::btnInCntWindow);
+	  UIActionCfgAdd(kAway::ui::cfgGroup, 0, ACTT_GROUPEND);
+
+	  /* Net selection */
+	  UIActionCfgAdd(kAway::ui::cfgGroup, 0, ACTT_GROUP, "Wybierz sieci, na których ma dzia³aæ wtyczka:");
+	  pCtrl->netListInit();
 	  UIActionCfgAdd(kAway::ui::cfgGroup, 0, ACTT_GROUPEND);
 
 	  /*  Interface group */

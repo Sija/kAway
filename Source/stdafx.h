@@ -14,17 +14,17 @@
 #include <map>
 #include <stdstring.h>
 
+/*
 #include <stamina/timer.h>
 #include <stamina/threadrun.h>
 #include <stamina/thread.h>
 #include <stamina/threadinvoke.h>
 #include <stamina/helpers.h>
 #include <stamina/regex.h>
+*/
 
 #include <konnekt/plug_export.h>
 #include <konnekt/ui.h>
 #include <konnekt/plug_func.h>
 #include <konnekt/knotify.h>
 #include <konnekt/ksound.h>
-
-#include "functions.h"
