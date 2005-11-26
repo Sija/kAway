@@ -7,7 +7,7 @@
  *  Copyright (C)2005 Sijawusz Pur Rahnama
  *  Copyright (C)2005 Winthux
  *
- *  $Id: $
+ *  $Id$
  */
 
 #pragma once
