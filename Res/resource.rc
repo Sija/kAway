@@ -58,6 +58,16 @@ BEGIN
     END
 END
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ENABLE              ICON                    "enable.ico"
+IDI_DISABLE             ICON                    "disable.ico"
 #endif    // Polish resources
 /////////////////////////////////////////////////////////////////////////////
 

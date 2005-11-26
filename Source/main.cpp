@@ -9,11 +9,6 @@
  */
 
 #include "stdafx.h"
-#include <konnekt/lib.h>
-
-#include "main.h"
-#include "plugsNET.h"
-#include "functions.h"
 
 #include <Stamina/Time64.h>
 #include <Stamina/Time64.cpp>
@@ -51,6 +46,11 @@ namespace kAway2 {
 
   int IPrepare() {
     pCtrl = new kAway2::Control();
+
+    /* Icons */
+    IconRegister(IML_16, kAway2::ico::logoSmall, Ctrl->hDll(), IDI_ENABLE); // temp
+    IconRegister(IML_16, kAway2::ico::enable, Ctrl->hDll(), IDI_ENABLE);
+    IconRegister(IML_16, kAway2::ico::disable, Ctrl->hDll(), IDI_DISABLE);
 
     /* Configuration */
     UIGroupInsert(IMIG_CFG_PLUGS, kAway2::ui::cfgGroup, -1, ACTR_SAVE, "kAway2", kAway2::ico::logoSmall);

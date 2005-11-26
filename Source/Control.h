@@ -1,5 +1,5 @@
 /*
- *  kAway2
+ *  kAway2 Control class
  *
  *  Please READ /License.txt FIRST! 
  *
@@ -19,15 +19,15 @@ namespace kAway2 {
       void Enable(std::string msg = "");
       void Disable(std::string msg = "");
 
-      inline bool kAway2::Control::isEnabled() {
+      inline bool isEnabled() {
         return(this->isOn ? true : false);
       }
 
-      inline std::string kAway2::Control::getAwayMsg() {
+      inline std::string getAwayMsg() {
         return(this->awayMsg);
       }
 
-      inline Stamina::Date64 kAway2::Control::getAwayTime() {
+      inline Stamina::Date64 getAwayTime() {
         return(this->awayTime);
       }
 
