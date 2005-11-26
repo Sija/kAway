@@ -1,8 +1,8 @@
 /*
- *  kAway [shared functions]
- *  
+ *  kAway2 [shared functions]
+ *
  *  Please READ /License.txt FIRST! 
- * 
+ *
  *  Copyright (C)2005 Sijawusz Pur Rahnama
  *
  *  $Id: $
