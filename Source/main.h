@@ -5,7 +5,7 @@
  *
  *  Copyright (C)2005 Sijawusz Pur Rahnama
  *
- *  $Id: $
+ *  $Id$
  */
 
 #pragma once
