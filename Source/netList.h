@@ -5,7 +5,7 @@
  *
  *  Copyright (C)2005 Sijawusz Pur Rahnama
  *
- *  $Id: $
+ *  $Id$
  */
 
 #pragma once
@@ -23,6 +23,7 @@ namespace kAway2 {
       void UIgetState();
       void UIsetState();
 
+      std::string getNetName(int net);
       bool setNetState(int net, bool use);
       bool getNetState(int net);
 

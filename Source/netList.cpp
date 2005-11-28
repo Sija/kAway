@@ -5,7 +5,7 @@
  *
  *  Copyright (C)2005 Sijawusz Pur Rahnama
  *
- *  $Id: $
+ *  $Id$
  */
 
 #pragma once
@@ -44,6 +44,7 @@ namespace kAway2 {
 
     int id, type, net;
     int plugs = IMessage( IMC_PLUG_COUNT );
+    std::string name;
     itemNet cfg;
 
     for (int i = 1; i < plugs ; i++) {
@@ -52,10 +53,12 @@ namespace kAway2 {
 
       if ((type & IMT_NET) == IMT_NET) {
         net = (int)IMessageDirect(IM_PLUG_NET, id);
+        name = (char*)IMessageDirect(IM_PLUG_NETNAME, id);
 
-        if (!this->isIgnored(net) && std::string((char*) IMessageDirect(IM_PLUG_NETNAME, id)).length()) {
+        if (name.length() && !this->isIgnored(net)) {
           cfg.id = id;
           cfg.net = net;
+          cfg.name = name;
           cfg.use = false;
 
           for ( std::list<itemNet>::const_iterator it = nets.begin(); it != nets.end(); it++) {
@@ -87,32 +90,29 @@ namespace kAway2 {
     itemNet item;
     int c = 1, i = 0, ico;
     int count = this->nets.size();
-    char *netName = NULL;
 
     for (std::list<itemNet>::iterator it = this->nets.begin(); it != this->nets.end(); it++, i++, c++) {
       item = *it;
       ico = UIIcon(IT_LOGO, (int) item.net, 0, 0);
-      netName = (char*) Ctrl->IMessage(IM_PLUG_NETNAME, item.net); 
       i %= colCount; 
 
       UIActionCfgAdd(this->cfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, shared::Icon16(ico).c_str(), 0, (i > 0) ? 10 : 0);
-      UIActionCfgAdd(this->cfgGroup, this->dynActGroup + item.id, (i != (colCount - 1) && c != count) ? ACTT_CHECK | ACTSC_INLINE : ACTT_CHECK, netName);
-      netName = NULL;
+      UIActionCfgAdd(this->cfgGroup, this->dynActGroup + item.id, (i != (colCount - 1) && c != count) ? ACTT_CHECK | ACTSC_INLINE : ACTT_CHECK, item.name.c_str());
     }
   }
 
   void netList::UIgetState() {
     itemNet item;
     char buff[16];
-    int v;
+    bool v;
 
     for (std::list<itemNet>::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
       item = *it;
       UIActionCfgGetValue(sUIAction(this->cfgGroup, this->dynActGroup + item.id), buff, 16, true);
-      v = atoi(buff);
+      v = (bool) atoi(buff);
 
-      if ((v ? true : false) != item.use) {
-        item.use = v ? true : false;
+      if (v != item.use) {
+        item.use = v;
         *it = item;
       }
     }
@@ -128,6 +128,14 @@ namespace kAway2 {
     }
   }
 
+  std::string netList::getNetName(int net) {
+    std::string fake;
+    for (std::list<itemNet>::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
+      if ((*it).net == net) return((*it).name);
+    }
+    return(fake);
+  }
+
   bool netList::getNetState(int net) {
     for (std::list<itemNet>::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
       if ((*it).net == net) return((*it).use);
@@ -136,13 +144,13 @@ namespace kAway2 {
   }
 
   bool netList::setNetState(int net, bool use) {
-    itemNet v;
+    itemNet item;
     for (std::list<itemNet>::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
-      v = *it;
+      item = *it;
 
-      if (v.net == net && v.use != use) {
-        v.use = use;
-        *it = v;
+      if (item.net == net && item.use != use) {
+        item.use = use;
+        *it = item;
         return(true);
       }
     }
