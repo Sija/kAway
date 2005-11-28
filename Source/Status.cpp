@@ -20,9 +20,6 @@ namespace kAway2 {
 
   Status::~Status()
   {
-    delete this->lCtrl;
-    this->lCtrl = NULL;
-
     this->info.clear();
   }
 

@@ -5,7 +5,7 @@
  *
  *  Copyright (C)2005 Sijawusz Pur Rahnama
  *
- *  $Id: Control.h 5 2005-11-26 17:00:21Z sija $
+ *  $Id: $
  */
 
 #pragma once
