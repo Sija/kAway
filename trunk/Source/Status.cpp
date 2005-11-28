@@ -41,7 +41,7 @@ namespace kAway2 {
         if ( item.use )
         {
           buff = this->Format( status, item.net );
-          buff = LimitChars( buff, item.net );
+          buff = this->LimitChars( buff, item.net );
 
           if( this->prevStat != st || this->prevStat != buff )
           {
@@ -71,7 +71,7 @@ namespace kAway2 {
     }
   }
 
-  void Status::ChangeStatus(int net, const char *txt, int st )
+  void Status::ChangeStatus( int net, const char *txt, int st )
   {
     std::string buff, status(txt);
 

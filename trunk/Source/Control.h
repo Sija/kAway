@@ -19,8 +19,16 @@ namespace kAway2 {
       void Enable(std::string msg = "");
       void Disable(std::string msg = "");
 
+      void Control::Log(enDebugLevel level, const char *format, ...);
+      void Control::Log(const char *format, ...);
+      void Control::Debug(const char *format, ...);
+
       inline bool isEnabled() {
         return(this->isOn ? true : false);
+      }
+
+      inline void setStatusCtrl(CtrlStatus *handle) {
+        this->sCtrl = handle;
       }
 
       inline std::string getAwayMsg() {
@@ -32,17 +40,18 @@ namespace kAway2 {
       }
 
     protected:
-      // CtrlStatus *ctrlSt;
-
       bool isOn;
       std::string awayMsg;
       Stamina::Date64 *awayTime;
       std::string ignoredUids;
 
+      void Control::Log(enDebugLevel level, const char *format, va_list ap);
+
     private:
+      CtrlStatus *sCtrl;
       static UINT_PTR m_Timer;
-      static kAway2::Control *sCtrl;
   };
 
   Control *pCtrl = NULL;
+  CtrlStatus *sCtrl = NULL;
 }

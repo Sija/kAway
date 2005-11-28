@@ -16,11 +16,11 @@
 #include "netList.h"
 #include "netList.cpp"
 
-#include "Control.h"
-#include "Control.cpp"
-
 #include "Status.h"
 #include "Status.cpp"
+
+#include "Control.h"
+#include "Control.cpp"
 
 int __stdcall DllMain(void * hinstDLL, unsigned long fdwReason, void * lpvReserved) {
   return(true);
@@ -34,8 +34,8 @@ namespace kAway2 {
   }
 
   int IEnd() {
-    delete pCtrl, lCtrl::reply;
-    pCtrl, lCtrl::reply = NULL;
+    delete pCtrl, sCtrl, lCtrl::reply;
+    pCtrl, sCtrl, lCtrl::reply = NULL;
 
     return(1);
   }
@@ -49,8 +49,16 @@ namespace kAway2 {
   int IPrepare() {
     pCtrl = new Control();
 
+    lCtrl::reply = new netList(cfg::reply::netChange, ui::replyCfgGroup, dynAct::reply);
+    lCtrl::reply->loadNets();
+
+    sCtrl = new CtrlStatus(lCtrl::reply);
+    pCtrl->setStatusCtrl(sCtrl);
+
+    pCtrl->Debug("net = %i, Ctrl = %i, pCtrl = %i, sCtrl = %i", net, Ctrl, pCtrl, sCtrl);
+
     /* Icons */
-    IconRegister(IML_16, ico::logoSmall, Ctrl->hDll(), IDI_ENABLE); // temp
+    IconRegister(IML_16, ico::logoSmall, Ctrl->hDll(), IDI_ENABLE); // ma byc logo16
     IconRegister(IML_16, ico::enable, Ctrl->hDll(), IDI_ENABLE);
     IconRegister(IML_16, ico::disable, Ctrl->hDll(), IDI_DISABLE);
 
@@ -94,9 +102,6 @@ namespace kAway2 {
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_GROUPEND);
 
     /*  Net selection */
-    lCtrl::reply = new netList(cfg::reply::netChange, ui::replyCfgGroup, dynAct::reply);
-    lCtrl::reply->loadNets();
-
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_GROUP, "Wybierz sieci, na których maj¹ dzia³aæ powiadomienia:");
     lCtrl::reply->UIdraw();
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_GROUPEND);

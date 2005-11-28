@@ -12,7 +12,7 @@
 
 namespace kAway2 {
   const unsigned int net = 667;
-  const int ignoredNets[] = {
+  const unsigned int ignoredNets[] = {
     plugsNET::konnferencja,
     plugsNET::checky,
     plugsNET::klan,
@@ -22,8 +22,9 @@ namespace kAway2 {
   const char poweredBy[64] = "Louis Armstrong and The Presage";
 
   struct itemNet {
-    int id;
-    int net;
+    unsigned int id;
+    unsigned int net;
+    std::string name;
     bool use;
   };
 

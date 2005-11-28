@@ -10,14 +10,8 @@
 
 #pragma once
 
-kAway2::Control *kAway2::Control::sCtrl = NULL;
-UINT_PTR kAway2::Control::m_Timer = NULL;
-
 namespace kAway2 {
   Control::Control() {
-    // this->ctrlSt = new kAway2::CtrlStatus();
-    // this->ctrlSt->GetNets(kAway2::cfg::reply::netChange);
-
     this->awayMsg = "";
     this->awayTime = new Stamina::Date64(false);
     this->ignoredUids = "";
@@ -33,9 +27,38 @@ namespace kAway2 {
     this->isOn = false;
   }
 
+  void Control::Log(enDebugLevel level, const char *format, va_list ap) {
+	  if (Ctrl && Ctrl->DebugLevel(level))
+	    Ctrl->IMLOG_(level, format, ap);
+  }
+
+  void Control::Log(enDebugLevel level, const char *format, ...) {
+	  va_list ap;
+	  va_start(ap, format);
+    this->Log(level, format, ap);
+	  va_end(ap);
+  }
+
+  void Control::Log(const char *format, ...) {
+	  va_list ap;
+	  va_start(ap, format);
+    this->Log(DBG_LOG, format, ap);
+	  va_end(ap);
+  }
+
+  void Control::Debug(const char *format, ...) {
+    if(!debug) return;
+
+	  va_list ap;
+	  va_start(ap, format);
+    this->Log(DBG_DEBUG, format, ap);
+	  va_end(ap);
+  }
+
   void Control::Enable(std::string msg) {
     if (!this->isOn) {
-      // this->ctrlSt->RememberInfo();
+      if(this->sCtrl)
+        this->sCtrl->RememberInfo();
 
       this->awayMsg = msg;
       this->awayTime->now();
@@ -45,7 +68,8 @@ namespace kAway2 {
 
   void Control::Disable(std::string msg) {
     if (this->isOn) {
-      // this->ctrlSt->BackRemeberedInfo();
+      if(this->sCtrl)
+        this->sCtrl->BackRemeberedInfo();
 
       this->awayMsg = "";
       this->awayTime->clear();
