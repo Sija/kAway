@@ -12,6 +12,7 @@
 
 #include <process.h>
 #include <map>
+#include <list>
 #include <stdstring.h>
 
 /*

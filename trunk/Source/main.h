@@ -21,6 +21,12 @@ namespace kAway2 {
   const bool debug = true;
   const char poweredBy[64] = "Louis Armstrong and The Presage";
 
+  struct itemNet {
+    int id;
+    int net;
+    bool use;
+  };
+
   namespace ui {
     const unsigned int ui = net * 1000;
 
@@ -47,48 +53,28 @@ namespace kAway2 {
     const unsigned int act = net * 1000 + 200;
   }
 
+  // dynamiczne akcje
+  namespace dynAct {
+    const unsigned int dynAct = net * 1000 + 300;
+
+    const unsigned int reply = dynAct + 1 * 10;
+    const unsigned int sms = dynAct + 2 * 10;
+    const unsigned int email = dynAct + 3 * 10;
+    const unsigned int forward = dynAct + 4 * 10;
+  }
+
   namespace cfg {
-    const unsigned int cfg = net * 1000 + 300;
+    const unsigned int cfg = net * 1000 + 500;
 
     const unsigned int autoAwaySync = cfg + 1;
     const unsigned int useKNotify = cfg + 2;
     const unsigned int ircCmds = cfg + 3;
     const unsigned int disableOnMsgSend = cfg + 4;
     const unsigned int saveToHistory = cfg + 5;
-    // const unsigned int notifyWhenInvisible = cfg + 6;
 
-    const unsigned int notifyOnEnable = cfg + 6;
-    const unsigned int notifyOnDisable = cfg + 7;
-    const unsigned int notifyOnReply = cfg + 8;
-
-    const unsigned int btnInMainWindow = cfg + 9;
-    const unsigned int btnInCntWindow = cfg + 10;
-    const unsigned int btnInTrayMenu = cfg + 11;
-
-    const unsigned int replyMinInterval = cfg + 12;
-    const unsigned int replyUseHtml = cfg + 13;
-    const unsigned int replyMagicKey = cfg + 14;
-    const unsigned int replyMagicKeyNotifyMethod = cfg + 15;
-
-    const unsigned int smsInterval = cfg + 16;
-    const unsigned int smsGate = cfg + 17;
-    const unsigned int smsNumber = cfg + 18;
-
-    const unsigned int emailInterval = cfg + 19;
-    const unsigned int emailUseHtml = cfg + 20;
-    const unsigned int emailAddress = cfg + 21;
-    const unsigned int emailSubject = cfg + 22;
-
-    const unsigned int smtpHost = cfg + 23;
-    const unsigned int smtpPort = cfg + 24;
-    const unsigned int smtpLogin = cfg + 25;
-    const unsigned int smtpPassword = cfg + 26;
-
-    const unsigned int forwardInterval = cfg + 27;
-    const unsigned int forwardNet = cfg + 28;
-    const unsigned int forwardTo = cfg + 29;
-
-    const unsigned int netChange = cfg + 30;
+    const unsigned int btnInMainWindow = cfg + 6;
+    const unsigned int btnInCntWindow = cfg + 7;
+    const unsigned int btnInTrayMenu = cfg + 8;
 
     namespace tpl {
       const unsigned int tpl = cfg + 100;
@@ -102,12 +88,58 @@ namespace kAway2 {
       const unsigned int sms = tpl + 5;
       const unsigned int email = tpl + 6;
 
-      const unsigned int status = tpl + 7;
+      const unsigned int statusInfo = tpl + 7;
     }
-  }
 
-  // dynamiczne akcje
-  namespace dynAct {
-    const int dynAct = net * 1000 + 500;
+    namespace reply {
+      const unsigned int reply = cfg + 200;
+
+      const unsigned int onEnable = reply + 1;
+      const unsigned int onDisable = reply + 2;
+      const unsigned int onMsg = reply + 3;
+
+      const unsigned int whenInvisible = reply + 4;
+      const unsigned int minInterval = reply + 5;
+      const unsigned int useHtml = reply + 6;
+
+      const unsigned int magicKey = reply + 7;
+      const unsigned int magicKeyNotifyMethod = reply + 8;
+
+      const unsigned int netChange = reply + 9;
+    }
+
+    namespace sms {
+      const unsigned int sms = cfg + 300;
+
+      const unsigned int interval = sms + 1;
+      const unsigned int gate = sms + 2;
+      const unsigned int number = sms + 3;
+    }
+
+    namespace email {
+      const unsigned int email = cfg + 400;
+
+      const unsigned int interval = email + 1;
+      const unsigned int useHtml = email + 2;
+      const unsigned int address = email + 3;
+      const unsigned int subject = email + 4;
+
+      namespace smtp {
+        const unsigned int smtp = cfg + 450;
+
+        const unsigned int host = smtp + 1;
+        const unsigned int port = smtp + 2;
+        const unsigned int login = smtp + 3;
+        const unsigned int password = smtp + 4;
+      }
+    }
+
+    namespace forward {
+      const unsigned int forward = cfg + 500;
+
+      const unsigned int interval = forward + 1;
+      const unsigned int net = forward + 2;
+      const unsigned int to = forward + 3;
+    }
   }
 }

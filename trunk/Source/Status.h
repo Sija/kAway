@@ -26,11 +26,6 @@
  */
 
 namespace kAway2 {
-  struct itemNet {
-    bool use;
-    int net;
-  };
-
   struct itemInfo {
     std::string info;
     int net;
@@ -67,7 +62,7 @@ namespace kAway2 {
 
   class Status {
     public:
-      Status(const int cfgCol);
+      Status(kAway2::netList *lCtrl);
       ~Status();
 
     public:
@@ -77,8 +72,6 @@ namespace kAway2 {
       void ChangeStatus(const char *txt, int st = -1);
       // Zmienia status na wybranej sieci
       void ChangeStatus(int net, const char *txt, int st = -1);
-      // Ustawia wartoœæ use dla sieci net
-      bool SetNet(int net, bool use);
       // Zapamiêtuje aktualny opis na ka¿dej sieci
       void RememberInfo();
       // Zapamiêtuje aktualny opis na wybranej sieci
@@ -91,25 +84,12 @@ namespace kAway2 {
       void BackRemeberedInfo();
 
       // lista z sieciami
-      std::list<itemNet> nets;
+      netList *lCtrl;
 
       std::string LimitChars(std::string Status, int net, int s = 0);
 
     protected:
       virtual std::string Format(std::string txt, int net) = 0;
-
-    private:
-      /* Sieci */
-      // Szuka sieci w konnekcie
-      int GetNets(bool mask = true);
-      // Odczytuje z konfigruacji jakie sieci sa w konnekcie
-      int LoadNets();
-      // zapisuje sieci do konfiguracji
-      void SaveNets();
-      // zwraca czy obslugujemy siec net
-      bool NetState(int net);
-      // zwraca czy siec jest ignorowana
-      bool IsIgnored(int net);
 
     public:
       /* Opisy */
@@ -119,8 +99,6 @@ namespace kAway2 {
       std::string GetInfo(int net);
 
     private:
-      // Id kolumny zapisuj¹cej, na których sieciach zmieniac status
-      int cfgCol;
       // Czy ma zmieniaæ opis przy Ukrytym?
       bool onHidden;
       // lista z opisami na sieciach
@@ -131,7 +109,7 @@ namespace kAway2 {
 
   class CtrlStatus : public kAway2::Status {
     public:
-      CtrlStatus(int _cfgCol) : Status(_cfgCol) { }
+      CtrlStatus(kAway2::netList *lCtrl) : Status(lCtrl) { }
     protected:
       std::string Format(std::string txt, int net);
   };
