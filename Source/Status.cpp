@@ -13,16 +13,17 @@
 #pragma once
 
 namespace kAway2 {
-  Status::Status( const int _cfgCol )
+  Status::Status(netList *lCtrl)
   {
-    this->cfgCol = _cfgCol;
+    this->lCtrl = lCtrl;
   }
 
   Status::~Status()
   {
-    this->SaveNets();
+    delete this->lCtrl;
+    this->lCtrl = NULL;
+
     this->info.clear();
-    this->nets.clear();
   }
 
   void Status::ChangeStatus( const char *txt, int st )
@@ -34,7 +35,7 @@ namespace kAway2 {
     if (status.length() == 0)
       return;
 
-    for (std::list<itemNet>::iterator it = this->nets.begin(); it != this->nets.end(); it++)
+    for (std::list<itemNet>::iterator it = this->lCtrl->nets.begin(); it != this->lCtrl->nets.end(); it++)
     {
       item = *it;
 
@@ -138,109 +139,7 @@ namespace kAway2 {
 
   void Status::Init()
   {
-    this->GetNets();
-  }
-
-  int Status::GetNets(bool mask)
-  {
-    int id, type, net, a=0;
-    char *txt;
-    int plugs = IMessage( IMC_PLUG_COUNT );
-    itemNet cfg;
-    int k=0;
-
-    for (int i = 1; i < plugs ; i++ )
-    {
-      id = IMessage( IMC_PLUG_ID, 0, 0, i );
-      type = IMessageDirect( IM_PLUG_TYPE, id );
-
-      if ( (type & IMT_NET) == IMT_NET )
-      {
-        net = (int)IMessageDirect( IM_PLUG_NET, id );
-
-        if ( !this->IsIgnored( net ) )
-        {
-          txt = (char*)IMessageDirect( IM_PLUG_NETNAME, id );
-          if (txt)
-          {
-            cfg.net = net;
-            cfg.use = true;
-            if(mask)
-              this->nets.push_back( cfg );
-            k++;
-          }
-        }
-      }
-    }
-    return k;
-  }
-
-  void Status::SaveNets()
-  {
-    std::string buf;
-    itemNet net;
-    char v[10];
-
-    for( std::list<itemNet>::iterator it = this->nets.begin(); it != this->nets.end(); it++ )
-    {
-      net = *it;
-      buf += itoa( net.net, v, 10 );
-      buf += "|";
-      buf += net.use?"1":"0";
-      buf += "|";
-    }
-
-    SETSTR( this->cfgCol, buf.c_str() );
-  }
-
-  int Status::LoadNets()
-  {
-    std::string buf( GETSTRA( this->cfgCol ) );
-    itemNet net;
-    int pos = (int)buf.find( "|" );
-    int off = 0;
-    int i=0;
-
-    while ( pos != std::string::npos )
-    {
-      net.net = atoi( buf.substr(off, pos-off).c_str() );
-      off = pos + 1;
-      pos = (int)buf.find( "|", off );
-      net.use = atoi( buf.substr( off, pos-off).c_str() )?true:false;
-      off = pos + 1;
-      pos = (int)buf.find( "|", off );
-      this->nets.push_back( net );
-      i++;
-    }
-    return i;
-  }
-
-  bool Status::NetState( int net )
-  {
-    itemNet v;
-    for( std::list<itemNet>::iterator it = this->nets.begin(); it != this->nets.end(); it++ )
-    {
-      v = *it;
-      if (v.net == net)
-        return v.use;
-    }
-    return false;
-  }
-
-  bool Status::SetNet( int net, bool use )
-  {
-    itemNet v;
-    for( std::list<itemNet>::iterator it = this->nets.begin(); this->nets.end() != it; it++ )
-    {
-      v = *it;
-      if (v.net == net && v.use != use)
-      {
-        v.use = use;
-        *it = v;
-        return true;
-      }
-    }
-    return false;
+    // this->GetNets();
   }
 
   void Status::AddInfo( char *info, int net )
@@ -273,7 +172,7 @@ namespace kAway2 {
     char *st = 0;
     itemNet item;
 
-    for (std::list<itemNet>::iterator it = this->nets.begin(); it != this->nets.end(); it++)
+    for (std::list<itemNet>::iterator it = this->lCtrl->nets.begin(); it != this->lCtrl->nets.end(); it++)
     {
       item = *it;
 
@@ -371,11 +270,11 @@ namespace kAway2 {
   {
     std::string status;
 
-    if ( !this->IsIgnored( net ) )
+    if ( !this->lCtrl->isIgnored( net ) )
     {
       if ( net == plugsNET::klan && ( ST_OFFLINE != IMessage( IM_GET_STATUS, net ) ) && ( ST_HIDDEN != IMessage( IM_GET_STATUS, net )) )
       {
-        if ( this->NetState( net ) )
+        if ( this->lCtrl->getNetState( net ) )
         {
           status = this->GetInfo( net );
           IMessage( IM_CHANGESTATUS , net , IMT_PROTOCOL , -1 , (int)status.c_str());
@@ -383,7 +282,7 @@ namespace kAway2 {
       }
       else if (IMessage( IM_ISCONNECTED , net , IMT_PROTOCOL ) && ( ST_HIDDEN != IMessage( IM_GET_STATUS, net )))
       {
-        if ( this->NetState( net ) )
+        if ( this->lCtrl->getNetState( net ) )
         {
           status = this->GetInfo( net );
           IMessage( IM_CHANGESTATUS , net , IMT_PROTOCOL , -1 , (int)status.c_str());
@@ -399,7 +298,7 @@ namespace kAway2 {
     for( std::list<itemInfo>::iterator it = this->info.begin(); it != this->info.end(); it++ )
     {
       v = *it;
-      if ( this->NetState( v.net ) )
+      if ( this->lCtrl->getNetState( v.net ) )
         IMessage( IM_CHANGESTATUS , v.net , IMT_PROTOCOL , -1 , (int)v.info.c_str());
     }
   }
@@ -412,15 +311,6 @@ namespace kAway2 {
       v = *it;
       this->BackInfo( v.net );
     }
-  }
-
-  bool Status::IsIgnored( int net )
-  {
-    bool is = false;
-    for (int i = 0; i < sizeof(kAway2::ignoredNets)/sizeof(int) && !is; i++)
-      if (net == kAway2::ignoredNets[i])
-        is = true;
-    return is;
   }
 
   std::string CtrlStatus::Format( std::string txt, int net )
