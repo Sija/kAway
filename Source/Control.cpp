@@ -28,31 +28,8 @@ namespace kAway2 {
   }
 
   void Control::Log(enDebugLevel level, const char *format, va_list ap) {
-	  if (Ctrl && Ctrl->DebugLevel(level))
-	    Ctrl->IMLOG_(level, format, ap);
-  }
-
-  void Control::Log(enDebugLevel level, const char *format, ...) {
-	  va_list ap;
-	  va_start(ap, format);
-    this->Log(level, format, ap);
-	  va_end(ap);
-  }
-
-  void Control::Log(const char *format, ...) {
-	  va_list ap;
-	  va_start(ap, format);
-    this->Log(DBG_LOG, format, ap);
-	  va_end(ap);
-  }
-
-  void Control::Debug(const char *format, ...) {
-    if(!debug) return;
-
-	  va_list ap;
-	  va_start(ap, format);
-    this->Log(DBG_DEBUG, format, ap);
-	  va_end(ap);
+    if (Ctrl && Ctrl->DebugLevel(level))
+      Ctrl->IMLOG_(level, format, ap);
   }
 
   void Control::Enable(std::string msg) {

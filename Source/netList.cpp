@@ -26,45 +26,55 @@ namespace kAway2 {
     std::list<itemNet> nets;
 
     if (!buff.empty()) {
-      itemNet cfg;
+      itemNet item;
 
       int pos = (int) buff.find("|");
       int off = 0;
 
       while (pos != std::string::npos) {
-        cfg.net = atoi(buff.substr(off, pos - off).c_str());
+        item.net = atoi(buff.substr(off, pos - off).c_str());
         off = pos + 1;
         pos = (int) buff.find("|", off);
-        cfg.use = atoi(buff.substr(off, pos - off).c_str()) ? true : false;
+        item.use = atoi(buff.substr(off, pos - off).c_str()) ? true : false;
         off = pos + 1;
         pos = (int) buff.find("|", off);
-        nets.push_back(cfg);
+
+        Control::Debug("[netList::loadNets().retroItem]: net = %i, use = %s",
+          item.net, btoa(item.use));
+
+        nets.push_back(item);
       }
     }
 
     int id, type, net;
-    int plugs = IMessage( IMC_PLUG_COUNT );
-    std::string name;
-    itemNet cfg;
+    int plugs = IMessage(IMC_PLUG_COUNT);
 
-    for (int i = 1; i < plugs ; i++) {
+    std::string name;
+    itemNet item;
+
+    for (int i = 1, n = 1; i < plugs ; i++) {
       id = IMessage(IMC_PLUG_ID, 0, 0, i);
       type = IMessageDirect(IM_PLUG_TYPE, id);
 
       if ((type & IMT_NET) == IMT_NET) {
-        net = (int)IMessageDirect(IM_PLUG_NET, id);
-        name = (char*)IMessageDirect(IM_PLUG_NETNAME, id);
+        net = (int) IMessageDirect(IM_PLUG_NET, id);
+        name = (char*) IMessageDirect(IM_PLUG_NETNAME, id);
 
         if (name.length() && !this->isIgnored(net)) {
-          cfg.id = id;
-          cfg.net = net;
-          cfg.name = name;
-          cfg.use = false;
+          item.net = net;
+          item.id = n++;
+          item.name = name;
+          item.use = false;
 
-          for ( std::list<itemNet>::const_iterator it = nets.begin(); it != nets.end(); it++) {
-            if ((*it).net == net && (*it).use) cfg.use = true; break;
+          for (std::list<itemNet>::iterator it = nets.begin(); it != nets.end(); it++) {
+            if ((*it).net == item.net && (*it).use) {
+              item.use = true; break;
+            }
           }
-          this->nets.push_back(cfg);
+          this->nets.push_back(item);
+
+          Control::Debug("[netList::loadNets().item]: id = %i, net = %i, name = %s, use = %s",
+            item.id, item.net, item.name.c_str(), btoa(item.use));
         }
       }
     }
@@ -72,21 +82,24 @@ namespace kAway2 {
 
   void netList::saveNets() {
     std::string buff;
-    itemNet net;
+    itemNet item;
     char v[10];
 
     for (std::list<itemNet>::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
-      net = *it;
-      buff += itoa(net.net, v, 10);
+      item = *it;
+      buff += itoa(item.net, v, 10);
       buff += "|";
-      buff += net.use ? "1" : "0";
+      buff += item.use ? "1" : "0";
       buff += "|";
+
+      Control::Debug("[netList::saveNets().item]: id = %i, net = %i, name = %s, use = %s",
+        item.id, item.net, item.name.c_str(), btoa(item.use));
     }
 
     SETSTR(this->cfgCol, buff.c_str());
   }
 
-  void netList::UIdraw(int colCount) {
+  void netList::UIDraw(int colCount) {
     itemNet item;
     int c = 1, i = 0, ico;
     int count = this->nets.size();
@@ -96,12 +109,15 @@ namespace kAway2 {
       ico = UIIcon(IT_LOGO, (int) item.net, 0, 0);
       i %= colCount; 
 
+      Control::Debug("[netList::UIDraw().item]: id = %i, net = %i, name = %s, use = %s",
+        item.id, item.net, item.name.c_str(), btoa(item.use));
+
       UIActionCfgAdd(this->cfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, shared::Icon16(ico).c_str(), 0, (i > 0) ? 10 : 0);
       UIActionCfgAdd(this->cfgGroup, this->dynActGroup + item.id, (i != (colCount - 1) && c != count) ? ACTT_CHECK | ACTSC_INLINE : ACTT_CHECK, item.name.c_str());
     }
   }
 
-  void netList::UIgetState() {
+  void netList::UIGetState() {
     itemNet item;
     char buff[16];
     bool v;
@@ -111,20 +127,22 @@ namespace kAway2 {
       UIActionCfgGetValue(sUIAction(this->cfgGroup, this->dynActGroup + item.id), buff, 16, true);
       v = (bool) atoi(buff);
 
-      if (v != item.use) {
-        item.use = v;
-        *it = item;
-      }
+      if (v != item.use) (*it).use = v;
+
+      Control::Debug("[netList::UIGetState().item]: id = %i, net = %i, name = %s, use = %s [now: %s]",
+        item.id, item.net, item.name.c_str(), btoa(item.use), btos(v).c_str());
     }
   }
 
-  void netList::UIsetState() {
+  void netList::UISetState() {
     itemNet item;
+
     for (std::list<itemNet>::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
       item = *it;
-      // Wszystkie nowo utworzone checkboxy s¹ zaznaczone, wiêc tylko odznaczamy :)
-      if (!item.use)
-        UIActionCfgSetValue(sUIAction(this->cfgGroup, this->dynActGroup + item.id), "0", true);
+      UIActionCfgSetValue(sUIAction(this->cfgGroup, this->dynActGroup + item.id), (item.use ? "1" : "0"), true);
+
+      Control::Debug("[netList::UISetState().item]: id = %i, net = %i, name = %s, use = %s",
+        item.id, item.net, item.name.c_str(), btoa(item.use));
     }
   }
 
@@ -158,8 +176,8 @@ namespace kAway2 {
   }
 
   bool netList::isIgnored(int net) {
-    for (int i = 0; i < sizeof(kAway2::ignoredNets) / sizeof(int); i++) {
-      if (net == kAway2::ignoredNets[i]) return(true);
+    for (int i = 0; i < sizeof(ignoredNets) / sizeof(int); i++) {
+      if (net == ignoredNets[i]) return(true);
     }
     return(false);
   }

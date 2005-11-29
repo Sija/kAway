@@ -134,11 +134,6 @@ namespace kAway2 {
     return Status;
   }
 
-  void Status::Init()
-  {
-    // this->GetNets();
-  }
-
   void Status::AddInfo( char *info, int net )
   {
     itemInfo in;
