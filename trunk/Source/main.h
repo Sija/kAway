@@ -52,16 +52,23 @@ namespace kAway2 {
 
   namespace act {
     const unsigned int act = net * 1000 + 200;
+
+    const unsigned int cfgGroupCheckCreate = act + 1;
+    const unsigned int cfgGroupCheckDestroy = act + 2;
+
+    const unsigned int replyCfgGroupCheckCreate = act + 3;
+    const unsigned int replyCfgGroupCheckDestroy = act + 4;
   }
 
   // dynamiczne akcje
   namespace dynAct {
     const unsigned int dynAct = net * 1000 + 300;
 
-    const unsigned int reply = dynAct + 1 * 10;
-    const unsigned int sms = dynAct + 2 * 10;
-    const unsigned int email = dynAct + 3 * 10;
-    const unsigned int forward = dynAct + 4 * 10;
+    const unsigned int reply = dynAct + 10;
+    const unsigned int sms = dynAct + 20;
+    const unsigned int email = dynAct + 30;
+    const unsigned int forward = dynAct + 40;
+    const unsigned int status = dynAct + 50;
   }
 
   namespace cfg {
@@ -141,6 +148,12 @@ namespace kAway2 {
       const unsigned int interval = forward + 1;
       const unsigned int net = forward + 2;
       const unsigned int to = forward + 3;
+    }
+
+    namespace status {
+      const unsigned int status = cfg + 600;
+
+      const unsigned int netChange = status + 1;
     }
   }
 }

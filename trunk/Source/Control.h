@@ -19,12 +19,31 @@ namespace kAway2 {
       void Enable(std::string msg = "");
       void Disable(std::string msg = "");
 
-      void Control::Log(enDebugLevel level, const char *format, ...);
-      void Control::Log(const char *format, ...);
-      void Control::Debug(const char *format, ...);
-
       inline bool isEnabled() {
         return(this->isOn ? true : false);
+      }
+
+      static inline void Log(enDebugLevel level, const char *format, ...) {
+        va_list ap;
+        va_start(ap, format);
+        Control::Log(level, format, ap);
+        va_end(ap);
+      }
+
+      static inline void Log(const char *format, ...) {
+        va_list ap;
+        va_start(ap, format);
+        Control::Log(DBG_LOG, format, ap);
+        va_end(ap);
+      }
+
+      static inline void Debug(const char *format, ...) {
+        if(!debug) return;
+
+        va_list ap;
+        va_start(ap, format);
+        Control::Log(DBG_DEBUG, format, ap);
+        va_end(ap);
       }
 
       inline void setStatusCtrl(CtrlStatus *handle) {
@@ -45,12 +64,21 @@ namespace kAway2 {
       Stamina::Date64 *awayTime;
       std::string ignoredUids;
 
-      void Control::Log(enDebugLevel level, const char *format, va_list ap);
+      static void Control::Log(enDebugLevel level, const char *format, va_list ap);
 
     private:
       CtrlStatus *sCtrl;
       static UINT_PTR m_Timer;
   };
+
+  namespace lCtrl {
+    netList *status = NULL;
+
+    netList *reply = NULL;
+    netList *sms = NULL;
+    netList *email = NULL;
+    netList *forward = NULL;
+  }
 
   Control *pCtrl = NULL;
   CtrlStatus *sCtrl = NULL;

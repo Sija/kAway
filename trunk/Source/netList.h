@@ -19,9 +19,9 @@ namespace kAway2 {
       void loadNets();
       void saveNets();
 
-      void UIdraw(int colCount = 3);
-      void UIgetState();
-      void UIsetState();
+      void UIDraw(int colCount = 3);
+      void UIGetState();
+      void UISetState();
 
       std::string getNetName(int net);
       bool setNetState(int net, bool use);
@@ -39,11 +39,4 @@ namespace kAway2 {
       int cfgGroup;
       int dynActGroup;
   };
-
-  namespace lCtrl {
-    netList *reply = NULL;
-    netList *sms = NULL;
-    netList *email = NULL;
-    netList *forward = NULL;
-  }
 }

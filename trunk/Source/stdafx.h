@@ -24,6 +24,9 @@
 #include <stamina/regex.h>
 */
 
+#include <stamina/time64.h>
+#include <stamina/time64.cpp>
+
 #include <konnekt/plug_export.h>
 #include <konnekt/ui.h>
 #include <konnekt/plug_func.h>

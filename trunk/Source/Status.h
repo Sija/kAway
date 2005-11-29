@@ -62,20 +62,23 @@ namespace kAway2 {
 
   class Status {
     public:
-      Status(kAway2::netList *lCtrl);
+      Status(netList *lCtrl);
       ~Status();
 
     public:
-      // Inicjuje listê sieci
-      void Init();
+      // Obcina status do maks. d³ugoœci
+      std::string LimitChars(std::string Status, int net, int s = 0);
+
       // Zmienia status, txt - opis, st - id statusu
       void ChangeStatus(const char *txt, int st = -1);
       // Zmienia status na wybranej sieci
       void ChangeStatus(int net, const char *txt, int st = -1);
+
       // Zapamiêtuje aktualny opis na ka¿dej sieci
       void RememberInfo();
       // Zapamiêtuje aktualny opis na wybranej sieci
       void RememberInfo(int net);
+
       // Przywraca opis na ka¿dej sieci
       void BackInfo();
       // Przywraca opis na wybranej sieci
@@ -85,8 +88,6 @@ namespace kAway2 {
 
       // lista z sieciami
       netList *lCtrl;
-
-      std::string LimitChars(std::string Status, int net, int s = 0);
 
     protected:
       virtual std::string Format(std::string txt, int net) = 0;
@@ -107,9 +108,9 @@ namespace kAway2 {
       StatInfo prevStat;
   };
 
-  class CtrlStatus : public kAway2::Status {
+  class CtrlStatus : public Status {
     public:
-      CtrlStatus(kAway2::netList *lCtrl) : Status(lCtrl) { }
+      CtrlStatus(netList *lCtrl) : Status(lCtrl) { }
     protected:
       std::string Format(std::string txt, int net);
   };
