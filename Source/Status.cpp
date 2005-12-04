@@ -1,6 +1,5 @@
 /*
  *  Status class
- *  v. 0.1.2.2
  *
  *  Please READ /License.txt FIRST! 
  *
@@ -13,323 +12,159 @@
 #pragma once
 
 namespace kAway2 {
-  Status::Status(netList *lCtrl)
-  {
+  Status::Status(netList *lCtrl, int onHiddenCfgCol) {
     this->lCtrl = lCtrl;
+    this->fCtrl = new Format;
+
+    this->onHiddenCfgCol = onHiddenCfgCol;
   }
 
-  Status::~Status()
-  {
+  Status::~Status() {
+    delete this->fCtrl;
+    this->fCtrl = NULL;
+
     this->info.clear();
   }
 
-  void Status::ChangeStatus( const char *txt, int st )
-  {
+  void Status::ChangeStatus(const char * txt, int st) {
+    for (std::list<itemNet>::iterator it = this->lCtrl->nets.begin(); it != this->lCtrl->nets.end(); it++) {
+      this->ChangeStatus((*it).net, txt, st);
+    }
+  }
+
+  bool Status::onHidden() {
+    return((this->onHiddenCfgCol ? (bool) GETINT(this->onHiddenCfgCol) : true));
+  }
+
+  void Status::ChangeStatus(int net, const char * txt, int st) {
     std::string buff, status(txt);
-    itemNet item;
 
-    // Je¿eli nic nie ma w txt to nie zmieniamy statusu
-    if (status.length() == 0)
-      return;
+    if (this->isNetUseful(net)) {
+      buff = this->Parse(status, net);
+      buff = this->LimitChars(buff, net);
 
-    for (std::list<itemNet>::iterator it = this->lCtrl->nets.begin(); it != this->lCtrl->nets.end(); it++)
-    {
+      IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, (int) buff.c_str());
+
+      Control::Debug("[Status::ChangeStatus().item]: net = %i, status = %i, info = %s",
+        net, st, (buff.length() ? buff.c_str() : "(none)"));
+    }
+  }
+
+  std::string Status::GetInfo(int net) {
+    std::string fake;
+    for (std::list<itemInfo>::iterator it = this->info.begin(); it != this->info.end(); it++) {
+      if ((*it).net == net) return((*it).info);
+    }
+    return(fake);
+  }
+
+  void Status::AddInfo(char * info, int net) {
+    itemInfo item;
+    std::string txt(info);
+    bool exists = false;
+
+    for (std::list<itemInfo>::iterator it = this->info.begin(); it != this->info.end() && !exists; it++) {
       item = *it;
-
-      if ( item.net == plugsNET::klan && ( ST_OFFLINE != IMessage( IM_GET_STATUS, item.net ) )  )
-      {
-        if ( item.use )
-        {
-          buff = this->Format( status, item.net );
-          buff = this->LimitChars( buff, item.net );
-
-          if( this->prevStat != st || this->prevStat != buff )
-          {
-            this->prevStat.st = st;
-            this->prevStat.info = buff;
-
-            if (this->onHidden)
-              IMessage( IM_CHANGESTATUS , item.net , IMT_PROTOCOL , st , (int)buff.c_str());
-            else if ( ST_HIDDEN != IMessage( IM_GET_STATUS, item.net ))
-              IMessage( IM_CHANGESTATUS , item.net , IMT_PROTOCOL , st , (int)buff.c_str());
-          }
-        }
+      if (item.net == net && item.info.compare(info)) {
+        item.info = txt;
+        *it = item;
+        exists = true;
       }
-      else if (IMessage( IM_ISCONNECTED , item.net , IMT_PROTOCOL ))
-      {
-        if ( item.use )
-        {
-          //IMLOG("[%i]: %s", status.c_str(), st);
-          buff = this->Format( status, item.net );
+    }
 
-          if (this->onHidden)
-            IMessage( IM_CHANGESTATUS , item.net , IMT_PROTOCOL , st , (int)buff.c_str());
-          else if ( ST_HIDDEN != IMessage( IM_GET_STATUS, item.net ))
-            IMessage( IM_CHANGESTATUS , item.net , IMT_PROTOCOL , st , (int)buff.c_str());
-        }
-      }
+    if (!exists) {
+      item.info = txt;
+      item.net = net;
+      this->info.push_back(item);
+    }
+
+    Control::Debug("[Status::AddInfo().item]: net = %i, info = %s",
+      net, (info ? info : "(none)"));
+  }
+
+  void Status::RememberInfo() {
+    for (std::list<itemNet>::iterator it = this->lCtrl->nets.begin(); it != this->lCtrl->nets.end(); it++) {
+      this->RememberInfo((*it).net);
     }
   }
 
-  void Status::ChangeStatus( int net, const char *txt, int st )
-  {
-    std::string buff, status(txt);
+  void Status::RememberInfo(int net) {
+    if (this->isNetUseful(net, false)) {
+      char * info = NULL;
 
-    // Je¿eli nic nie ma w txt to nie zmieniamy statusu
-    if (status.length() == 0)
-      return;
-
-    if ( net == plugsNET::klan && ( ST_OFFLINE != IMessage( IM_GET_STATUS, net ) )  )
-    {
-      if (this->onHidden)
-        IMessage( IM_CHANGESTATUS , net , IMT_PROTOCOL , st , (int)buff.c_str());
-      else if ( ST_HIDDEN != IMessage( IM_GET_STATUS, net ))
-        IMessage( IM_CHANGESTATUS , net , IMT_PROTOCOL , st , (int)buff.c_str());
-    }
-    else if (IMessage( IM_ISCONNECTED , net , IMT_PROTOCOL ))
-    {
-      if (this->onHidden)
-        IMessage( IM_CHANGESTATUS , net , IMT_PROTOCOL , st , (int)buff.c_str());
-      else if ( ST_HIDDEN != IMessage( IM_GET_STATUS, net ))
-        IMessage( IM_CHANGESTATUS , net , IMT_PROTOCOL , st , (int)buff.c_str());
+      info = (char*) IMessage(IM_GET_STATUSINFO, net);
+      if (info) this->AddInfo(info, net);
     }
   }
 
-  std::string Status::LimitChars( std::string Status, int net, int s )
-  {
+  void Status::BackInfo() {
+    for (std::list<itemInfo>::iterator it = this->info.begin(); it != this->info.end(); it++) {
+      this->BackInfo((*it).net);
+    }
+  }
+
+  void Status::BackInfo(int net) {
+    if (this->isNetUseful(net, false)) {
+      std::string info;
+
+      info = this->GetInfo(net);
+      IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, -1 , (int) info.c_str());
+
+      Control::Debug("[Status::BackInfo().item]: net = %i, info = %s",
+        net, (info.length() ? info.c_str() : "(none)"));
+    }
+  }
+
+  bool Status::isNetUseful(int net, bool onHidden) {
+    if (this->lCtrl->getNetState(net) && this->lCtrl->isConnected(net)) {
+      if (onHidden && !this->onHidden() && (ST_HIDDEN == IMessage(IM_GET_STATUS, net)))
+        return(false);
+      else
+        return(true);
+    }
+    return(false);
+  }
+
+  std::string Status::Parse(std::string status, int net) {
+    Control::Debug("[Status::Parse().item]: net = %i, info = %s",
+      net, (status.length() ? status.c_str() : "(none)"));
+
+    return(this->fCtrl->Parse(status));
+  }
+
+  std::string Status::LimitChars(std::string status, int net, int s) {
     UINT iLimit;
 
-    switch (net)
-    {
-    case plugsNET::gg:
-        iLimit = GG_STATUS_LENGTH;
+    switch (net) {
+      case plugsNET::kjabber:
+      case plugsNET::kjabber1:
+      case plugsNET::kjabber2:
+      case plugsNET::kjabber3:
+      case plugsNET::kjabber4:
+      case plugsNET::kjabber5:
+      case plugsNET::kjabber6:
+      case plugsNET::kjabber7:
+      case plugsNET::kjabber8:
+      case plugsNET::kjabber9:
+      case plugsNET::kjabber10:
+        iLimit = jabber_status_length;
         break;
-    case plugsNET::dwutlenek:
-        iLimit = TLEN_STATUS_LENGTH;
+      case plugsNET::dwutlenek:
+        iLimit = tlen_status_length;
         break;
-    case plugsNET::kjabber:
-    case plugsNET::kjabber1:
-    case plugsNET::kjabber2:
-    case plugsNET::kjabber3:
-    case plugsNET::kjabber4:
-    case plugsNET::kjabber5:
-    case plugsNET::kjabber6:
-    case plugsNET::kjabber7:
-    case plugsNET::kjabber8:
-    case plugsNET::kjabber9:
-    case plugsNET::kjabber10:
-        iLimit = JABBER_STATUS_LENGTH;
+      case plugsNET::gg:
+        iLimit = gg_status_length;
         break;
-    default:
-        iLimit = DEFAULT_STATUS_LENGTH;
+      default:
+        iLimit = default_status_length;
         break;
     }
 
     iLimit = iLimit - s;
-    if ( Status.length() > iLimit )
-    {
-      Status.resize( iLimit );
-      Status.replace( Status.length()-3, 3, "...");
+    if (status.length() > iLimit) {
+      status.resize(iLimit);
+      status.replace(status.length() - 3, 3, "...");
     }
-    return Status;
-  }
-
-  void Status::AddInfo( char *info, int net )
-  {
-    itemInfo in;
-    std::string txt(info);
-    bool t = false;
-
-    for( std::list<itemInfo>::iterator it = this->info.begin(); it != this->info.end() && !t; it++ )
-    {
-      in = *it;
-      if( in.net == net && in.info.compare( info ) )
-      {
-        t = true;
-        in.info = txt;
-        *it = in;
-      }
-    }
-    
-    if(!t)
-    {
-      in.info = txt;
-      in.net = net;
-          this->info.push_back( in );
-    }
-  }
-
-  void Status::RememberInfo()
-  {
-    char *st = 0;
-    itemNet item;
-
-    for (std::list<itemNet>::iterator it = this->lCtrl->nets.begin(); it != this->lCtrl->nets.end(); it++)
-    {
-      item = *it;
-
-      if ( item.net == plugsNET::klan && ( ST_OFFLINE != IMessage( IM_GET_STATUS, item.net ) ) )
-      {
-        if ( this->onHidden )
-        {
-          st = (char*)IMessage(IM_GET_STATUSINFO, item.net);
-
-          if (st)
-            this->AddInfo( st, item.net );
-        }
-        else if (ST_HIDDEN != IMessage( IM_GET_STATUS, item.net ))
-        {
-          st = (char*)IMessage(IM_GET_STATUSINFO, item.net);
-
-          if (st)
-            this->AddInfo( st, item.net );
-        }
-      }
-      else if (IMessage( IM_ISCONNECTED , item.net , IMT_PROTOCOL )  )
-      {
-        if ( this->onHidden )
-        {
-          st = (char*)IMessage(IM_GET_STATUSINFO, item.net);
-
-          if (st)
-            this->AddInfo( st, item.net );
-        }
-        else if (ST_HIDDEN != IMessage( IM_GET_STATUS, item.net ))
-        {
-          st = (char*)IMessage(IM_GET_STATUSINFO, item.net);
-
-          if (st)
-            this->AddInfo( st, item.net );
-        }
-      }
-    }
-  }
-
-  void Status::RememberInfo( int net )
-  {
-    char *st = NULL;
-
-    if ( net == plugsNET::klan && ( ST_OFFLINE != IMessage( IM_GET_STATUS, net ) ) )
-    {
-      if ( this->onHidden )
-      {
-        st = (char*)IMessage(IM_GET_STATUSINFO, net);
-
-        if (st)
-          this->AddInfo( st, net );
-      }
-      else if (ST_HIDDEN != IMessage( IM_GET_STATUS, net ))
-      {
-        st = (char*)IMessage(IM_GET_STATUSINFO, net);
-
-        if (st)
-          this->AddInfo( st, net );
-      }
-    }
-    else if (IMessage( IM_ISCONNECTED , net , IMT_PROTOCOL )  )
-    {
-      if ( this->onHidden )
-      {
-        st = (char*)IMessage(IM_GET_STATUSINFO, net);
-
-        if (st)
-          this->AddInfo( st, net );
-      }
-      else if (ST_HIDDEN != IMessage( IM_GET_STATUS, net ))
-      {
-        st = (char*)IMessage(IM_GET_STATUSINFO, net);
-
-        if (st)
-          this->AddInfo( st, net );
-      }
-    }
-  }
-
-  std::string Status::GetInfo( int net )
-  {
-    std::string t("");
-    itemInfo v;
-    for( std::list<itemInfo>::iterator it = this->info.begin(); it != this->info.end(); it++ )
-    {
-      v = *it;
-      if( v.net == net )
-        return v.info;
-    }
-    return t;
-  }
-
-  void Status::BackInfo( int net )
-  {
-    std::string status;
-
-    if ( !this->lCtrl->isIgnored( net ) )
-    {
-      if ( net == plugsNET::klan && ( ST_OFFLINE != IMessage( IM_GET_STATUS, net ) ) && ( ST_HIDDEN != IMessage( IM_GET_STATUS, net )) )
-      {
-        if ( this->lCtrl->getNetState( net ) )
-        {
-          status = this->GetInfo( net );
-          IMessage( IM_CHANGESTATUS , net , IMT_PROTOCOL , -1 , (int)status.c_str());
-        }
-      }
-      else if (IMessage( IM_ISCONNECTED , net , IMT_PROTOCOL ) && ( ST_HIDDEN != IMessage( IM_GET_STATUS, net )))
-      {
-        if ( this->lCtrl->getNetState( net ) )
-        {
-          status = this->GetInfo( net );
-          IMessage( IM_CHANGESTATUS , net , IMT_PROTOCOL , -1 , (int)status.c_str());
-        }
-      }
-    }
-  }
-
-  void Status::BackInfo()
-  {
-    itemInfo v;
-
-    for( std::list<itemInfo>::iterator it = this->info.begin(); it != this->info.end(); it++ )
-    {
-      v = *it;
-      if ( this->lCtrl->getNetState( v.net ) )
-        IMessage( IM_CHANGESTATUS , v.net , IMT_PROTOCOL , -1 , (int)v.info.c_str());
-    }
-  }
-
-  void Status::BackRemeberedInfo()
-  {
-    itemInfo v;
-    for( std::list<itemInfo>::iterator it = this->info.begin(); it != this->info.end(); it++ )
-    {
-      v = *it;
-      this->BackInfo( v.net );
-    }
-  }
-
-  std::string CtrlStatus::Format( std::string txt, int net )
-  {
-    //cPreg *preg = new cPreg();
-    //
-    //preg->setPattern("/\{([^a-z0-9]*)([a-z0-9]+)([^a-z0-9]*)\}/i");
-    //preg->setSubject(txt);
-    //preg->reset();
-
-    //string result, buff;
-    //int ret;
-    //while( (ret = preg->match_global()) > 0)
-    //{
-    // // na razie jest przystosowane do tego,
-    // // ¿e nie ma fsd dsf d, Sija jak poprawisz
-    // // to dojdzie jeden subs[i] na syf z poczatku
-    // // i jeden subs[i] na syf na koncu
-    //  if ( this->GetVar( preg->subs[2], buff ) ) {
-    //   result += preg->subs[1];
-      //  result += buff;
-    //   result += preg->subs[3];
-    //  }
-    //}
-    //preg->reset();
-
-    //delete preg; preg = NULL;
-    return(txt);
+    return(status);
   }
 }

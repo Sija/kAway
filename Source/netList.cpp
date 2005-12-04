@@ -11,10 +11,15 @@
 #pragma once
 
 namespace kAway2 {
-  netList::netList(const int cfgCol, const int cfgGroup, const int dynActGroup) {
+  netList::netList(const int cfgCol, const int cfgGroup, const int dynActGroup, const int actCreate, const int actDestroy) {
+    this->configSaved = false;
+    this->netsDrawn = false;
+
     this->cfgCol = cfgCol;
     this->cfgGroup = cfgGroup;
     this->dynActGroup = dynActGroup;
+    this->actCreate = actCreate;
+    this->actDestroy = actDestroy;
   }
 
   netList::~netList() {
@@ -52,7 +57,7 @@ namespace kAway2 {
     std::string name;
     itemNet item;
 
-    for (int i = 1, n = 1; i < plugs ; i++) {
+    for (int i = 1, n = 1; i < plugs; i++) {
       id = IMessage(IMC_PLUG_ID, 0, 0, i);
       type = IMessageDirect(IM_PLUG_TYPE, id);
 
@@ -92,11 +97,30 @@ namespace kAway2 {
       buff += item.use ? "1" : "0";
       buff += "|";
 
-      Control::Debug("[netList::saveNets().item]: id = %i, net = %i, name = %s, use = %s",
-        item.id, item.net, item.name.c_str(), btoa(item.use));
+      Control::Debug("[netList::saveNets().item]: name = %s, use = %s",
+        item.name.c_str(), btoa(item.use));
     }
 
     SETSTR(this->cfgCol, buff.c_str());
+  }
+
+  void netList::actionHandle(const int id, const int code) {
+    if (!this) return;
+
+    if (id == this->cfgGroup && code == ACTN_SAVE) {
+      this->configSaved = true;
+    } else if (id == this->actCreate && code == ACTN_CREATEWINDOW) {
+      this->netsDrawn = true;
+      this->UISetState();
+    } else if (id == this->actDestroy && code == ACTN_DESTROYWINDOW) {
+      if (this->configSaved && this->netsDrawn) {
+        Control::Debug("[netList::actionHandle()]: id = %i, code = %i", id, code);
+        this->UIGetState();
+        this->saveNets();
+      }
+      this->netsDrawn = false;
+      this->configSaved = false;
+    }
   }
 
   void netList::UIDraw(int colCount) {
@@ -104,17 +128,21 @@ namespace kAway2 {
     int c = 1, i = 0, ico;
     int count = this->nets.size();
 
+    UIActionCfgAdd(this->cfgGroup, this->actDestroy, ACTT_HWND, 0, 0, 0, -20);
+
     for (std::list<itemNet>::iterator it = this->nets.begin(); it != this->nets.end(); it++, i++, c++) {
       item = *it;
       ico = UIIcon(IT_LOGO, (int) item.net, 0, 0);
       i %= colCount; 
 
-      Control::Debug("[netList::UIDraw().item]: id = %i, net = %i, name = %s, use = %s",
-        item.id, item.net, item.name.c_str(), btoa(item.use));
+      Control::Debug("[netList::UIDraw().item]: name = %s, use = %s",
+        item.name.c_str(), btoa(item.use));
 
       UIActionCfgAdd(this->cfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, shared::Icon16(ico).c_str(), 0, (i > 0) ? 10 : 0);
       UIActionCfgAdd(this->cfgGroup, this->dynActGroup + item.id, (i != (colCount - 1) && c != count) ? ACTT_CHECK | ACTSC_INLINE : ACTT_CHECK, item.name.c_str());
     }
+
+    UIActionCfgAdd(this->cfgGroup, this->actCreate, ACTT_HWND, 0, 0, 0, -20);
   }
 
   void netList::UIGetState() {
@@ -129,8 +157,8 @@ namespace kAway2 {
 
       if (v != item.use) (*it).use = v;
 
-      Control::Debug("[netList::UIGetState().item]: id = %i, net = %i, name = %s, use = %s [now: %s]",
-        item.id, item.net, item.name.c_str(), btoa(item.use), btos(v).c_str());
+      Control::Debug("[netList::UIGetState().item]: name = %s, use = %s [now: %s]",
+        item.name.c_str(), btoa(item.use), btos(v).c_str());
     }
   }
 
@@ -141,8 +169,8 @@ namespace kAway2 {
       item = *it;
       UIActionCfgSetValue(sUIAction(this->cfgGroup, this->dynActGroup + item.id), (item.use ? "1" : "0"), true);
 
-      Control::Debug("[netList::UISetState().item]: id = %i, net = %i, name = %s, use = %s",
-        item.id, item.net, item.name.c_str(), btoa(item.use));
+      Control::Debug("[netList::UISetState().item]: name = %s, use = %s",
+        item.name.c_str(), btoa(item.use));
     }
   }
 
@@ -173,6 +201,13 @@ namespace kAway2 {
       }
     }
     return(false);
+  }
+
+  bool netList::isConnected(int net) {
+    if (IMessage(IM_ISCONNECTED, net, IMT_PROTOCOL))
+      return(true);
+    else
+      return(false);
   }
 
   bool netList::isIgnored(int net) {
