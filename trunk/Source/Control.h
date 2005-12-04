@@ -11,6 +11,11 @@
 #pragma once
 
 namespace kAway2 {
+  struct ignoredUid {
+    unsigned int net;
+    std::string uid;
+  };
+
   class Control {
     public:
       Control();
@@ -19,25 +24,33 @@ namespace kAway2 {
       void Enable(std::string msg = "");
       void Disable(std::string msg = "");
 
+      bool isIgnoredUid(int net, std::string uid);
+      void addIgnoredUid(int net, std::string uid);
+      void removeIgnoredUid(int net, std::string uid);
+
       inline bool isEnabled() {
         return(this->isOn ? true : false);
       }
 
-      static inline void Log(enDebugLevel level, const char *format, ...) {
+      inline bool isAwayMsgSet() {
+        return(this->awayMsg.length() ? true : false);
+      }
+
+      static inline void Log(enDebugLevel level, const char * format, ...) {
         va_list ap;
         va_start(ap, format);
         Control::Log(level, format, ap);
         va_end(ap);
       }
 
-      static inline void Log(const char *format, ...) {
+      static inline void Log(const char * format, ...) {
         va_list ap;
         va_start(ap, format);
         Control::Log(DBG_LOG, format, ap);
         va_end(ap);
       }
 
-      static inline void Debug(const char *format, ...) {
+      static inline void Debug(const char * format, ...) {
         if(!debug) return;
 
         va_list ap;
@@ -46,7 +59,7 @@ namespace kAway2 {
         va_end(ap);
       }
 
-      inline void setStatusCtrl(CtrlStatus *handle) {
+      inline void setStatusCtrl(Status *handle) {
         this->sCtrl = handle;
       }
 
@@ -62,12 +75,12 @@ namespace kAway2 {
       bool isOn;
       std::string awayMsg;
       Stamina::Date64 *awayTime;
-      std::string ignoredUids;
+      std::list<ignoredUid> ignoredUids;
 
-      static void Control::Log(enDebugLevel level, const char *format, va_list ap);
+      static void Control::Log(enDebugLevel level, const char * format, va_list ap);
 
     private:
-      CtrlStatus *sCtrl;
+      Status *sCtrl;
       static UINT_PTR m_Timer;
   };
 
@@ -81,5 +94,5 @@ namespace kAway2 {
   }
 
   Control *pCtrl = NULL;
-  CtrlStatus *sCtrl = NULL;
+  Status *sCtrl = NULL;
 }

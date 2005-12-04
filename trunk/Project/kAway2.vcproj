@@ -124,6 +124,15 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\Source\Format.cpp">
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\Source\functions.h">
 				<FileConfiguration
 					Name="Release|Win32"
@@ -160,6 +169,9 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
 			<File
 				RelativePath="..\Source\Control.h">
+			</File>
+			<File
+				RelativePath="..\Source\Format.h">
 			</File>
 			<File
 				RelativePath="..\Source\main.h">

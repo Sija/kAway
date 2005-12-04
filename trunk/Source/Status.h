@@ -1,6 +1,5 @@
 /*
  *  Status class
- *  v. 0.1.2.2
  *
  *  Please READ /License.txt FIRST! 
  *
@@ -12,16 +11,10 @@
 
 #pragma once
 
-#define GG_STATUS_LENGTH 70
-#define TLEN_STATUS_LENGTH 255
-#define JABBER_STATUS_LENGTH 255
-#define DEFAULT_STATUS_LENGTH 255
-
-#include <list>
-
 /*
  *  TODO:
  *  - niech zapamiêtuje status i opis (czy warto status?), ¿eby póŸniej przywróciæ
+ *  - rozprawic sie z char * w metodach
  *
  */
 
@@ -31,15 +24,15 @@ namespace kAway2 {
     int net;
   };
 
-  struct StatInfo {
+  struct statInfo {
     std::string info;
     int st;
 
-    bool operator == (const StatInfo a) const {
+    bool operator == (const statInfo a) const {
       return (a.st == this->st && !a.info.compare(this->info)) ? true : false;
     }
 
-    bool operator != (const StatInfo a) const {
+    bool operator != (const statInfo a) const {
       return (a.st != this->st || a.info.compare(this->info)) ? true : false;
     }
 
@@ -62,17 +55,23 @@ namespace kAway2 {
 
   class Status {
     public:
-      Status(netList *lCtrl);
+      Status(netList *lCtrl, int onHiddenCfgCol = 0);
       ~Status();
 
     public:
       // Obcina status do maks. d³ugoœci
-      std::string LimitChars(std::string Status, int net, int s = 0);
+      std::string LimitChars(std::string status, int net, int s = 0);
+      // Formatuje status
+      std::string Parse(std::string status, int net);
+
+      // Sprawdza czy sieæ 'nadaje siê do u¿ytku'
+      bool Status::isNetUseful(int net, bool onHidden = true);
+      bool Status::onHidden();
 
       // Zmienia status, txt - opis, st - id statusu
-      void ChangeStatus(const char *txt, int st = -1);
+      void ChangeStatus(const char * txt, int st = -1);
       // Zmienia status na wybranej sieci
-      void ChangeStatus(int net, const char *txt, int st = -1);
+      void ChangeStatus(int net, const char * txt, int st = -1);
 
       // Zapamiêtuje aktualny opis na ka¿dej sieci
       void RememberInfo();
@@ -83,35 +82,29 @@ namespace kAway2 {
       void BackInfo();
       // Przywraca opis na wybranej sieci
       void BackInfo(int net);
-      // Przywraca zapamiêtane opisy
-      void BackRemeberedInfo();
 
-      // lista z sieciami
-      netList *lCtrl;
-
-    protected:
-      virtual std::string Format(std::string txt, int net) = 0;
-
-    public:
-      /* Opisy */
       // Dodaje info do listy
-      void AddInfo(char *info, int net);
+      void AddInfo(char * info, int net);
       // Zwraca opis sieci net
       std::string GetInfo(int net);
 
+      // lista z sieciami
+      netList *lCtrl;
+      // formatowanie statusu
+      Format *fCtrl;
+
+      // definicje max d³ugoœci statusów poszcz. dla sieci
+      static const int default_status_length = 255;
+      static const int jabber_status_length = 255;
+      static const int tlen_status_length = 255;
+      static const int gg_status_length = 70;
+
+    protected:
+      // virtual std::string Format(std::string txt, int net) = 0;
+
     private:
-      // Czy ma zmieniaæ opis przy Ukrytym?
-      bool onHidden;
+      int onHiddenCfgCol;
       // lista z opisami na sieciach
       std::list<itemInfo> info;
-      // poprzedni opis
-      StatInfo prevStat;
-  };
-
-  class CtrlStatus : public Status {
-    public:
-      CtrlStatus(netList *lCtrl) : Status(lCtrl) { }
-    protected:
-      std::string Format(std::string txt, int net);
   };
 }

@@ -21,13 +21,6 @@ namespace kAway2 {
   const bool debug = true;
   const char poweredBy[64] = "Louis Armstrong and The Presage";
 
-  struct itemNet {
-    unsigned int id;
-    unsigned int net;
-    std::string name;
-    bool use;
-  };
-
   namespace ui {
     const unsigned int ui = net * 1000;
 
@@ -154,6 +147,7 @@ namespace kAway2 {
       const unsigned int status = cfg + 600;
 
       const unsigned int netChange = status + 1;
+      const unsigned int whenInvisible = status + 2;
     }
   }
 }
