@@ -15,17 +15,18 @@
 #include <list>
 #include <stdstring.h>
 
+#pragma comment(lib, "stamina.lib")
+
 /*
-#include <stamina/timer.h>
 #include <stamina/threadrun.h>
 #include <stamina/thread.h>
 #include <stamina/threadinvoke.h>
+#include <stamina/timer.h>
 #include <stamina/helpers.h>
-#include <stamina/regex.h>
 */
 
+#include <stamina/regex.h>
 #include <stamina/time64.h>
-#include <stamina/time64.cpp>
 
 #include <konnekt/plug_export.h>
 #include <konnekt/ui.h>
