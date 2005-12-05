@@ -22,13 +22,11 @@ namespace kAway2 {
   struct sVar {
     std::string name; // nazwa zmiennej
     TYPE type; // typ zmiennej
-    // chcia³em tutaj wrzucic union ale póŸniej coœ siê burczy
-    // o niezgodnosc typow przy podstawianiu
+    std::string value; // wartosc zmiennej (TYPE == STRING)
     FUNC function; // funkcja, która zwraca string
-    std::string value; // lub mo¿e byæ to jakiœ tekst
 
     // defaultowy konstruktor, ¿eby nie trzeba by³o siê bawiæ w deklarowanie zmiennych
-    sVar(const char * name = NULL, TYPE type = STRING, FUNC function = NULL, const char * value = NULL) {
+    sVar(std::string name, TYPE type, FUNC function, std::string value) {
       this->name = name;
       this->type = type;
 
@@ -47,20 +45,24 @@ namespace kAway2 {
 
   class Format {
     public:
-      Format();
+      Format(std::string pattern = "/\{([^a-z0-9]*)([a-z0-9]+)([^a-z0-9]*)\}/i");
       ~Format();
 
     public:
       std::string Parse(std::string txt);
-
-      bool GetVar(std::string name, std::string &val);
-      void AddVar(const char * name, FUNC function);
-      void AddVar(const char * name, const char * value);
-      void RemoveVar(const char * name);
-      bool VarExists(const char * name);
       void ClearVars();
 
+      std::string GetVar(std::string name);
+      bool GetVar(std::string name, std::string &val);
+
+      void AddVar(std::string name, FUNC function);
+      void AddVar(std::string name, std::string value);
+
+      void RemoveVar(std::string name);
+      bool VarExists(std::string name);
+
     protected:
+      std::string pattern;
       tVars vars;
   };
 }

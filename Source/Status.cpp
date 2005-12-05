@@ -12,7 +12,7 @@
 #pragma once
 
 namespace kAway2 {
-  Status::Status(netList *lCtrl, int onHiddenCfgCol, const char * stInfoVar) {
+  Status::Status(netList *lCtrl, int onHiddenCfgCol, std::string stInfoVar) {
     this->lCtrl = lCtrl;
     this->fCtrl = new Format;
 
@@ -27,33 +27,33 @@ namespace kAway2 {
     this->info.clear();
   }
 
-  void Status::ChangeStatus(const char * txt, int st) {
+  void Status::ChangeStatus(std::string info, int st) {
     for (tItemNets::iterator it = this->lCtrl->nets.begin(); it != this->lCtrl->nets.end(); it++) {
-      this->ChangeStatus(it->net, txt, st);
+      this->ChangeStatus(it->net, info, st);
     }
   }
 
   bool Status::onHidden() {
-    return((this->onHiddenCfgCol ? (bool) GETINT(this->onHiddenCfgCol) : true));
+    return(this->onHiddenCfgCol ? (bool) GETINT(this->onHiddenCfgCol) : true);
   }
 
-  void Status::ChangeStatus(int net, const char * txt, int st) {
-    std::string buff, status(txt);
-
+  void Status::ChangeStatus(int net, std::string info, int st) {
     if (this->isNetUseful(net)) {
-      if (this->stInfoVar && !this->fCtrl->VarExists(this->stInfoVar))
-        this->fCtrl->AddVar(this->stInfoVar, this->GetInfo(net).c_str());
+      bool dynSt = (this->stInfoVar.length() && !this->fCtrl->VarExists(this->stInfoVar)) ? true : false;
 
-      buff = this->Parse(status, net);
-      buff = this->LimitChars(buff, net);
+      if (dynSt)
+        this->fCtrl->AddVar(this->stInfoVar, this->GetInfo(net));
 
-      if (this->stInfoVar && !this->fCtrl->VarExists(this->stInfoVar))
+      info = this->Parse(info, net);
+      info = this->LimitChars(info, net);
+
+      if (dynSt)
         this->fCtrl->RemoveVar(this->stInfoVar);
 
-      IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, (int) buff.c_str());
+      IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, (int) info.c_str());
 
       Control::Debug("[Status::ChangeStatus().item]: net = %i, status = %i, info = %s",
-        net, st, (buff.length() ? buff.c_str() : "(none)"));
+        net, st, (info.length() ? info.c_str() : "(none)"));
     }
   }
 
@@ -64,6 +64,10 @@ namespace kAway2 {
     return(status);
   }
 
+  int Status::GetActualStatus(int net) {
+    return(IMessage(IM_GET_STATUS, net));
+  }
+
   std::string Status::GetInfo(int net) {
     std::string fake;
     for (tItemInfos::iterator it = this->info.begin(); it != this->info.end(); it++) {
@@ -72,13 +76,12 @@ namespace kAway2 {
     return(fake);
   }
 
-  void Status::AddInfo(char * info, int net) {
-    std::string txt(info);
+  void Status::AddInfo(std::string info, int net) {
     bool exists = false;
 
     for (tItemInfos::iterator it = this->info.begin(); it != this->info.end() && !exists; it++) {
       if (it->net == net) {
-        it->info = txt;
+        it->info = info;
         exists = true;
       }
     }
@@ -86,13 +89,13 @@ namespace kAway2 {
     if (!exists) {
       itemInfo item;
 
-      item.info = txt;
+      item.info = info;
       item.net = net;
       this->info.push_back(item);
     }
 
     Control::Debug("[Status::AddInfo().item]: net = %i, info = %s",
-      net, (info ? info : "(none)"));
+      net, (info.length() ? info.c_str() : "(none)"));
   }
 
   void Status::RememberInfo() {
@@ -103,13 +106,11 @@ namespace kAway2 {
 
   void Status::RememberInfo(int net) {
     if (this->isNetUseful(net)) {
-      char * info = NULL;
-
-      info = (char*) IMessage(IM_GET_STATUSINFO, net);
-      if (info) this->AddInfo(info, net);
+      std::string info = this->GetActualInfo(net);
+      if (info.length()) this->AddInfo(info, net);
 
       Control::Debug("[Status::RememberInfo().item]: net = %i, info = %s",
-        net, (info ? info : "(none)"));
+        net, (info.length() ? info.c_str() : "(none)"));
     }
   }
 
@@ -121,9 +122,7 @@ namespace kAway2 {
 
   void Status::BackInfo(int net) {
     if (this->isNetUseful(net)) {
-      std::string info;
-
-      info = this->GetInfo(net);
+      std::string info = this->GetInfo(net);
       IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, -1 , (int) info.c_str());
 
       Control::Debug("[Status::BackInfo().item]: net = %i, info = %s",
@@ -131,9 +130,9 @@ namespace kAway2 {
     }
   }
 
-  bool Status::isNetUseful(int net, bool onHidden) {
+  bool Status::isNetUseful(int net) {
     if (this->lCtrl->getNetState(net) && this->lCtrl->isConnected(net)) {
-      if (onHidden && !this->onHidden() && (ST_HIDDEN == IMessage(IM_GET_STATUS, net)))
+      if (!this->onHidden() && (ST_HIDDEN == this->GetActualStatus(net)))
         return(false);
       else
         return(true);

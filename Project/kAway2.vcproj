@@ -4,6 +4,7 @@
 	Version="7.10"
 	Name="kAway2"
 	ProjectGUID="{4EDCA059-6CF8-4752-A73D-6D4ECA2D8EC7}"
+	RootNamespace="kAway2"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform
@@ -79,6 +80,7 @@
 				Name="VCLinkerTool"
 				OutputFile="$(OutDir)/kAway2.dll"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="$(ProjectDir)lib"
 				GenerateDebugInformation="TRUE"
 				SubSystem="2"
 				OptimizeReferences="2"

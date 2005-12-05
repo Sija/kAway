@@ -11,9 +11,25 @@
 
 #pragma once
 
+std::string __stdcall fCallback(Stamina::RegEx *reg, void * param) {
+  kAway2::Format * fCtrl = static_cast<kAway2::Format*>(param);
+  std::string result, buff;
+
+  if (fCtrl->GetVar(reg->getSub(2), buff)) {
+    if (buff.length()) {
+      result += reg->getSub(1);
+      result += buff;
+      result += reg->getSub(3);
+    }
+  } else {
+    result = reg->getSub(0);
+  }
+  return(result);
+}
+
 namespace kAway2 {
-  Format::Format() {
-    //
+  Format::Format(std::string pattern) {
+    this->pattern = pattern;
   }
 
   Format::~Format() {
@@ -21,61 +37,60 @@ namespace kAway2 {
   }
 
   std::string Format::Parse(std::string txt) {
-    /*
-    cPreg *preg = new cPreg();
+    Stamina::RegEx *reg = new Stamina::RegEx;
 
-    preg->setPattern("/\{([^a-z0-9]*)([a-z0-9]+)([^a-z0-9]*)\}/i");
-    preg->setSubject(txt);
-    preg->reset();
+    reg->setLocale("pl_PL");
+    reg->setPattern(this->pattern);
+    reg->setSubject(txt);
 
-    std::string result, buff;
-    int ret;
-    while ((ret = preg->match_global()) > 0) {
-      if (this->GetVar(preg->subs[2], buff)) {
-        result += preg->subs[1];
-        result += buff.length() ? buff : preg->subs[2];
-        result += preg->subs[3];
-      }
-    }
-    preg->reset();
+    std::string result = reg->replace(fCallback, NULL, this);
 
-    delete preg; preg = NULL;
-    */
-    return(txt);
+    Control::Debug("[Format::Parse()]: before = %s, after = %s",
+      txt.c_str(), result.c_str());
+
+    delete reg; reg = NULL;
+    return(result);
   }
 
   void Format::ClearVars() {
     this->vars.clear();
   }
 
-  bool Format::VarExists(const char * name) {
+  bool Format::VarExists(std::string name) {
     for (tVars::iterator it = this->vars.begin(); it != this->vars.end(); it++) {
-      if (it->name.c_str() == name) return(true);
+      if (it->name == name) return(true);
     }
     return(false);
   }
 
-  void Format::AddVar(const char * name, FUNC function) {
-    Control::Debug("[Format::AddVar()]: name = %s, function = ?", name);
+  void Format::AddVar(std::string name, FUNC function) {
+    Control::Debug("[Format::AddVar()]: name = %s, function = ?", name.c_str());
 
     sVar item(name, FUNCTION, function, NULL);
     this->vars.push_back(item);
   }
 
-  void Format::AddVar(const char * name, const char * value) {
+  void Format::AddVar(std::string name, std::string value) {
     Control::Debug("[Format::AddVar()]: name = %s, value = %s", 
-      name, (value ? value : "(none)"));
+      name.c_str(), (value.length() ? value.c_str() : "(none)"));
 
     sVar item(name, STRING, NULL, value);
     this->vars.push_back(item);
   }
 
-  void Format::RemoveVar(const char * name) {
+  void Format::RemoveVar(std::string name) {
     for (tVars::iterator it = this->vars.begin(); it != this->vars.end(); it++) {
-      if (it->name.c_str() == name) {
+      if (it->name == name) {
         it = this->vars.erase(it);
+        break;
       }
     }
+  }
+
+  std::string Format::GetVar(std::string name) {
+    std::string result;
+    this->GetVar(name, result);
+    return(result);
   }
 
   bool Format::GetVar(std::string name, std::string &val) {
@@ -89,7 +104,8 @@ namespace kAway2 {
             val = it->value;
             break;
         }
-        Control::Debug("[Format::GetVar()]: name = %s, value = %s", name.c_str(), val.c_str());
+        Control::Debug("[Format::GetVar()]: name = %s, value = %s",
+          name.c_str(), (val.length() ? val.c_str() : "(none)"));
         return(true);
       }
     }

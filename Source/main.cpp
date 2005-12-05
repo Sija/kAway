@@ -65,8 +65,21 @@ namespace kAway2 {
     sCtrl = new Status(lCtrl::status, cfg::status::whenInvisible, "status");
     pCtrl->setStatusCtrl(sCtrl);
 
-    pCtrl->Enable("test");
     pCtrl->Debug("net = %i, Ctrl = %i, pCtrl = %i, sCtrl = %i", net, Ctrl, pCtrl, sCtrl);
+
+    /* Debug shit */
+    pCtrl->Enable("test");
+
+    Format *f = new Format;
+    std::string s = "|{/y/}lalalalf sdf {|test|}ewr 2331 234 324{[x]}|3423 2r ewf ewr2";
+
+    f->AddVar("test", "===");
+    f->AddVar("x", "+++");
+    f->AddVar("y", "");
+    f->Parse(s);
+
+    delete f; f = NULL;
+    /* /Debug shit */
 
     /* Registering icons */
     // IconRegister(IML_32, ico::logoBig, Ctrl->hDll(), IDI_LOGO32);
@@ -184,7 +197,7 @@ namespace kAway2 {
 }
 
 int __stdcall IMessageProc(sIMessage_base * msgBase) {
-  sIMessage_2params * msg = (msgBase->s_size >= sizeof(sIMessage_2params)) ? static_cast<sIMessage_2params*>(msgBase) : 0;
+  sIMessage_2params * msg = static_cast<sIMessage_2params*>(msgBase);
 
   switch (msgBase->id) {
     case IM_PLUG_NET:        return(net);

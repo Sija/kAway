@@ -22,13 +22,13 @@ namespace kAway2 {
 
   class netList {
     public:
-      netList(const int cfgCol, const int cfgGroup, const int dynActGroup, const int actCreate, const int actDestroy);
+      netList(int cfgCol, int cfgGroup, int dynActGroup, int actCreate, int actDestroy);
       ~netList();
 
       void loadNets();
       void saveNets();
 
-      void actionHandle(const int id, const int code);
+      void actionHandle(int id, int code);
 
       void UIDraw(int colCount = 3);
       void UIGetState();
@@ -47,11 +47,11 @@ namespace kAway2 {
       tItemNets nets;
 
     protected:
-      int cfgCol;
-      int cfgGroup;
-      int dynActGroup;
-      int actCreate;
-      int actDestroy;
+      unsigned int cfgCol;
+      unsigned int cfgGroup;
+      unsigned int dynActGroup;
+      unsigned int actCreate;
+      unsigned int actDestroy;
 
       bool configSaved;
       bool netsDrawn;

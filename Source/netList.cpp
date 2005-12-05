@@ -11,7 +11,7 @@
 #pragma once
 
 namespace kAway2 {
-  netList::netList(const int cfgCol, const int cfgGroup, const int dynActGroup, const int actCreate, const int actDestroy) {
+  netList::netList(int cfgCol, int cfgGroup, int dynActGroup, int actCreate, int actDestroy) {
     this->configSaved = false;
     this->netsDrawn = false;
 
@@ -102,7 +102,7 @@ namespace kAway2 {
     SETSTR(this->cfgCol, buff.c_str());
   }
 
-  void netList::actionHandle(const int id, const int code) {
+  void netList::actionHandle(int id, int code) {
     if (!this) return;
 
     if (id == this->cfgGroup && code == ACTN_SAVE) {
@@ -149,10 +149,10 @@ namespace kAway2 {
       UIActionCfgGetValue(sUIAction(this->cfgGroup, this->dynActGroup + it->id), buff, 16, true);
       v = (bool) atoi(buff);
 
-      if (it->use != v) it->use = v;
-
       Control::Debug("[netList::UIGetState().item]: name = %s, use = %s [now: %s]",
         it->name.c_str(), btoa(it->use), btos(v).c_str());
+
+      if (it->use != v) it->use = v;
     }
   }
 

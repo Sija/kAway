@@ -12,15 +12,15 @@
 
 std::string itos(int i, int radix = 10) {
   char buff[64]; _itoa(i, buff, radix);
-  return((std::string) buff);
+  return(buff);
 }
 
 char * btoa(bool value) {
-  return((value ? "true" : "false"));
+  return(value ? "true" : "false");
 }
 
 std::string btos(bool value) {
-  return(std::string(btoa(value)));
+  return(btoa(value));
 }
 
 namespace shared {

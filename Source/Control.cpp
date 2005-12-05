@@ -38,16 +38,15 @@ namespace kAway2 {
       this->isOn = true;
 
       if(this->sCtrl) {
-        this->sCtrl->fCtrl->AddVar("date", this->awayTime->strftime("%d/%m/%Y").c_str());
-        this->sCtrl->fCtrl->AddVar("time", this->awayTime->strftime("%H:%M:%S").c_str());
-        this->sCtrl->fCtrl->AddVar("msg", msg.c_str());
+        this->sCtrl->fCtrl->AddVar("date", this->awayTime->strftime("%d/%m/%Y"));
+        this->sCtrl->fCtrl->AddVar("time", this->awayTime->strftime("%H:%M:%S"));
+        this->sCtrl->fCtrl->AddVar("msg", msg);
 
         this->sCtrl->RememberInfo();
-        this->sCtrl->ChangeStatus("ssaj mego bena dzifko!");
+        this->sCtrl->ChangeStatus("ssaj mego bena dzifko!"); // debug ;>
       }
 
-      this->Debug("[Control::Enable()]: msg = %s, timestamp = %s",
-        (msg.length() ? msg.c_str() : "(none)"), this->awayTime->strftime("%d/%m/%Y [%H:%M:%S]").c_str());
+      this->Debug("[Control::Enable()]: msg = %s", (msg.length() ? msg.c_str() : "(none)"));
     }
   }
 
@@ -58,8 +57,7 @@ namespace kAway2 {
         this->sCtrl->BackInfo();
       }
 
-      this->Debug("[Control::Disable()]: msg = %s, timestamp = %s",
-        (msg.length() ? msg.c_str() : "(none)"), this->awayTime->strftime("%d/%m/%Y [%H:%M:%S]").c_str());
+      this->Debug("[Control::Disable()]: msg = %s", (msg.length() ? msg.c_str() : "(none)"));
 
       this->awayMsg = "";
       this->awayTime->clear();
@@ -88,6 +86,7 @@ namespace kAway2 {
     for (tIgnoredUids::iterator it = this->ignoredUids.begin(); it != this->ignoredUids.end(); it++) {
       if ((it->net == net) && (it->uid == uid)) {
         it = this->ignoredUids.erase(it);
+        break;
       }
     }
   }
