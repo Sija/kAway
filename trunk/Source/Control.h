@@ -16,6 +16,8 @@ namespace kAway2 {
     std::string uid;
   };
 
+  typedef std::list<ignoredUid> tIgnoredUids;
+
   class Control {
     public:
       Control();
@@ -75,7 +77,7 @@ namespace kAway2 {
       bool isOn;
       std::string awayMsg;
       Stamina::Date64 *awayTime;
-      std::list<ignoredUid> ignoredUids;
+      tIgnoredUids ignoredUids;
 
       static void Control::Log(enDebugLevel level, const char * format, va_list ap);
 

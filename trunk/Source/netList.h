@@ -18,6 +18,8 @@ namespace kAway2 {
     bool use;
   };
 
+  typedef std::list<itemNet> tItemNets;
+
   class netList {
     public:
       netList(const int cfgCol, const int cfgGroup, const int dynActGroup, const int actCreate, const int actDestroy);
@@ -36,13 +38,13 @@ namespace kAway2 {
       bool setNetState(int net, bool use);
       bool getNetState(int net);
 
-      inline std::list<itemNet> getNets() {
+      inline tItemNets getNets() {
         return(this->nets);
       }
       bool isConnected(int net);
       bool isIgnored(int net);
 
-      std::list<itemNet> nets;
+      tItemNets nets;
 
     protected:
       int cfgCol;

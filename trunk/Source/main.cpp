@@ -54,7 +54,7 @@ namespace kAway2 {
   int IPrepare() {
     pCtrl = new Control();
 
-    lCtrl::status = new netList(cfg::status::netChange, ui::cfgGroup, dynAct::status, 
+    lCtrl::status = new netList(cfg::status::netChange, ui::statusCfgGroup, dynAct::status, 
       act::cfgGroupCheckCreate, act::cfgGroupCheckDestroy);
     lCtrl::status->loadNets();
 
@@ -62,12 +62,10 @@ namespace kAway2 {
       act::replyCfgGroupCheckCreate, act::replyCfgGroupCheckDestroy);
     lCtrl::reply->loadNets();
 
-    sCtrl = new Status(lCtrl::status, cfg::status::whenInvisible);
+    sCtrl = new Status(lCtrl::status, cfg::status::whenInvisible, "status");
     pCtrl->setStatusCtrl(sCtrl);
 
     pCtrl->Enable("test");
-    sCtrl->ChangeStatus("ssaj mego bena dzifko!");
-
     pCtrl->Debug("net = %i, Ctrl = %i, pCtrl = %i, sCtrl = %i", net, Ctrl, pCtrl, sCtrl);
 
     /* Registering icons */
@@ -79,6 +77,7 @@ namespace kAway2 {
 
     /* Adding configuration tabs */
     UIGroupInsert(IMIG_CFG_PLUGS, ui::cfgGroup, -1, ACTR_SAVE, "kAway2", ico::logoSmall);
+    UIGroupInsert(ui::cfgGroup, ui::statusCfgGroup, -1, ACTR_SAVE, "Status", 0x00000020);
     UIGroupInsert(ui::cfgGroup, ui::replyCfgGroup, -1, ACTR_SAVE, "Autoresponder", 0x50000010);
 
     /* Plugin info box */
@@ -91,8 +90,8 @@ namespace kAway2 {
       "Copyright © 2004-2005 <b>KPlugins Team</b>",
       poweredBy, __DATE__, __TIME__);
 
-    UIActionCfgAddPluginInfoBox2(ui::cfgGroup, "Implementacja IRCowej funkcjonalnoœci <b>/away [...]</b>", header,
-      shared::Icon32(ico::logoBig).c_str());
+    UIActionCfgAddPluginInfoBox2(ui::cfgGroup, "Implementacja IRCowej funkcjonalnoœci <b>/away [...]</b>", 
+      header, shared::Icon32(ico::logoBig).c_str());
 
     /* Main tab */
     /* |-> General settings group */
@@ -103,12 +102,6 @@ namespace kAway2 {
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Komendy '/away' i '/back' z okna rozmów" AP_TIP 
       "/away [...] w³¹cza tryb away, a /back [...] go wy³¹cza; mo¿na podaæ te¿ powód w³¹czenia/wy³¹czenia trybu", cfg::ircCmds);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Pokazuj powiadomienia K.Notify", cfg::useKNotify);
-    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Zmieniaj status przy w³¹czonym statusie 'ukryty'", cfg::status::whenInvisible);
-    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
-
-    /* |-> Net selection group */
-    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUP, "Wybierz sieci, na których chcesz zmieniaæ status:");
-    lCtrl::status->UIDraw();
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
 
     /* |-> Interface group */
@@ -117,6 +110,17 @@ namespace kAway2 {
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Pokazuj przycisk w g³ównym oknie", cfg::btnInMainWindow);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Pokazuj przycisk w oknie rozmowy", cfg::btnInCntWindow);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
+
+    /* Status tab */
+    /* |-> Settings group */
+    UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_GROUP, "Ustawienia");
+    UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_CHECK, "Zmieniaj status przy w³¹czonym statusie 'ukryty'", cfg::status::whenInvisible);
+    UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_GROUPEND);
+
+    /* |-> Net selection group */
+    UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_GROUP, "Wybierz sieci, na których chcesz zmieniaæ status:");
+    lCtrl::status->UIDraw();
+    UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_GROUPEND);
 
     /* Autoresponder tab */
     /* |-> Minimal reply interval group */
@@ -166,8 +170,6 @@ namespace kAway2 {
 
   ActionProc(sUIActionNotify_base * anBase) {
     sUIActionNotify_2params * an = static_cast<sUIActionNotify_2params*>(anBase);
-
-    // bool isMe = (GETCNTI(anBase->act.cnt, CNT_NET) == net);
 
     pCtrl->Debug("[ActionProc()]: anBase->act.id = %i, an->code = %i", anBase->act.id, an->code);
 

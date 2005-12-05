@@ -6,7 +6,7 @@
  *  Copyright (C)2005 Sijawusz Pur Rahnama
  *  Copyright (C)2005 Winthux
  *
- *  $Id: $
+ *  $Id$
  */
 
 #pragma once
@@ -44,40 +44,52 @@ namespace kAway2 {
     return(txt);
   }
 
+  void Format::ClearVars() {
+    this->vars.clear();
+  }
+
+  bool Format::VarExists(const char * name) {
+    for (tVars::iterator it = this->vars.begin(); it != this->vars.end(); it++) {
+      if (it->name.c_str() == name) return(true);
+    }
+    return(false);
+  }
+
   void Format::AddVar(const char * name, FUNC function) {
+    Control::Debug("[Format::AddVar()]: name = %s, function = ?", name);
+
     sVar item(name, FUNCTION, function, NULL);
     this->vars.push_back(item);
   }
 
   void Format::AddVar(const char * name, const char * value) {
+    Control::Debug("[Format::AddVar()]: name = %s, value = %s", 
+      name, (value ? value : "(none)"));
+
     sVar item(name, STRING, NULL, value);
     this->vars.push_back(item);
   }
 
   void Format::RemoveVar(const char * name) {
-    for (std::list<sVar>::iterator it = this->vars.begin(); it != this->vars.end(); it++) {
-      if ((*it).name.c_str() == name) {
-        // removing unwanted item [how? ;>]
-        // this->vars.pop_back();
+    for (tVars::iterator it = this->vars.begin(); it != this->vars.end(); it++) {
+      if (it->name.c_str() == name) {
+        it = this->vars.erase(it);
       }
     }
   }
 
   bool Format::GetVar(std::string name, std::string &val) {
-    sVar item;
-
-    for (std::list<sVar>::iterator it = this->vars.begin(); it != this->vars.end(); it++) {
-      item = *it;
-
-      if (!name.compare(item.name)) {
-        switch (item.type) {
+    for (tVars::iterator it = this->vars.begin(); it != this->vars.end(); it++) {
+      if (it->name == name) {
+        switch (it->type) {
           case FUNCTION:
-            val = (*item.function)();
+            val = (*it->function)();
             break;
           case STRING:
-            val = item.value;
+            val = it->value;
             break;
         }
+        Control::Debug("[Format::GetVar()]: name = %s, value = %s", name.c_str(), val.c_str());
         return(true);
       }
     }
