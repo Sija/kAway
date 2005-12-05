@@ -27,10 +27,11 @@ namespace kAway2 {
     const unsigned int cfgGroup = ui + 1;
     const unsigned int cntCfgGroup = ui + 2;
 
-    const unsigned int replyCfgGroup = ui + 3;
-    const unsigned int forwardCfgGroup = ui + 3;
-    const unsigned int smsCfgGroup = ui + 4;
-    const unsigned int emailCfgGroup = ui + 5;
+    const unsigned int statusCfgGroup = ui + 3;
+    const unsigned int replyCfgGroup = ui + 4;
+    const unsigned int forwardCfgGroup = ui + 5;
+    const unsigned int smsCfgGroup = ui + 6;
+    const unsigned int emailCfgGroup = ui + 7;
   }
 
   namespace ico {

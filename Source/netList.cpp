@@ -28,7 +28,7 @@ namespace kAway2 {
 
   void netList::loadNets() {
     std::string buff(GETSTRA(this->cfgCol));
-    std::list<itemNet> nets;
+    tItemNets nets;
 
     if (!buff.empty()) {
       itemNet item;
@@ -71,8 +71,8 @@ namespace kAway2 {
           item.name = name;
           item.use = false;
 
-          for (std::list<itemNet>::iterator it = nets.begin(); it != nets.end(); it++) {
-            if ((*it).net == item.net && (*it).use) {
+          for (tItemNets::iterator it = nets.begin(); it != nets.end(); it++) {
+            if (it->net == item.net && it->use) {
               item.use = true; break;
             }
           }
@@ -87,18 +87,16 @@ namespace kAway2 {
 
   void netList::saveNets() {
     std::string buff;
-    itemNet item;
     char v[10];
 
-    for (std::list<itemNet>::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
-      item = *it;
-      buff += itoa(item.net, v, 10);
+    for (tItemNets::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
+      buff += itoa(it->net, v, 10);
       buff += "|";
-      buff += item.use ? "1" : "0";
+      buff += it->use ? "1" : "0";
       buff += "|";
 
       Control::Debug("[netList::saveNets().item]: name = %s, use = %s",
-        item.name.c_str(), btoa(item.use));
+        it->name.c_str(), btoa(it->use));
     }
 
     SETSTR(this->cfgCol, buff.c_str());
@@ -124,79 +122,68 @@ namespace kAway2 {
   }
 
   void netList::UIDraw(int colCount) {
-    itemNet item;
     int c = 1, i = 0, ico;
     int count = this->nets.size();
 
     UIActionCfgAdd(this->cfgGroup, this->actDestroy, ACTT_HWND, 0, 0, 0, -20);
 
-    for (std::list<itemNet>::iterator it = this->nets.begin(); it != this->nets.end(); it++, i++, c++) {
-      item = *it;
-      ico = UIIcon(IT_LOGO, (int) item.net, 0, 0);
+    for (tItemNets::iterator it = this->nets.begin(); it != this->nets.end(); it++, i++, c++) {
+      ico = UIIcon(IT_LOGO, (int) it->net, 0, 0);
       i %= colCount; 
 
       Control::Debug("[netList::UIDraw().item]: name = %s, use = %s",
-        item.name.c_str(), btoa(item.use));
+        it->name.c_str(), btoa(it->use));
 
       UIActionCfgAdd(this->cfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, shared::Icon16(ico).c_str(), 0, (i > 0) ? 10 : 0);
-      UIActionCfgAdd(this->cfgGroup, this->dynActGroup + item.id, (i != (colCount - 1) && c != count) ? ACTT_CHECK | ACTSC_INLINE : ACTT_CHECK, item.name.c_str());
+      UIActionCfgAdd(this->cfgGroup, this->dynActGroup + it->id, (i != (colCount - 1) && c != count) ? ACTT_CHECK | ACTSC_INLINE : ACTT_CHECK, it->name.c_str());
     }
 
     UIActionCfgAdd(this->cfgGroup, this->actCreate, ACTT_HWND, 0, 0, 0, -20);
   }
 
   void netList::UIGetState() {
-    itemNet item;
     char buff[16];
     bool v;
 
-    for (std::list<itemNet>::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
-      item = *it;
-      UIActionCfgGetValue(sUIAction(this->cfgGroup, this->dynActGroup + item.id), buff, 16, true);
+    for (tItemNets::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
+      UIActionCfgGetValue(sUIAction(this->cfgGroup, this->dynActGroup + it->id), buff, 16, true);
       v = (bool) atoi(buff);
 
-      if (v != item.use) (*it).use = v;
+      if (it->use != v) it->use = v;
 
       Control::Debug("[netList::UIGetState().item]: name = %s, use = %s [now: %s]",
-        item.name.c_str(), btoa(item.use), btos(v).c_str());
+        it->name.c_str(), btoa(it->use), btos(v).c_str());
     }
   }
 
   void netList::UISetState() {
-    itemNet item;
-
-    for (std::list<itemNet>::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
-      item = *it;
-      UIActionCfgSetValue(sUIAction(this->cfgGroup, this->dynActGroup + item.id), (item.use ? "1" : "0"), true);
+    for (tItemNets::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
+      UIActionCfgSetValue(sUIAction(this->cfgGroup, this->dynActGroup + it->id), (it->use ? "1" : "0"), true);
 
       Control::Debug("[netList::UISetState().item]: name = %s, use = %s",
-        item.name.c_str(), btoa(item.use));
+        it->name.c_str(), btoa(it->use));
     }
   }
 
   std::string netList::getNetName(int net) {
     std::string fake;
-    for (std::list<itemNet>::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
-      if ((*it).net == net) return((*it).name);
+    for (tItemNets::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
+      if (it->net == net) return(it->name);
     }
     return(fake);
   }
 
   bool netList::getNetState(int net) {
-    for (std::list<itemNet>::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
-      if ((*it).net == net) return((*it).use);
+    for (tItemNets::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
+      if (it->net == net) return(it->use);
     }
     return(false);
   }
 
   bool netList::setNetState(int net, bool use) {
-    itemNet item;
-    for (std::list<itemNet>::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
-      item = *it;
-
-      if (item.net == net && item.use != use) {
-        item.use = use;
-        *it = item;
+    for (tItemNets::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
+      if (it->net == net) {
+        if (it->use != use) it->use = use;
         return(true);
       }
     }

@@ -15,6 +15,7 @@
  *  TODO:
  *  - niech zapamiêtuje status i opis (czy warto status?), ¿eby póŸniej przywróciæ
  *  - rozprawic sie z char * w metodach
+ *  - czy ustawianie zmiennej do ktorej wrzucony bedzie aktualny opis w konstruktorze to dobry pomysl ?
  *
  */
 
@@ -23,6 +24,8 @@ namespace kAway2 {
     std::string info;
     int net;
   };
+
+  typedef std::list<itemInfo> tItemInfos;
 
   struct statInfo {
     std::string info;
@@ -55,7 +58,7 @@ namespace kAway2 {
 
   class Status {
     public:
-      Status(netList *lCtrl, int onHiddenCfgCol = 0);
+      Status(netList *lCtrl, int onHiddenCfgCol = NULL, const char * stInfoVar = "");
       ~Status();
 
     public:
@@ -65,8 +68,8 @@ namespace kAway2 {
       std::string Parse(std::string status, int net);
 
       // Sprawdza czy sieæ 'nadaje siê do u¿ytku'
-      bool Status::isNetUseful(int net, bool onHidden = true);
-      bool Status::onHidden();
+      bool isNetUseful(int net, bool onHidden = true);
+      bool onHidden();
 
       // Zmienia status, txt - opis, st - id statusu
       void ChangeStatus(const char * txt, int st = -1);
@@ -83,10 +86,12 @@ namespace kAway2 {
       // Przywraca opis na wybranej sieci
       void BackInfo(int net);
 
-      // Dodaje info do listy
-      void AddInfo(char * info, int net);
+      // Zwraca aktualny opis sieci net
+      std::string GetActualInfo(int net);
       // Zwraca opis sieci net
       std::string GetInfo(int net);
+      // Dodaje info do listy
+      void AddInfo(char * info, int net);
 
       // lista z sieciami
       netList *lCtrl;
@@ -103,8 +108,11 @@ namespace kAway2 {
       // virtual std::string Format(std::string txt, int net) = 0;
 
     private:
+      // nazwa zmiennej do której wrzucany bêdzie aktualny opis statusu
+      const char * stInfoVar;
+      // kolumna konfiguracji ktora odpowiada za opcje 'zmieniaj status przy statusie ukryty'
       int onHiddenCfgCol;
       // lista z opisami na sieciach
-      std::list<itemInfo> info;
+      tItemInfos info;
   };
 }

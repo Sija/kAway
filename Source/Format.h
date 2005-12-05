@@ -6,7 +6,7 @@
  *  Copyright (C)2005 Sijawusz Pur Rahnama
  *  Copyright (C)2005 Winthux
  *
- *  $Id: $
+ *  $Id$
  */
 
 #pragma once
@@ -43,6 +43,8 @@ namespace kAway2 {
     }
   };
 
+  typedef std::list<sVar> tVars;
+
   class Format {
     public:
       Format();
@@ -55,8 +57,10 @@ namespace kAway2 {
       void AddVar(const char * name, FUNC function);
       void AddVar(const char * name, const char * value);
       void RemoveVar(const char * name);
+      bool VarExists(const char * name);
+      void ClearVars();
 
     protected:
-      std::list<sVar> vars;
+      tVars vars;
   };
 }

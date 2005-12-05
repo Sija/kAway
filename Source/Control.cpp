@@ -14,7 +14,6 @@ namespace kAway2 {
   Control::Control() {
     // this->awayMsg = "";
     this->awayTime = new Stamina::Date64(false);
-    // this->ignoredUids.clear();
     this->isOn = false;
   }
 
@@ -34,12 +33,18 @@ namespace kAway2 {
 
   void Control::Enable(std::string msg) {
     if (!this->isOn) {
-      if(this->sCtrl)
-        this->sCtrl->RememberInfo();
-
       this->awayMsg = msg;
       this->awayTime->now();
       this->isOn = true;
+
+      if(this->sCtrl) {
+        this->sCtrl->fCtrl->AddVar("date", this->awayTime->strftime("%d/%m/%Y").c_str());
+        this->sCtrl->fCtrl->AddVar("time", this->awayTime->strftime("%H:%M:%S").c_str());
+        this->sCtrl->fCtrl->AddVar("msg", msg.c_str());
+
+        this->sCtrl->RememberInfo();
+        this->sCtrl->ChangeStatus("ssaj mego bena dzifko!");
+      }
 
       this->Debug("[Control::Enable()]: msg = %s, timestamp = %s",
         (msg.length() ? msg.c_str() : "(none)"), this->awayTime->strftime("%d/%m/%Y [%H:%M:%S]").c_str());
@@ -48,8 +53,10 @@ namespace kAway2 {
 
   void Control::Disable(std::string msg) {
     if (this->isOn) {
-      if(this->sCtrl)
+      if(this->sCtrl) {
+        this->sCtrl->fCtrl->ClearVars();
         this->sCtrl->BackInfo();
+      }
 
       this->Debug("[Control::Disable()]: msg = %s, timestamp = %s",
         (msg.length() ? msg.c_str() : "(none)"), this->awayTime->strftime("%d/%m/%Y [%H:%M:%S]").c_str());
@@ -62,11 +69,8 @@ namespace kAway2 {
   }
 
   bool Control::isIgnoredUid(int net, std::string uid) {
-    ignoredUid item;
-
-    for (std::list<ignoredUid>::iterator it = this->ignoredUids.begin(); it != this->ignoredUids.end(); it++) {
-      item = *it;
-      if ((item.net == net) && (item.uid == uid)) return(true);
+    for (tIgnoredUids::iterator it = this->ignoredUids.begin(); it != this->ignoredUids.end(); it++) {
+      if ((it->net == net) && (it->uid == uid)) return(true);
     }
     return(false);
   }
@@ -81,14 +85,9 @@ namespace kAway2 {
   }
 
   void Control::removeIgnoredUid(int net, std::string uid) {
-    ignoredUid item;
-
-    for (std::list<ignoredUid>::iterator it = this->ignoredUids.begin(); it != this->ignoredUids.end(); it++) {
-      item = *it;
-
-      if ((item.net == net) && (item.uid == uid)) {
-        // removing unwanted item [how? ;>]
-        // this->ignoredUids.pop_back();
+    for (tIgnoredUids::iterator it = this->ignoredUids.begin(); it != this->ignoredUids.end(); it++) {
+      if ((it->net == net) && (it->uid == uid)) {
+        it = this->ignoredUids.erase(it);
       }
     }
   }

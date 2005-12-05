@@ -12,10 +12,11 @@
 #pragma once
 
 namespace kAway2 {
-  Status::Status(netList *lCtrl, int onHiddenCfgCol) {
+  Status::Status(netList *lCtrl, int onHiddenCfgCol, const char * stInfoVar) {
     this->lCtrl = lCtrl;
     this->fCtrl = new Format;
 
+    this->stInfoVar = stInfoVar;
     this->onHiddenCfgCol = onHiddenCfgCol;
   }
 
@@ -27,8 +28,8 @@ namespace kAway2 {
   }
 
   void Status::ChangeStatus(const char * txt, int st) {
-    for (std::list<itemNet>::iterator it = this->lCtrl->nets.begin(); it != this->lCtrl->nets.end(); it++) {
-      this->ChangeStatus((*it).net, txt, st);
+    for (tItemNets::iterator it = this->lCtrl->nets.begin(); it != this->lCtrl->nets.end(); it++) {
+      this->ChangeStatus(it->net, txt, st);
     }
   }
 
@@ -40,8 +41,14 @@ namespace kAway2 {
     std::string buff, status(txt);
 
     if (this->isNetUseful(net)) {
+      if (this->stInfoVar && !this->fCtrl->VarExists(this->stInfoVar))
+        this->fCtrl->AddVar(this->stInfoVar, this->GetInfo(net).c_str());
+
       buff = this->Parse(status, net);
       buff = this->LimitChars(buff, net);
+
+      if (this->stInfoVar && !this->fCtrl->VarExists(this->stInfoVar))
+        this->fCtrl->RemoveVar(this->stInfoVar);
 
       IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, (int) buff.c_str());
 
@@ -50,29 +57,35 @@ namespace kAway2 {
     }
   }
 
+  std::string Status::GetActualInfo(int net) {
+    std::string status;
+    status = (char*) IMessage(IM_GET_STATUSINFO, net);
+
+    return(status);
+  }
+
   std::string Status::GetInfo(int net) {
     std::string fake;
-    for (std::list<itemInfo>::iterator it = this->info.begin(); it != this->info.end(); it++) {
-      if ((*it).net == net) return((*it).info);
+    for (tItemInfos::iterator it = this->info.begin(); it != this->info.end(); it++) {
+      if (it->net == net) return(it->info);
     }
     return(fake);
   }
 
   void Status::AddInfo(char * info, int net) {
-    itemInfo item;
     std::string txt(info);
     bool exists = false;
 
-    for (std::list<itemInfo>::iterator it = this->info.begin(); it != this->info.end() && !exists; it++) {
-      item = *it;
-      if (item.net == net && item.info.compare(info)) {
-        item.info = txt;
-        *it = item;
+    for (tItemInfos::iterator it = this->info.begin(); it != this->info.end() && !exists; it++) {
+      if (it->net == net) {
+        it->info = txt;
         exists = true;
       }
     }
 
     if (!exists) {
+      itemInfo item;
+
       item.info = txt;
       item.net = net;
       this->info.push_back(item);
@@ -83,28 +96,31 @@ namespace kAway2 {
   }
 
   void Status::RememberInfo() {
-    for (std::list<itemNet>::iterator it = this->lCtrl->nets.begin(); it != this->lCtrl->nets.end(); it++) {
-      this->RememberInfo((*it).net);
+    for (tItemNets::iterator it = this->lCtrl->nets.begin(); it != this->lCtrl->nets.end(); it++) {
+      this->RememberInfo(it->net);
     }
   }
 
   void Status::RememberInfo(int net) {
-    if (this->isNetUseful(net, false)) {
+    if (this->isNetUseful(net)) {
       char * info = NULL;
 
       info = (char*) IMessage(IM_GET_STATUSINFO, net);
       if (info) this->AddInfo(info, net);
+
+      Control::Debug("[Status::RememberInfo().item]: net = %i, info = %s",
+        net, (info ? info : "(none)"));
     }
   }
 
   void Status::BackInfo() {
-    for (std::list<itemInfo>::iterator it = this->info.begin(); it != this->info.end(); it++) {
-      this->BackInfo((*it).net);
+    for (tItemInfos::iterator it = this->info.begin(); it != this->info.end(); it++) {
+      this->BackInfo(it->net);
     }
   }
 
   void Status::BackInfo(int net) {
-    if (this->isNetUseful(net, false)) {
+    if (this->isNetUseful(net)) {
       std::string info;
 
       info = this->GetInfo(net);
