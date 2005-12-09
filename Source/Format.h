@@ -12,25 +12,31 @@
 #pragma once
 
 namespace kAway2 {
-  typedef std::string (*FUNC)();
+  typedef std::string (*tFunc)();
 
-  enum TYPE {
+  enum enType {
     FUNCTION,
     STRING
   };
 
+  struct helpVar {
+    const std::string name; // nazwa zmiennej
+    const std::string desc; // opis zmiennej
+
+    // konstruktor
+    helpVar(std::string _name, std::string _desc) : name(_name), desc(_desc) { }
+  };
+
   struct sVar {
     std::string name; // nazwa zmiennej
-    TYPE type; // typ zmiennej
+    enType type; // typ zmiennej
     std::string value; // wartosc zmiennej (TYPE == STRING)
-    FUNC function; // funkcja, która zwraca string
+    tFunc function; // funkcja, która zwraca string (TYPE == FUNCTION)
 
     // defaultowy konstruktor, ¿eby nie trzeba by³o siê bawiæ w deklarowanie zmiennych
-    sVar(std::string name, TYPE type, FUNC function, std::string value) {
-      this->name = name;
-      this->type = type;
-
-      switch(type) {
+    sVar(std::string _name, enType _type, tFunc function, std::string value) : 
+      name(_name), type(_type) {
+      switch(_type) {
         case FUNCTION:
           this->function = function;
           break;
@@ -41,25 +47,34 @@ namespace kAway2 {
     }
   };
 
+  typedef std::list<helpVar> tHelpVars;
   typedef std::list<sVar> tVars;
 
   class Format {
     public:
-      Format(std::string pattern = "/\{([^a-z0-9]*)([a-z0-9]+)([^a-z0-9]*)\}/i");
+      Format(bool format = true, std::string pattern = "/\{([^a-z0-9]*)([a-z0-9]+)([^a-z0-9]*)\}/i");
       ~Format();
 
     public:
-      std::string Parse(std::string txt);
-      void ClearVars();
+      std::string parse(std::string txt);
 
-      std::string GetVar(std::string name);
-      bool GetVar(std::string name, std::string &val);
+      std::string buildHtmlHelp();
+      std::string buildHtmlHelp(tHelpVars vars);
 
-      void AddVar(std::string name, FUNC function);
-      void AddVar(std::string name, std::string value);
+      inline void clearVars() {
+        this->vars.clear();
+      }
 
-      void RemoveVar(std::string name);
-      bool VarExists(std::string name);
+      std::string getVar(std::string name);
+      bool getVar(std::string name, std::string &val);
+
+      void addVar(std::string name, tFunc function);
+      void addVar(std::string name, std::string value);
+
+      void removeVar(std::string name);
+      bool varExists(std::string name);
+
+      bool format;
 
     protected:
       std::string pattern;

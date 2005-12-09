@@ -1,5 +1,5 @@
 /*
- *  kAway2 netList class
+ *  kAway2 NetList class
  *
  *  Please READ /License.txt FIRST! 
  *
@@ -11,7 +11,7 @@
 #pragma once
 
 namespace kAway2 {
-  netList::netList(int cfgCol, int cfgGroup, int dynActGroup, int actCreate, int actDestroy) {
+  NetList::NetList(int cfgCol, int cfgGroup, int dynActGroup, int actCreate, int actDestroy) {
     this->configSaved = false;
     this->netsDrawn = false;
 
@@ -22,11 +22,11 @@ namespace kAway2 {
     this->actDestroy = actDestroy;
   }
 
-  netList::~netList() {
+  NetList::~NetList() {
     this->nets.clear();
   }
 
-  void netList::loadNets() {
+  void NetList::loadNets() {
     std::string buff(GETSTRA(this->cfgCol));
     tItemNets nets;
 
@@ -44,7 +44,7 @@ namespace kAway2 {
         off = pos + 1;
         pos = (int) buff.find("|", off);
 
-        Control::Debug("[netList::loadNets().retroItem]: net = %i, use = %s",
+        Control::Debug("[NetList::loadNets().retroItem]: net = %i, use = %s",
           item.net, btoa(item.use));
 
         nets.push_back(item);
@@ -78,14 +78,14 @@ namespace kAway2 {
           }
           this->nets.push_back(item);
 
-          Control::Debug("[netList::loadNets().item]: id = %i, net = %i, name = %s, use = %s",
+          Control::Debug("[NetList::loadNets().item]: id = %i, net = %i, name = %s, use = %s",
             item.id, item.net, item.name.c_str(), btoa(item.use));
         }
       }
     }
   }
 
-  void netList::saveNets() {
+  void NetList::saveNets() {
     std::string buff;
     char v[10];
 
@@ -95,14 +95,14 @@ namespace kAway2 {
       buff += it->use ? "1" : "0";
       buff += "|";
 
-      Control::Debug("[netList::saveNets().item]: name = %s, use = %s",
+      Control::Debug("[NetList::saveNets().item]: name = %s, use = %s",
         it->name.c_str(), btoa(it->use));
     }
 
     SETSTR(this->cfgCol, buff.c_str());
   }
 
-  void netList::actionHandle(int id, int code) {
+  void NetList::actionHandle(int id, int code) {
     if (!this) return;
 
     if (id == this->cfgGroup && code == ACTN_SAVE) {
@@ -112,7 +112,7 @@ namespace kAway2 {
       this->UISetState();
     } else if (id == this->actDestroy && code == ACTN_DESTROYWINDOW) {
       if (this->configSaved && this->netsDrawn) {
-        Control::Debug("[netList::actionHandle()]: id = %i, code = %i", id, code);
+        Control::Debug("[NetList::actionHandle()]: id = %i, code = %i", id, code);
         this->UIGetState();
         this->saveNets();
       }
@@ -121,7 +121,7 @@ namespace kAway2 {
     }
   }
 
-  void netList::UIDraw(int colCount) {
+  void NetList::UIDraw(int colCount) {
     int c = 1, i = 0, ico;
     int count = this->nets.size();
 
@@ -131,7 +131,7 @@ namespace kAway2 {
       ico = UIIcon(IT_LOGO, (int) it->net, 0, 0);
       i %= colCount; 
 
-      Control::Debug("[netList::UIDraw().item]: name = %s, use = %s",
+      Control::Debug("[NetList::UIDraw().item]: name = %s, use = %s",
         it->name.c_str(), btoa(it->use));
 
       UIActionCfgAdd(this->cfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, shared::Icon16(ico).c_str(), 0, (i > 0) ? 10 : 0);
@@ -141,7 +141,7 @@ namespace kAway2 {
     UIActionCfgAdd(this->cfgGroup, this->actCreate, ACTT_HWND, 0, 0, 0, -20);
   }
 
-  void netList::UIGetState() {
+  void NetList::UIGetState() {
     char buff[16];
     bool v;
 
@@ -149,23 +149,23 @@ namespace kAway2 {
       UIActionCfgGetValue(sUIAction(this->cfgGroup, this->dynActGroup + it->id), buff, 16, true);
       v = (bool) atoi(buff);
 
-      Control::Debug("[netList::UIGetState().item]: name = %s, use = %s [now: %s]",
+      Control::Debug("[NetList::UIGetState().item]: name = %s, use = %s [now: %s]",
         it->name.c_str(), btoa(it->use), btos(v).c_str());
 
       if (it->use != v) it->use = v;
     }
   }
 
-  void netList::UISetState() {
+  void NetList::UISetState() {
     for (tItemNets::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
       UIActionCfgSetValue(sUIAction(this->cfgGroup, this->dynActGroup + it->id), (it->use ? "1" : "0"), true);
 
-      Control::Debug("[netList::UISetState().item]: name = %s, use = %s",
+      Control::Debug("[NetList::UISetState().item]: name = %s, use = %s",
         it->name.c_str(), btoa(it->use));
     }
   }
 
-  std::string netList::getNetName(int net) {
+  std::string NetList::getNetName(int net) {
     std::string fake;
     for (tItemNets::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
       if (it->net == net) return(it->name);
@@ -173,14 +173,14 @@ namespace kAway2 {
     return(fake);
   }
 
-  bool netList::getNetState(int net) {
+  bool NetList::getNetState(int net) {
     for (tItemNets::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
       if (it->net == net) return(it->use);
     }
     return(false);
   }
 
-  bool netList::setNetState(int net, bool use) {
+  bool NetList::setNetState(int net, bool use) {
     for (tItemNets::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
       if (it->net == net) {
         if (it->use != use) it->use = use;
@@ -190,14 +190,14 @@ namespace kAway2 {
     return(false);
   }
 
-  bool netList::isConnected(int net) {
+  bool NetList::isConnected(int net) {
     if (IMessage(IM_ISCONNECTED, net, IMT_PROTOCOL))
       return(true);
     else
       return(false);
   }
 
-  bool netList::isIgnored(int net) {
+  bool NetList::isIgnored(int net) {
     for (int i = 0; i < sizeof(ignoredNets) / sizeof(int); i++) {
       if (net == ignoredNets[i]) return(true);
     }

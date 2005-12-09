@@ -1,5 +1,5 @@
 /*
- *  kAway2 netList class
+ *  kAway2 NetList class
  *
  *  Please READ /License.txt FIRST! 
  *
@@ -16,14 +16,17 @@ namespace kAway2 {
     unsigned int net;
     std::string name;
     bool use;
+
+    itemNet(int _id = NULL, int _net = NULL, std::string _name = "", bool _use = true):
+      id(_id), net(_net), name(_name), use(_use) {}
   };
 
   typedef std::list<itemNet> tItemNets;
 
-  class netList {
+  class NetList {
     public:
-      netList(int cfgCol, int cfgGroup, int dynActGroup, int actCreate, int actDestroy);
-      ~netList();
+      NetList(int cfgCol, int cfgGroup, int dynActGroup, int actCreate, int actDestroy);
+      ~NetList();
 
       void loadNets();
       void saveNets();

@@ -25,6 +25,7 @@
 #include <stamina/helpers.h>
 */
 
+#include <stamina/string.h>
 #include <stamina/regex.h>
 #include <stamina/time64.h>
 

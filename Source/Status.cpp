@@ -12,7 +12,7 @@
 #pragma once
 
 namespace kAway2 {
-  Status::Status(netList *lCtrl, int onHiddenCfgCol, std::string stInfoVar) {
+  Status::Status(NetList *lCtrl, int onHiddenCfgCol, std::string stInfoVar) {
     this->lCtrl = lCtrl;
     this->fCtrl = new Format;
 
@@ -27,48 +27,50 @@ namespace kAway2 {
     this->info.clear();
   }
 
-  void Status::ChangeStatus(std::string info, int st) {
+  void Status::changeStatus(std::string info, int st) {
     for (tItemNets::iterator it = this->lCtrl->nets.begin(); it != this->lCtrl->nets.end(); it++) {
-      this->ChangeStatus(it->net, info, st);
+      this->changeStatus(it->net, info, st);
     }
   }
 
-  bool Status::onHidden() {
-    return(this->onHiddenCfgCol ? (bool) GETINT(this->onHiddenCfgCol) : true);
-  }
-
-  void Status::ChangeStatus(int net, std::string info, int st) {
+  void Status::changeStatus(int net, std::string info, int st) {
     if (this->isNetUseful(net)) {
-      bool dynSt = (this->stInfoVar.length() && !this->fCtrl->VarExists(this->stInfoVar)) ? true : false;
+      bool dynSt = (this->stInfoVar.length() && !this->fCtrl->varExists(this->stInfoVar)) ? true : false;
 
       if (dynSt)
-        this->fCtrl->AddVar(this->stInfoVar, this->GetInfo(net));
+        this->fCtrl->addVar(this->stInfoVar, this->getInfo(net));
 
-      info = this->Parse(info, net);
-      info = this->LimitChars(info, net);
+      info = this->fCtrl->parse(info);
+      info = this->limitChars(info, net);
 
       if (dynSt)
-        this->fCtrl->RemoveVar(this->stInfoVar);
+        this->fCtrl->removeVar(this->stInfoVar);
 
       IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, (int) info.c_str());
 
-      Control::Debug("[Status::ChangeStatus().item]: net = %i, status = %i, info = %s",
+      Control::Debug("[Status::changeStatus().item]: net = %i, status = %i, info = %s",
         net, st, (info.length() ? info.c_str() : "(none)"));
     }
   }
 
-  std::string Status::GetActualInfo(int net) {
-    std::string status;
-    status = (char*) IMessage(IM_GET_STATUSINFO, net);
-
-    return(status);
-  }
-
-  int Status::GetActualStatus(int net) {
+  int Status::getActualStatus(int net) {
     return(IMessage(IM_GET_STATUS, net));
   }
 
-  std::string Status::GetInfo(int net) {
+  int Status::getStatus(int net) {
+    for (tItemInfos::iterator it = this->info.begin(); it != this->info.end(); it++) {
+      if (it->net == net) return(it->st);
+    }
+  }
+
+  std::string Status::getActualInfo(int net) {
+    std::string status;
+
+    status = (char*) IMessage(IM_GET_STATUSINFO, net);
+    return(status);
+  }
+
+  std::string Status::getInfo(int net) {
     std::string fake;
     for (tItemInfos::iterator it = this->info.begin(); it != this->info.end(); it++) {
       if (it->net == net) return(it->info);
@@ -76,63 +78,49 @@ namespace kAway2 {
     return(fake);
   }
 
-  void Status::AddInfo(std::string info, int net) {
-    bool exists = false;
+  void Status::rememberInfo() {
+    this->info.clear();
+    for (tItemNets::iterator it = this->lCtrl->nets.begin(); it != this->lCtrl->nets.end(); it++) {
+      this->rememberInfo(it->net);
+    }
+  }
 
-    for (tItemInfos::iterator it = this->info.begin(); it != this->info.end() && !exists; it++) {
-      if (it->net == net) {
-        it->info = info;
-        exists = true;
+  void Status::rememberInfo(int net) {
+    if (this->isNetUseful(net)) {
+      std::string info = this->getActualInfo(net);
+      if (info.length()) {
+        itemInfo item(net, this->getActualStatus(net), info);
+        this->info.push_back(item);
+
+        Control::Debug("[Status::rememberInfo().item]: net = %i, status = %i, info = %s",
+          net, item.st, info.c_str());
       }
     }
-
-    if (!exists) {
-      itemInfo item;
-
-      item.info = info;
-      item.net = net;
-      this->info.push_back(item);
-    }
-
-    Control::Debug("[Status::AddInfo().item]: net = %i, info = %s",
-      net, (info.length() ? info.c_str() : "(none)"));
   }
 
-  void Status::RememberInfo() {
-    for (tItemNets::iterator it = this->lCtrl->nets.begin(); it != this->lCtrl->nets.end(); it++) {
-      this->RememberInfo(it->net);
-    }
-  }
-
-  void Status::RememberInfo(int net) {
-    if (this->isNetUseful(net)) {
-      std::string info = this->GetActualInfo(net);
-      if (info.length()) this->AddInfo(info, net);
-
-      Control::Debug("[Status::RememberInfo().item]: net = %i, info = %s",
-        net, (info.length() ? info.c_str() : "(none)"));
-    }
-  }
-
-  void Status::BackInfo() {
+  void Status::restoreInfo() {
     for (tItemInfos::iterator it = this->info.begin(); it != this->info.end(); it++) {
-      this->BackInfo(it->net);
+      this->restoreInfo(it->net);
     }
   }
 
-  void Status::BackInfo(int net) {
+  void Status::restoreInfo(int net) {
     if (this->isNetUseful(net)) {
-      std::string info = this->GetInfo(net);
+      std::string info = this->getInfo(net);
       IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, -1 , (int) info.c_str());
 
-      Control::Debug("[Status::BackInfo().item]: net = %i, info = %s",
+      Control::Debug("[Status::restoreInfo().item]: net = %i, info = %s",
         net, (info.length() ? info.c_str() : "(none)"));
     }
+  }
+
+  bool Status::onHidden() {
+    return(this->onHiddenCfgCol ? (bool) GETINT(this->onHiddenCfgCol) : true);
   }
 
   bool Status::isNetUseful(int net) {
     if (this->lCtrl->getNetState(net) && this->lCtrl->isConnected(net)) {
-      if (!this->onHidden() && (ST_HIDDEN == this->GetActualStatus(net)))
+      if (!this->onHidden() && (ST_HIDDEN == this->getActualStatus(net)))
         return(false);
       else
         return(true);
@@ -140,15 +128,8 @@ namespace kAway2 {
     return(false);
   }
 
-  std::string Status::Parse(std::string status, int net) {
-    Control::Debug("[Status::Parse().item]: net = %i, info = %s",
-      net, (status.length() ? status.c_str() : "(none)"));
-
-    return(this->fCtrl->Parse(status));
-  }
-
-  std::string Status::LimitChars(std::string status, int net, int s) {
-    UINT iLimit;
+  std::string Status::limitChars(std::string status, int net, int s) {
+    enMaxLength limit;
 
     switch (net) {
       case plugsNET::kjabber:
@@ -162,20 +143,20 @@ namespace kAway2 {
       case plugsNET::kjabber8:
       case plugsNET::kjabber9:
       case plugsNET::kjabber10:
-        iLimit = jabber_status_length;
+        limit = jabber;
         break;
       case plugsNET::dwutlenek:
-        iLimit = tlen_status_length;
+        limit = tlen;
         break;
       case plugsNET::gg:
-        iLimit = gg_status_length;
+        limit = gg;
         break;
       default:
-        iLimit = default_status_length;
+        limit = normal;
         break;
     }
 
-    iLimit = iLimit - s;
+    UINT iLimit = limit - s;
     if (status.length() > iLimit) {
       status.resize(iLimit);
       status.replace(status.length() - 3, 3, "...");
