@@ -27,8 +27,8 @@ LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,0,0,12
- PRODUCTVERSION 0,0,0,12
+ FILEVERSION 0,0,0,13
+ PRODUCTVERSION 0,0,0,13
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -45,12 +45,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Sijawusz Pur Rahnama"
             VALUE "FileDescription", "kAway2 plugin for Konnekt IM"
-            VALUE "FileVersion", "0, 0, 0, 12"
+            VALUE "FileVersion", "0, 0, 0, 13"
             VALUE "InternalName", "kAway2"
             VALUE "LegalCopyright", "Copyright (C) 2005 Sijawusz Pur Rahnama"
             VALUE "OriginalFilename", "kAway2.dll"
             VALUE "ProductName", "kAway2"
-            VALUE "ProductVersion", "0, 0, 0, 12"
+            VALUE "ProductVersion", "0, 0, 0, 13"
             VALUE "URL", "http://www.kplugins.net/"
         END
     END

@@ -31,33 +31,33 @@ namespace kAway2 {
       Ctrl->IMLOG_(level, format, ap);
   }
 
-  void Control::Enable(std::string msg) {
+  void Control::enable(std::string msg) {
     if (!this->isOn) {
       this->awayMsg = msg;
       this->awayTime->now();
       this->isOn = true;
 
       if(this->sCtrl) {
-        this->sCtrl->fCtrl->AddVar("date", this->awayTime->strftime("%d/%m/%Y"));
-        this->sCtrl->fCtrl->AddVar("time", this->awayTime->strftime("%H:%M:%S"));
-        this->sCtrl->fCtrl->AddVar("msg", msg);
+        this->sCtrl->fCtrl->addVar("date", this->awayTime->strftime("%d/%m/%Y"));
+        this->sCtrl->fCtrl->addVar("time", this->awayTime->strftime("%H:%M:%S"));
+        this->sCtrl->fCtrl->addVar("msg", msg);
 
-        this->sCtrl->RememberInfo();
-        this->sCtrl->ChangeStatus("ssaj mego bena dzifko!"); // debug ;>
+        this->sCtrl->rememberInfo();
+        this->sCtrl->changeStatus("ssaj mego bena dzifko!"); // debug ;>
       }
 
-      this->Debug("[Control::Enable()]: msg = %s", (msg.length() ? msg.c_str() : "(none)"));
+      this->Debug("[Control::enable()]: msg = %s", (msg.length() ? msg.c_str() : "(none)"));
     }
   }
 
-  void Control::Disable(std::string msg) {
+  void Control::disable(std::string msg) {
     if (this->isOn) {
       if(this->sCtrl) {
-        this->sCtrl->fCtrl->ClearVars();
-        this->sCtrl->BackInfo();
+        this->sCtrl->fCtrl->clearVars();
+        this->sCtrl->restoreInfo();
       }
 
-      this->Debug("[Control::Disable()]: msg = %s", (msg.length() ? msg.c_str() : "(none)"));
+      this->Debug("[Control::disable()]: msg = %s", (msg.length() ? msg.c_str() : "(none)"));
 
       this->awayMsg = "";
       this->awayTime->clear();
@@ -74,19 +74,13 @@ namespace kAway2 {
   }
 
   void Control::addIgnoredUid(int net, std::string uid) {
-    ignoredUid item;
-
-    item.net = net;
-    item.uid = uid;
-
-    this->ignoredUids.push_back(item);
+    this->ignoredUids.push_back(ignoredUid(net, uid));
   }
 
   void Control::removeIgnoredUid(int net, std::string uid) {
     for (tIgnoredUids::iterator it = this->ignoredUids.begin(); it != this->ignoredUids.end(); it++) {
       if ((it->net == net) && (it->uid == uid)) {
-        it = this->ignoredUids.erase(it);
-        break;
+        it = this->ignoredUids.erase(it); break;
       }
     }
   }

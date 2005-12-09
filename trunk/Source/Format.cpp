@@ -13,13 +13,29 @@
 
 std::string __stdcall fCallback(Stamina::RegEx *reg, void * param) {
   kAway2::Format * fCtrl = static_cast<kAway2::Format*>(param);
-  std::string result, buff;
 
-  if (fCtrl->GetVar(reg->getSub(2), buff)) {
+  std::string result, buff, prefix, suffix;
+  Stamina::String value;
+
+  if (fCtrl->getVar(reg->getSub(2), buff)) {
     if (buff.length()) {
-      result += reg->getSub(1);
-      result += buff;
-      result += reg->getSub(3);
+      prefix = reg->getSub(1);
+      suffix = reg->getSub(3);
+      value = buff;
+
+      if (fCtrl->format && prefix.length()) {
+        if (prefix.substr(0, 1) == "+") {
+          value = value.toUpper();
+          prefix = prefix.substr(1, prefix.length());
+        } else if (prefix.substr(0, 1) == "-") {
+          value = value.toLower();
+          prefix = prefix.substr(1, prefix.length());
+        }
+      }
+
+      result += prefix;
+      result += value;
+      result += suffix;
     }
   } else {
     result = reg->getSub(0);
@@ -28,7 +44,8 @@ std::string __stdcall fCallback(Stamina::RegEx *reg, void * param) {
 }
 
 namespace kAway2 {
-  Format::Format(std::string pattern) {
+  Format::Format(bool format, std::string pattern) {
+    this->format = format;
     this->pattern = pattern;
   }
 
@@ -36,7 +53,7 @@ namespace kAway2 {
     this->vars.clear();
   }
 
-  std::string Format::Parse(std::string txt) {
+  std::string Format::parse(std::string txt) {
     Stamina::RegEx *reg = new Stamina::RegEx;
 
     reg->setLocale("pl_PL");
@@ -45,55 +62,67 @@ namespace kAway2 {
 
     std::string result = reg->replace(fCallback, NULL, this);
 
-    Control::Debug("[Format::Parse()]: before = %s, after = %s",
+    Control::Debug("[Format::parse()]: before = %s, after = %s",
       txt.c_str(), result.c_str());
 
     delete reg; reg = NULL;
     return(result);
   }
 
-  void Format::ClearVars() {
-    this->vars.clear();
-  }
+  std::string Format::buildHtmlHelp(tHelpVars vars) {
+    tHelpVars::iterator end = vars.end(); end--;
+    std::string result = AP_TIPRICH;
 
-  bool Format::VarExists(std::string name) {
-    for (tVars::iterator it = this->vars.begin(); it != this->vars.end(); it++) {
-      if (it->name == name) return(true);
+    if (this->format) {
+      result += "Je¿eli dodasz '+' przed prefixem, wynik zostanie zwrócony du¿ymi literami, a jeœli '-' - ma³ymi<br/><br/>";
     }
-    return(false);
-  }
 
-  void Format::AddVar(std::string name, FUNC function) {
-    Control::Debug("[Format::AddVar()]: name = %s, function = ?", name.c_str());
-
-    sVar item(name, FUNCTION, function, NULL);
-    this->vars.push_back(item);
-  }
-
-  void Format::AddVar(std::string name, std::string value) {
-    Control::Debug("[Format::AddVar()]: name = %s, value = %s", 
-      name.c_str(), (value.length() ? value.c_str() : "(none)"));
-
-    sVar item(name, STRING, NULL, value);
-    this->vars.push_back(item);
-  }
-
-  void Format::RemoveVar(std::string name) {
-    for (tVars::iterator it = this->vars.begin(); it != this->vars.end(); it++) {
-      if (it->name == name) {
-        it = this->vars.erase(it);
-        break;
-      }
+    for (tHelpVars::iterator it = vars.begin(); it != vars.end(); it++) {
+      result += "<b>" + it->name + "</b> - ";
+      result += (it->desc.length()) ? it->desc : "<span class='note'>(brak opisu)</span>";
+      if (it != end) result += "<br/>\n";
     }
-  }
-
-  std::string Format::GetVar(std::string name) {
-    std::string result;
-    this->GetVar(name, result);
     return(result);
   }
 
-  bool Format::GetVar(std::string name, std::string &val) {
+  std::string Format::buildHtmlHelp() {
+    tVars::iterator end = this->vars.end(); end--;
+    std::string result = AP_TIPRICH;
+
+    if (this->format) {
+      result += "Je¿eli dodasz '+' przed prefixem, wynik zostanie zwrócony du¿ymi literami, a jeœli '-' - ma³ymi<br/><br/>";
+    }
+
+    for (tVars::iterator it = this->vars.begin(); it != this->vars.end(); it++) {
+      result += "<b>" + it->name + "</b>";
+      if (it != end) result += ", ";
+    }
+    return(result);
+  }
+
+  void Format::addVar(std::string name, tFunc function) {
+    Control::Debug("[Format::addVar()]: name = %s, type = function", name.c_str());
+
+    this->removeVar(name);
+    this->vars.push_back(sVar(name, FUNCTION, function, NULL));
+  }
+
+  void Format::addVar(std::string name, std::string value) {
+    Control::Debug("[Format::addVar()]: name = %s, value = %s", 
+      name.c_str(), (value.length() ? value.c_str() : "(none)"));
+
+    this->removeVar(name);
+    this->vars.push_back(sVar(name, STRING, NULL, value));
+  }
+
+  std::string Format::getVar(std::string name) {
+    std::string result;
+
+    this->getVar(name, result);
+    return(result);
+  }
+
+  bool Format::getVar(std::string name, std::string &val) {
     for (tVars::iterator it = this->vars.begin(); it != this->vars.end(); it++) {
       if (it->name == name) {
         switch (it->type) {
@@ -104,10 +133,25 @@ namespace kAway2 {
             val = it->value;
             break;
         }
-        Control::Debug("[Format::GetVar()]: name = %s, value = %s",
+        Control::Debug("[Format::getVar()]: name = %s, value = %s",
           name.c_str(), (val.length() ? val.c_str() : "(none)"));
         return(true);
       }
+    }
+    return(false);
+  }
+
+  void Format::removeVar(std::string name) {
+    for (tVars::iterator it = this->vars.begin(); it != this->vars.end(); it++) {
+      if (it->name == name) {
+        it = this->vars.erase(it); break;
+      }
+    }
+  }
+
+  bool Format::varExists(std::string name) {
+    for (tVars::iterator it = this->vars.begin(); it != this->vars.end(); it++) {
+      if (it->name == name) return(true);
     }
     return(false);
   }

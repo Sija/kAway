@@ -10,12 +10,12 @@
 
 #include "stdafx.h"
 
-#include "netList.h"
+#include "NetList.h"
 #include "Format.h"
 #include "Status.h"
 #include "Control.h"
 
-#include "netList.cpp"
+#include "NetList.cpp"
 #include "Format.cpp"
 #include "Status.cpp"
 #include "Control.cpp"
@@ -54,29 +54,45 @@ namespace kAway2 {
   int IPrepare() {
     pCtrl = new Control();
 
-    lCtrl::status = new netList(cfg::status::netChange, ui::statusCfgGroup, dynAct::status, 
+    lCtrl::status = new NetList(cfg::status::netChange, ui::statusCfgGroup, dynAct::status, 
       act::cfgGroupCheckCreate, act::cfgGroupCheckDestroy);
     lCtrl::status->loadNets();
 
-    lCtrl::reply = new netList(cfg::reply::netChange, ui::replyCfgGroup, dynAct::reply, 
+    lCtrl::reply = new NetList(cfg::reply::netChange, ui::replyCfgGroup, dynAct::reply, 
       act::replyCfgGroupCheckCreate, act::replyCfgGroupCheckDestroy);
     lCtrl::reply->loadNets();
 
     sCtrl = new Status(lCtrl::status, cfg::status::whenInvisible, "status");
     pCtrl->setStatusCtrl(sCtrl);
 
-    pCtrl->Debug("net = %i, Ctrl = %i, pCtrl = %i, sCtrl = %i", net, Ctrl, pCtrl, sCtrl);
+    pCtrl->Log("net = %i, Ctrl = %i, pCtrl = %i, sCtrl = %i", net, Ctrl, pCtrl, sCtrl);
+
+    /* Defining help variables */
+    tHelpVars stVars, rVars;
+
+    stVars.push_back( helpVar( "status", "Aktualny status" ) );
+    stVars.push_back( helpVar( "date", "Data w³¹czenia trybu away" ) );
+    stVars.push_back( helpVar( "time", "Czas w³¹czenia trybu away" ) );
+    stVars.push_back( helpVar( "msg", "Przyczyna nieobecnoœci" ) );
+
+    rVars.push_back( helpVar( "display", "Nazwa wyœwietlania przypisana do kontaktu" ) );
+    rVars.push_back( helpVar( "name", "Imiê przypisane do kontaktu" ) );
+    rVars.push_back( helpVar( "nick", "Ksywka przypisana do kontaktu" ) );
+    rVars.push_back( helpVar( "surname", "Nazwisko przypisane do kontaktu" ) );
+    rVars.push_back( helpVar( "date", "Data w³¹czenia trybu away" ) );
+    rVars.push_back( helpVar( "time", "Czas w³¹czenia trybu away" ) );
+    rVars.push_back( helpVar( "msg", "Przyczyna nieobecnoœci" ) );
 
     /* Debug shit */
-    pCtrl->Enable("test");
+    pCtrl->enable("test");
 
     Format *f = new Format;
-    std::string s = "|{/y/}lalalalf sdf {|test|}ewr 2331 234 324{[x]}|3423 2r ewf ewr2";
+    std::string s = "|{/y/}lalalalf sdf {+test}ewr 2331 234 324{-[x]}|3423 2r ewf ewr2";
 
-    f->AddVar("test", "===");
-    f->AddVar("x", "+++");
-    f->AddVar("y", "");
-    f->Parse(s);
+    f->addVar("test", "_¹ó oOo_");
+    f->addVar("x", "_X t¥k oOo_");
+    f->addVar("y", "");
+    f->parse(s);
 
     delete f; f = NULL;
     /* /Debug shit */
@@ -130,6 +146,12 @@ namespace kAway2 {
     UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_CHECK, "Zmieniaj status przy w³¹czonym statusie 'ukryty'", cfg::status::whenInvisible);
     UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_GROUPEND);
 
+    UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_GROUP, "Szablony statusów");
+    UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_TIPBUTTON | ACTSBUTTON_ALIGNRIGHT | ACTSC_INLINE, 
+      sCtrl->fCtrl->buildHtmlHelp(stVars).c_str());
+    UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_EDIT, 0, cfg::tpl::status);
+    UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_GROUPEND);
+
     /* |-> Net selection group */
     UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_GROUP, "Wybierz sieci, na których chcesz zmieniaæ status:");
     lCtrl::status->UIDraw();
@@ -168,6 +190,7 @@ namespace kAway2 {
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_CHECK, "Formatuj kod HTML" AP_TIP 
       "Jeœli w³¹czone, znaki specjalne nale¿y zamieniaæ na ich HTML-owe odpowiedniki (np.: (< na &lt;), (> na &gt;))", cfg::reply::useHtml);
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_SEPARATOR);
+
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_COMMENT, "OdpowiedŸ:");
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::reply);
 

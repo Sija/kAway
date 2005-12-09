@@ -90,7 +90,7 @@ namespace kAway2 {
       const unsigned int sms = tpl + 5;
       const unsigned int email = tpl + 6;
 
-      const unsigned int statusInfo = tpl + 7;
+      const unsigned int status = tpl + 7;
     }
 
     namespace reply {

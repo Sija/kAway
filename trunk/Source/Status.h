@@ -22,62 +22,65 @@ namespace kAway2 {
     unsigned int net;
     unsigned int st;
     std::string info;
+
+    itemInfo(int _net, int _st, std::string _info): 
+      net(_net), st(_st), info(_info) { }
+  };
+
+  // definicje max d³ugoœci statusów poszcz. dla sieci
+  enum enMaxLength {
+    normal = 255,
+    jabber = 255,
+    tlen = 255,
+    gg = 70
   };
 
   typedef std::list<itemInfo> tItemInfos;
 
   class Status {
     public:
-      Status(netList *lCtrl, int onHiddenCfgCol = NULL, std::string stInfoVar = "");
+      Status(NetList *lCtrl, int onHiddenCfgCol = NULL, std::string stInfoVar = "");
       ~Status();
 
     public:
       // Obcina status do maks. d³ugoœci
-      std::string LimitChars(std::string status, int net, int s = 0);
+      std::string limitChars(std::string status, int net, int s = 0);
       // Formatuje status
-      std::string Parse(std::string status, int net);
+      std::string parse(std::string status, int net);
 
       // Sprawdza czy sieæ 'nadaje siê do u¿ytku'
       bool isNetUseful(int net);
       bool onHidden();
 
       // Zmienia status, txt - opis, st - id statusu
-      void ChangeStatus(std::string info, int st = -1);
+      void changeStatus(std::string info, int st = -1);
       // Zmienia status na wybranej sieci
-      void ChangeStatus(int net, std::string info, int st = -1);
+      void changeStatus(int net, std::string info, int st = -1);
 
       // Zapamiêtuje aktualny opis na ka¿dej sieci
-      void RememberInfo();
+      void rememberInfo();
       // Zapamiêtuje aktualny opis na wybranej sieci
-      void RememberInfo(int net);
+      void rememberInfo(int net);
 
       // Przywraca opis na ka¿dej sieci
-      void BackInfo();
+      void restoreInfo();
       // Przywraca opis na wybranej sieci
-      void BackInfo(int net);
+      void restoreInfo(int net);
 
       // Zwraca aktualny opis sieci net
-      std::string GetActualInfo(int net);
+      std::string getActualInfo(int net);
       // Zwraca opis sieci net
-      std::string GetInfo(int net);
-      // Zwraca aktualny status
-      int GetActualStatus(int net);
-      // Dodaje info do listy
-      void AddInfo(std::string info, int net);
+      std::string getInfo(int net);
+
+      // Zwraca aktualny status sieci net
+      int getActualStatus(int net);
+      // Zwraca status sieci net
+      int getStatus(int net);
 
       // lista z sieciami
-      netList *lCtrl;
+      NetList *lCtrl;
       // formatowanie statusu
       Format *fCtrl;
-
-      // definicje max d³ugoœci statusów poszcz. dla sieci
-      static const unsigned int default_status_length = 255;
-      static const unsigned int jabber_status_length = 255;
-      static const unsigned int tlen_status_length = 255;
-      static const unsigned int gg_status_length = 70;
-
-    protected:
-      // virtual std::string Format(std::string txt, int net) = 0;
 
     private:
       // nazwa zmiennej do której wrzucany bêdzie aktualny opis statusu

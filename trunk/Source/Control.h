@@ -14,6 +14,8 @@ namespace kAway2 {
   struct ignoredUid {
     unsigned int net;
     std::string uid;
+
+    ignoredUid(int _net, std::string _uid): net(_net), uid(_uid) { }
   };
 
   typedef std::list<ignoredUid> tIgnoredUids;
@@ -23,8 +25,8 @@ namespace kAway2 {
       Control();
       ~Control();
 
-      void Enable(std::string msg = "");
-      void Disable(std::string msg = "");
+      void enable(std::string msg = "");
+      void disable(std::string msg = "");
 
       bool isIgnoredUid(int net, std::string uid);
       void addIgnoredUid(int net, std::string uid);
@@ -83,16 +85,15 @@ namespace kAway2 {
 
     private:
       Status *sCtrl;
-      static UINT_PTR m_Timer;
   };
 
   namespace lCtrl {
-    netList *status = NULL;
+    NetList *status = NULL;
 
-    netList *reply = NULL;
-    netList *sms = NULL;
-    netList *email = NULL;
-    netList *forward = NULL;
+    NetList *reply = NULL;
+    NetList *sms = NULL;
+    NetList *email = NULL;
+    NetList *forward = NULL;
   }
 
   Control *pCtrl = NULL;
