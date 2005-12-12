@@ -54,6 +54,8 @@ namespace kAway2 {
   }
 
   std::string Format::parse(std::string txt) {
+    if (!this->vars.size()) return(txt);
+
     Stamina::RegEx *reg = new Stamina::RegEx;
 
     reg->setLocale("pl_PL");
@@ -82,6 +84,7 @@ namespace kAway2 {
       result += (it->desc.length()) ? it->desc : "<span class='note'>(brak opisu)</span>";
       if (it != end) result += "<br/>\n";
     }
+    result += AP_TIP_WIDTH "240";
     return(result);
   }
 
@@ -97,6 +100,7 @@ namespace kAway2 {
       result += "<b>" + it->name + "</b>";
       if (it != end) result += ", ";
     }
+    result += AP_TIP_WIDTH "240";
     return(result);
   }
 

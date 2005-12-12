@@ -35,18 +35,18 @@ namespace kAway2 {
 
   void Status::changeStatus(int net, std::string info, int st) {
     if (this->isNetUseful(net)) {
-      bool dynSt = (this->stInfoVar.length() && !this->fCtrl->varExists(this->stInfoVar)) ? true : false;
+      st = st ? st : -1;
+      if (info.length()) {
+        bool dynSt = (this->stInfoVar.length() && !this->fCtrl->varExists(this->stInfoVar)) ? true : false;
+        if (dynSt) this->fCtrl->addVar(this->stInfoVar, this->getInfo(net));
 
-      if (dynSt)
-        this->fCtrl->addVar(this->stInfoVar, this->getInfo(net));
+        info = this->fCtrl->parse(info);
+        info = this->limitChars(info, net);
 
-      info = this->fCtrl->parse(info);
-      info = this->limitChars(info, net);
+        if (dynSt) this->fCtrl->removeVar(this->stInfoVar);
+      }
 
-      if (dynSt)
-        this->fCtrl->removeVar(this->stInfoVar);
-
-      IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, (int) info.c_str());
+      IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, (info.length() || st == -1) ? (int) info.c_str() : 0);
 
       Control::Debug("[Status::changeStatus().item]: net = %i, status = %i, info = %s",
         net, st, (info.length() ? info.c_str() : "(none)"));
@@ -88,13 +88,9 @@ namespace kAway2 {
   void Status::rememberInfo(int net) {
     if (this->isNetUseful(net)) {
       std::string info = this->getActualInfo(net);
-      if (info.length()) {
-        itemInfo item(net, this->getActualStatus(net), info);
-        this->info.push_back(item);
+      this->info.push_back(itemInfo(net, this->getActualStatus(net), info));
 
-        Control::Debug("[Status::rememberInfo().item]: net = %i, status = %i, info = %s",
-          net, item.st, info.c_str());
-      }
+      Control::Debug("[Status::rememberInfo().item]: net = %i, info = %s", net, info.c_str());
     }
   }
 
@@ -107,7 +103,7 @@ namespace kAway2 {
   void Status::restoreInfo(int net) {
     if (this->isNetUseful(net)) {
       std::string info = this->getInfo(net);
-      IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, -1 , (int) info.c_str());
+      IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, this->getStatus(net), (int) info.c_str());
 
       Control::Debug("[Status::restoreInfo().item]: net = %i, info = %s",
         net, (info.length() ? info.c_str() : "(none)"));

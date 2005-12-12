@@ -32,6 +32,10 @@ namespace kAway2 {
     const unsigned int forwardCfgGroup = ui + 5;
     const unsigned int smsCfgGroup = ui + 6;
     const unsigned int emailCfgGroup = ui + 7;
+
+    const unsigned int powerInMainWnd = ui + 8;
+    const unsigned int powerInCntWnd = ui + 9;
+    const unsigned int powerInTrayMenu = ui + 10;
   }
 
   namespace ico {
@@ -149,6 +153,9 @@ namespace kAway2 {
 
       const unsigned int netChange = status + 1;
       const unsigned int whenInvisible = status + 2;
+
+      const unsigned int changeOnEnable = status + 3;
+      const unsigned int changeInfoOnEnable = status + 4;
     }
   }
 }

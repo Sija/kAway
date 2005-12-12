@@ -25,7 +25,7 @@ namespace kAway2 {
       Control();
       ~Control();
 
-      void enable(std::string msg = "");
+      void enable(std::string msg = "", int status = -1);
       void disable(std::string msg = "");
 
       bool isIgnoredUid(int net, std::string uid);
@@ -98,4 +98,5 @@ namespace kAway2 {
 
   Control *pCtrl = NULL;
   Status *sCtrl = NULL;
+  AwayWnd *wCtrl = NULL;
 }
