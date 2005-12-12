@@ -31,33 +31,40 @@ namespace kAway2 {
       Ctrl->IMLOG_(level, format, ap);
   }
 
-  void Control::enable(std::string msg) {
+  void Control::enable(std::string msg, int status) {
     if (!this->isOn) {
       this->awayMsg = msg;
       this->awayTime->now();
       this->isOn = true;
 
-      if(this->sCtrl) {
-        this->sCtrl->fCtrl->addVar("date", this->awayTime->strftime("%d/%m/%Y"));
-        this->sCtrl->fCtrl->addVar("time", this->awayTime->strftime("%H:%M:%S"));
-        this->sCtrl->fCtrl->addVar("msg", msg);
+      if (this->sCtrl) {
+        int chgStatus = GETINT(cfg::status::changeOnEnable);
+        int chgInfo = GETINT(cfg::status::changeInfoOnEnable);
 
-        this->sCtrl->rememberInfo();
-        this->sCtrl->changeStatus("ssaj mego bena dzifko!"); // debug ;>
+        if (chgInfo) {
+          this->sCtrl->fCtrl->addVar("date", this->awayTime->strftime("%d/%m/%Y"));
+          this->sCtrl->fCtrl->addVar("time", this->awayTime->strftime("%H:%M:%S"));
+          this->sCtrl->fCtrl->addVar("msg", msg);
+        }
+
+        if (chgStatus || chgInfo) {
+          this->sCtrl->rememberInfo();
+          this->sCtrl->changeStatus(chgInfo ? GETSTRA(cfg::tpl::status) : "", chgStatus ? status : -1);
+        }
       }
 
-      this->Debug("[Control::enable()]: msg = %s", (msg.length() ? msg.c_str() : "(none)"));
+      this->Log("[Control::enable()]: msg = %s", (msg.length() ? msg.c_str() : "(none)"));
     }
   }
 
   void Control::disable(std::string msg) {
     if (this->isOn) {
-      if(this->sCtrl) {
+      if (this->sCtrl) {
         this->sCtrl->fCtrl->clearVars();
         this->sCtrl->restoreInfo();
       }
 
-      this->Debug("[Control::disable()]: msg = %s", (msg.length() ? msg.c_str() : "(none)"));
+      this->Log("[Control::disable()]: msg = %s", (msg.length() ? msg.c_str() : "(none)"));
 
       this->awayMsg = "";
       this->awayTime->clear();

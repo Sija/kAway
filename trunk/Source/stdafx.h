@@ -5,26 +5,31 @@
 #pragma once
 
 #define WIN32_LEAN_AND_MEAN // Exclude rarely-used stuff from Windows headers
-#define _WIN32_WINNT 0x500
+#define _WIN32_WINNT 0x0600
+#define _WIN32_WINDOWS 0x0490
 
 // Windows Header Files:
 #include <windows.h>
 
 #include <process.h>
+#include <commctrl.h>
 #include <map>
 #include <list>
 #include <stdstring.h>
 
+#pragma comment(lib, "comctl32.lib")
 #pragma comment(lib, "stamina.lib")
+
+#define ever (;;)
 
 /*
 #include <stamina/threadrun.h>
 #include <stamina/thread.h>
 #include <stamina/threadinvoke.h>
-#include <stamina/timer.h>
 #include <stamina/helpers.h>
 */
 
+#include <stamina/timer.h>
 #include <stamina/string.h>
 #include <stamina/regex.h>
 #include <stamina/time64.h>
