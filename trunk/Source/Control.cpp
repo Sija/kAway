@@ -30,94 +30,126 @@ namespace kAway2 {
       Ctrl->IMLOG_(level, format, ap);
   }
 
-  void Control::enable(std::string msg, int status) {
-    if (!this->isOn) {
-      this->awayMsg = msg;
-      this->awayTime->now();
-      this->isOn = true;
+  void Control::enable(std::string msg, int status, bool silent) {
+    if (this->isOn) return;
 
-      if (this->sCtrl) {
-        int chgStatus = GETINT(cfg::status::changeOnEnable);
-        int chgInfo = GETINT(cfg::status::changeInfoOnEnable);
+    this->awayMsg = msg;
+    this->awayTime->now();
+    this->isOn = true;
 
-        if (chgInfo) {
-          this->sCtrl->fCtrl->addVar("date", this->awayTime->strftime("%d/%m/%Y"));
-          this->sCtrl->fCtrl->addVar("time", this->awayTime->strftime("%H:%M:%S"));
-          this->sCtrl->fCtrl->addVar("msg", msg);
-        }
+    if (this->sCtrl) {
+      int chgStatus = GETINT(cfg::status::changeOnEnable);
+      int chgInfo = GETINT(cfg::status::changeInfoOnEnable);
 
-        if (chgStatus || chgInfo) {
-          this->sCtrl->rememberInfo();
-          this->sCtrl->changeStatus(chgInfo ? GETSTRA(cfg::tpl::status) : "", chgStatus ? status : -1);
-        }
+      if (chgInfo) {
+        this->sCtrl->fCtrl->addVar("date", this->awayTime->strftime("%d/%m/%Y"));
+        this->sCtrl->fCtrl->addVar("time", this->awayTime->strftime("%H:%M:%S"));
+        this->sCtrl->fCtrl->addVar("msg", msg);
       }
 
-      this->checkBtn(ICMessage(IMI_GETPLUGINSGROUP), ui::powerInMainWnd, true);
-      this->checkBtn(IMIG_TRAY, ui::powerInTrayMenu, true);
-
-      int count = IMessage(IMC_CNT_COUNT);
-      for (int i = 0; i < count; i++) {
-        int net = GETCNTI(i, CNT_NET);
-        if (IMessage(IMI_MSG_WINDOWSTATE, 0, 0, i)) {
-          this->checkBtn(IMIG_MSGTB, ui::powerInCntWnd, i, true);
-
-          if (GETINT(cfg::reply::onEnable) && lCtrl::reply->getNetState(net)) {
-            // wysylanie powiadomienia
-          }
-        }
+      if (chgStatus || chgInfo) {
+        this->sCtrl->rememberInfo();
+        this->sCtrl->changeStatus(chgInfo ? GETSTRA(cfg::tpl::status) : "", chgStatus ? status : -1);
       }
-
-      this->Log("[Control::enable()]: msg = %s", (msg.length() ? msg.c_str() : "(none)"));
     }
+
+    this->checkBtn(ICMessage(IMI_GETPLUGINSGROUP), ui::powerInMainWnd, true);
+    this->checkBtn(IMIG_TRAY, ui::powerInTrayMenu, true);
+
+    int count = IMessage(IMC_CNT_COUNT);
+    for (int i = 0; i < count; i++) {
+      if (IMessage(IMI_MSG_WINDOWSTATE, 0, 0, i)) {
+        if (GETINT(cfg::reply::onEnable) && !silent) {
+          this->sendMsg(i, cfg::tpl::enable);
+        }
+        this->checkBtn(IMIG_MSGTB, ui::powerInCntWnd, i, true);
+      }
+    }
+
+    this->showKNotify("Tryb away zosta³ <b>w³¹czony<b>", ico::enable);
+    this->Log("[Control::enable()]: msg = %s, silent = %s", 
+      (msg.length() ? msg.c_str() : "(none)"), btoa(silent));
   }
 
-  void Control::disable(std::string msg) {
-    if (this->isOn) {
-      if (this->sCtrl) {
-        this->sCtrl->fCtrl->clearVars();
-        this->sCtrl->restoreInfo();
-      }
+  void Control::disable(std::string msg, bool silent) {
+    if (!this->isOn) return;
 
-      this->checkBtn(ICMessage(IMI_GETPLUGINSGROUP), ui::powerInMainWnd, false);
-      this->checkBtn(IMIG_TRAY, ui::powerInTrayMenu, false);
-
-      int count = IMessage(IMC_CNT_COUNT);
-      for (int i = 0; i < count; i++) {
-        int net = GETCNTI(i, CNT_NET);
-        if (IMessage(IMI_MSG_WINDOWSTATE, 0, 0, i)) {
-          this->checkBtn(IMIG_MSGTB, ui::powerInCntWnd, i, false);
-
-          if (GETINT(cfg::reply::onDisable) && lCtrl::reply->getNetState(net)) {
-            // wysylanie powiadomienia
-          }
-        }
-      }
-
-      this->Log("[Control::disable()]: msg = %s", (msg.length() ? msg.c_str() : "(none)"));
-
-      this->awayMsg = "";
-      this->awayTime->clear();
-      this->ignoredUids.clear();
-      this->isOn = false;
+    if (this->sCtrl) {
+      this->sCtrl->fCtrl->clearVars();
+      this->sCtrl->restoreInfo();
     }
+
+    this->checkBtn(ICMessage(IMI_GETPLUGINSGROUP), ui::powerInMainWnd, false);
+    this->checkBtn(IMIG_TRAY, ui::powerInTrayMenu, false);
+
+    int count = IMessage(IMC_CNT_COUNT);
+    for (int i = 0; i < count; i++) {
+      if (IMessage(IMI_MSG_WINDOWSTATE, 0, 0, i)) {
+        if (GETINT(cfg::reply::onDisable) && !silent) {
+          this->sendMsg(i, cfg::tpl::disable);
+        }
+        this->checkBtn(IMIG_MSGTB, ui::powerInCntWnd, i, false);
+      }
+    }
+
+    this->showKNotify("Tryb away zosta³ <b>wy³¹czony<b>", ico::disable);
+    this->Log("[Control::disable()]: msg = %s, silent = %s", 
+      (msg.length() ? msg.c_str() : "(none)"), btoa(silent));
+
+    this->awayMsg = "";
+    this->awayTime->clear();
+    this->ignoredUids.clear();
+    this->isOn = false;
   }
 
-  void Control::checkBtn(int group, int id, int cnt, bool val, bool check) {
+  void Control::showKNotify(char * text, int ico) {
+    if (!GETINT(cfg::useKNotify)) return;
+    Ctrl->IMessage(&KNotify::sIMessage_notify(text, ico));
+  }
+
+  void Control::sendMsg(int cnt, int tplId) {
+    int net = GETCNTI(cnt, CNT_NET);
+
+    if ((sCtrl->getActualStatus(net) == ST_HIDDEN && !GETINT(cfg::reply::whenInvisible)) || 
+      !lCtrl::reply->getNetState(net) || !lCtrl::reply->isConnected(net))
+      return;
+
+    std::string ext;
+    ext = SetExtParam(ext, "kA2AutoMsg", "true");
+
+    Format *format = new Format;
+
+    format->addVar("display", GETCNTC(cnt, CNT_DISPLAY));
+    format->addVar("name", GETCNTC(cnt, CNT_NAME));
+    format->addVar("nick", GETCNTC(cnt, CNT_NICK));
+    format->addVar("surname", GETCNTC(cnt, CNT_SURNAME));
+    format->addVar("date", this->awayTime->strftime("%d/%m/%Y"));
+    format->addVar("time", this->awayTime->strftime("%H:%M:%S"));
+    format->addVar("msg", this->awayMsg);
+
+    this->Debug("[Control::sendMsg()]: net = %i, uid = %s", net, GETCNTC(cnt, CNT_UID));
+
+    Message::SendMsg(GETCNTC(cnt, CNT_UID), net, format->parse(GETSTRA(tplId)), 
+      MT_MESSAGE, ext, GETINT(cfg::reply::useHtml));
+    delete format; format = NULL;
+  }
+
+  void Control::checkBtn(int group, int id, int cnt, bool state, bool check) {
     sUIAction act(group, id, cnt);
     sUIActionInfo ai;
 
     ai.mask = UIAIM_P1 | UIAIM_TXT | UIAIM_STATUS;
     ai.act = act;
-    ai.txt = (val) ? "Wy³¹cz tryb away" : "W³¹cz tryb away";
-    ai.p1 = (val) ? ico::disable : ico::enable;
-    ai.status = (val && check) ? ACTS_CHECKED : 0;
+    ai.txt = (state) ? "Wy³¹cz tryb away" : "W³¹cz tryb away";
+    ai.p1 = (state) ? ico::disable : ico::enable;
+    ai.status = (state && check) ? ACTS_CHECKED : 0;
 
     ICMessage(IMI_ACTION_SET , (int)&ai , 0);
   }
 
-  void Control::checkBtn(int group, int id, bool val, bool check) {
-    sUIActionInfo ai(group, id, 0, (val && check) ? ACTS_CHECKED : 0, 
-      (val) ? "Wy³¹cz tryb away" : "W³¹cz tryb away", (val) ? ico::disable : ico::enable);
+  void Control::checkBtn(int group, int id, bool state, bool check) {
+    sUIActionInfo ai(group, id, 0, (state && check) ? ACTS_CHECKED : 0, 
+      (state) ? "Wy³¹cz tryb away" : "W³¹cz tryb away", (state) ? ico::disable : ico::enable);
     UIActionSet(ai);
   }
 

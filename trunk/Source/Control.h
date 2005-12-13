@@ -25,8 +25,8 @@ namespace kAway2 {
       Control();
       ~Control();
 
-      void enable(std::string msg = "", int status = -1);
-      void disable(std::string msg = "");
+      void enable(std::string msg = "", int status = -1, bool silent = false);
+      void disable(std::string msg = "", bool silent = false);
 
       bool isIgnoredUid(int net, std::string uid);
       void addIgnoredUid(int net, std::string uid);
@@ -75,6 +75,9 @@ namespace kAway2 {
         return(this->awayTime);
       }
 
+      void sendMsg(int cnt, int tplId);
+      void showKNotify(char * text, int ico = ico::logoSmall);
+
     protected:
       bool isOn;
       std::string awayMsg;
@@ -83,8 +86,8 @@ namespace kAway2 {
 
       static void Log(enDebugLevel level, const char * format, va_list ap);
 
-      void checkBtn(int group, int id, bool val, bool check = false);
-      void checkBtn(int group, int id, int cnt, bool val, bool check = true);
+      void checkBtn(int group, int id, bool state, bool check = false);
+      void checkBtn(int group, int id, int cnt, bool state, bool check = true);
 
     private:
       Status *sCtrl;
