@@ -56,38 +56,44 @@ namespace kAway2 {
     Ctrl->SetColumn(DTCFG, cfg::btnInCntWindow, DT_CT_INT, 1, "kAway2/btnInCntWindow");
     Ctrl->SetColumn(DTCFG, cfg::btnInTrayMenu, DT_CT_INT, 1, "kAway2/btnInTrayMenu");
 
-    Ctrl->SetColumn(DTCFG, cfg::tpl::enable, DT_CT_STR, "", "kAway2/tpl/enable");
-    Ctrl->SetColumn(DTCFG, cfg::tpl::disable, DT_CT_STR, "", "kAway2/tpl/disable");
-    Ctrl->SetColumn(DTCFG, cfg::tpl::reply, DT_CT_STR, "", "kAway2/tpl/reply");
-    Ctrl->SetColumn(DTCFG, cfg::tpl::forward, DT_CT_STR, "", "kAway2/tpl/forward");
-    Ctrl->SetColumn(DTCFG, cfg::tpl::sms, DT_CT_STR, "", "kAway2/tpl/sms");
-    Ctrl->SetColumn(DTCFG, cfg::tpl::email, DT_CT_STR, "", "kAway2/tpl/email");
-    Ctrl->SetColumn(DTCFG, cfg::tpl::status, DT_CT_STR, "", "kAway2/tpl/status");
-    Ctrl->SetColumn(DTCFG, cfg::tpl::autoAway, DT_CT_STR, "", "kAway2/tpl/autoAway");
+    Ctrl->SetColumn(DTCFG, cfg::tpl::enable, DT_CT_STR, 
+      "Auto away mode is been activated {(msg)}", "kAway2/tpl/enable");
+    Ctrl->SetColumn(DTCFG, cfg::tpl::disable, DT_CT_STR, 
+      "Auto away mode is been deactivated {(msg)}", "kAway2/tpl/disable");
+    Ctrl->SetColumn(DTCFG, cfg::tpl::reply, DT_CT_STR, 
+      "Hello <b>{display}</b>, i'm away from {date} @ {time} {[msg]}.\nLeave a message after the beep. Byeee.",
+      "kAway2/tpl/reply");
+    // Ctrl->SetColumn(DTCFG, cfg::tpl::forward, DT_CT_STR, "", "kAway2/tpl/forward");
+    // Ctrl->SetColumn(DTCFG, cfg::tpl::sms, DT_CT_STR, "", "kAway2/tpl/sms");
+    // Ctrl->SetColumn(DTCFG, cfg::tpl::email, DT_CT_STR, "", "kAway2/tpl/email");
+    Ctrl->SetColumn(DTCFG, cfg::tpl::status, DT_CT_STR, "{status |} away {[msg]}", "kAway2/tpl/status");
+    Ctrl->SetColumn(DTCFG, cfg::tpl::autoAway, DT_CT_STR, "AutoAway ...", "kAway2/tpl/autoAway");
 
     Ctrl->SetColumn(DTCFG, cfg::reply::onEnable, DT_CT_INT, 0, "kAway2/reply/onEnable");
     Ctrl->SetColumn(DTCFG, cfg::reply::onDisable, DT_CT_INT, 0, "kAway2/reply/onDisable");
     Ctrl->SetColumn(DTCFG, cfg::reply::onMsg, DT_CT_INT, 1, "kAway2/reply/onMsg");
     Ctrl->SetColumn(DTCFG, cfg::reply::whenInvisible, DT_CT_INT, 1, "kAway2/reply/whenInvisible");
     Ctrl->SetColumn(DTCFG, cfg::reply::minInterval, DT_CT_INT, 0, "kAway2/reply/minInterval");
-    Ctrl->SetColumn(DTCFG, cfg::reply::useHtml, DT_CT_INT, 0, "kAway2/reply/useHtml");
+    Ctrl->SetColumn(DTCFG, cfg::reply::useHtml, DT_CT_INT, 1, "kAway2/reply/useHtml");
     Ctrl->SetColumn(DTCFG, cfg::reply::netChange, DT_CT_STR, "", "kAway2/reply/netChange");
 
+    /*
     Ctrl->SetColumn(DTCNT, cfg::reply::cnt::onEnable, DT_CT_INT, 0, "kAway2/reply/onEnable");
     Ctrl->SetColumn(DTCNT, cfg::reply::cnt::onDisable, DT_CT_INT, 0, "kAway2/reply/onDisable");
     Ctrl->SetColumn(DTCNT, cfg::reply::cnt::onMsg, DT_CT_INT, 1, "kAway2/reply/onMsg");
     Ctrl->SetColumn(DTCNT, cfg::reply::cnt::whenInvisible, DT_CT_INT, 1, "kAway2/reply/whenInvisible");
     Ctrl->SetColumn(DTCNT, cfg::reply::cnt::minInterval, DT_CT_INT, 0, "kAway2/reply/minInterval");
-    Ctrl->SetColumn(DTCNT, cfg::reply::cnt::useHtml, DT_CT_INT, 0, "kAway2/reply/useHtml");
+    Ctrl->SetColumn(DTCNT, cfg::reply::cnt::useHtml, DT_CT_INT, 1, "kAway2/reply/useHtml");
+    */
 
     Ctrl->SetColumn(DTCFG, cfg::sms::interval, DT_CT_INT, 150, "kAway2/sms/interval");
     Ctrl->SetColumn(DTCFG, cfg::sms::gate, DT_CT_STR, "", "kAway2/sms/gate");
     Ctrl->SetColumn(DTCFG, cfg::sms::number, DT_CT_INT, 0, "kAway2/sms/number");
 
     Ctrl->SetColumn(DTCFG, cfg::status::whenInvisible, DT_CT_INT, 1, "kAway2/status/whenInvisible");
-    Ctrl->SetColumn(DTCFG, cfg::status::netChange, DT_CT_STR, "", "kAway2/status/netChange");
     Ctrl->SetColumn(DTCFG, cfg::status::changeOnEnable, DT_CT_INT, 1, "kAway2/status/changeOnEnable");
     Ctrl->SetColumn(DTCFG, cfg::status::changeInfoOnEnable, DT_CT_INT, 1, "kAway2/status/changeInfoOnEnable");
+    Ctrl->SetColumn(DTCFG, cfg::status::netChange, DT_CT_STR, "", "kAway2/status/netChange");
 
     return(1);
   }
@@ -162,6 +168,10 @@ namespace kAway2 {
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Komendy '/away' i '/back' z okna rozmów" AP_TIP 
       "/away [...] w³¹cza tryb away, a /back [...] go wy³¹cza; mo¿na podaæ te¿ powód w³¹czenia/wy³¹czenia trybu", cfg::ircCmds);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Pokazuj powiadomienia K.Notify", cfg::useKNotify);
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
+
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUP, "Powód nieobecnoœci dla auto-away'a");
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::autoAway);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
 
     /* |-> Interface group */
@@ -243,7 +253,7 @@ namespace kAway2 {
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::disable);
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_GROUPEND);
 
-    /* Autoresponder tab */
+    /* Main tab in cnt wnd */
     /* |-> Minimal reply interval group */
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_GROUP, "Minimalny interwa³ pomiêdzy wysy³anymi odpowiedziami [s]:");
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_SLIDER, "Ma³y\nDu¿y" AP_STEP "60" AP_MINIMUM "0" AP_MAXIMUM "3600" AP_TIP 
@@ -320,6 +330,7 @@ namespace kAway2 {
 
 int __stdcall IMessageProc(sIMessage_base * msgBase) {
   sIMessage_2params * msg = static_cast<sIMessage_2params*>(msgBase);
+  static bool isAutoAwayOn = false;
 
   switch (msgBase->id) {
     case IM_PLUG_NET:        return(net);
@@ -339,6 +350,67 @@ int __stdcall IMessageProc(sIMessage_base * msgBase) {
     case IM_START:           return(IStart());
     case IM_END:             return(IEnd());
     case IM_UIACTION:        return(ActionProc((sUIActionNotify_base*)msg->p1));
+
+    case IM_AWAY: {
+      if (!pCtrl->isEnabled() && GETINT(cfg::autoAwaySync)) {
+        pCtrl->enable(GETSTRA(cfg::tpl::autoAway));
+        isAutoAwayOn = true;
+      }
+      return(0);
+    }
+
+    case IM_BACK: {
+      if (pCtrl->isEnabled() && GETINT(cfg::autoAwaySync) && isAutoAwayOn) {
+        pCtrl->disable();
+        isAutoAwayOn = false;
+      }
+      return(0);
+    }
+
+    case IM_MSG_RCV: {
+      cMessage * m = (cMessage*) msg->p1;
+      static std::map<int, int> times;
+
+      if (m->type != MT_MESSAGE)
+        return(0);
+
+      if (strlen(m->fromUid) && GETINT(cfg::reply::onMsg) && pCtrl->isEnabled()) {
+        int cnt = ICMessage(IMC_CNT_FIND, m->net, (int) m->fromUid);
+        bool found = times.find(cnt) != times.end();
+        int interval = GETINT(cfg::reply::minInterval);
+
+        if ((!interval && !found) || interval && ((interval + times[cnt]) < m->time)) {
+          pCtrl->sendMsg(cnt, cfg::tpl::reply);
+          times[cnt] = m->time;
+        }
+      } else if (!strlen(m->fromUid) && GETINT(cfg::ircCmds) &&
+        !GetExtParam(m->ext, "kA2AutoMsg").length() && m->body[0] == '/') {
+
+        Stamina::tStringVector params;
+        std::string body(m->body); 
+        body = body.substr(1, body.length());
+
+        Stamina::splitCommand(body, (char) " ", params);
+        std::string cmd = params[0];
+        std::string msg = (params.size() > 1) ? params[1] : "";
+        bool del = false;
+
+        if (cmd == "away") {
+          del = true; pCtrl->enable(msg);
+        } else if (cmd == "brb") {
+          del = true; pCtrl->enable(msg, -1, true);
+        } else if (cmd == "back") {
+          del = true; pCtrl->disable(msg);
+        } else if (cmd == "re") {
+          del = true; pCtrl->disable(msg, true);
+        }
+
+        if (del) return(IM_MSG_delete);
+      } else if (!strlen(m->fromUid) && GETINT(cfg::disableOnMsgSend) && pCtrl->isEnabled()) {
+        if (!GetExtParam(m->ext, "kA2AutoMsg").length()) pCtrl->disable("", true);
+      }
+      return(0);
+    }
 
     default:
       if (Ctrl) Ctrl->setError(IMERROR_NORESULT);

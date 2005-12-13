@@ -15,6 +15,8 @@
 #include <commctrl.h>
 #include <map>
 #include <list>
+#include <string>
+#include <deque>
 #include <stdstring.h>
 
 #pragma comment(lib, "comctl32.lib")
@@ -26,9 +28,9 @@
 #include <stamina/threadrun.h>
 #include <stamina/thread.h>
 #include <stamina/threadinvoke.h>
-#include <stamina/helpers.h>
 */
 
+#include <stamina/helpers.h>
 #include <stamina/timer.h>
 #include <stamina/string.h>
 #include <stamina/regex.h>
