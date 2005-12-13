@@ -14,12 +14,14 @@
 #include "Format.h"
 #include "Status.h"
 #include "AwayWnd.h"
+#include "Message.h"
 #include "Control.h"
 
 #include "NetList.cpp"
 #include "Format.cpp"
 #include "Status.cpp"
 #include "AwayWnd.cpp"
+#include "Message.cpp"
 #include "Control.cpp"
 
 int __stdcall DllMain(void * hinstDLL, unsigned long fdwReason, void * lpvReserved) {
@@ -30,7 +32,6 @@ using namespace kAway2;
 
 namespace kAway2 {
   int IStart() {
-
     return(1);
   }
 
@@ -62,6 +63,7 @@ namespace kAway2 {
     Ctrl->SetColumn(DTCFG, cfg::tpl::sms, DT_CT_STR, "", "kAway2/tpl/sms");
     Ctrl->SetColumn(DTCFG, cfg::tpl::email, DT_CT_STR, "", "kAway2/tpl/email");
     Ctrl->SetColumn(DTCFG, cfg::tpl::status, DT_CT_STR, "", "kAway2/tpl/status");
+    Ctrl->SetColumn(DTCFG, cfg::tpl::autoAway, DT_CT_STR, "", "kAway2/tpl/autoAway");
 
     Ctrl->SetColumn(DTCFG, cfg::reply::onEnable, DT_CT_INT, 0, "kAway2/reply/onEnable");
     Ctrl->SetColumn(DTCFG, cfg::reply::onDisable, DT_CT_INT, 0, "kAway2/reply/onDisable");
@@ -70,6 +72,13 @@ namespace kAway2 {
     Ctrl->SetColumn(DTCFG, cfg::reply::minInterval, DT_CT_INT, 0, "kAway2/reply/minInterval");
     Ctrl->SetColumn(DTCFG, cfg::reply::useHtml, DT_CT_INT, 0, "kAway2/reply/useHtml");
     Ctrl->SetColumn(DTCFG, cfg::reply::netChange, DT_CT_STR, "", "kAway2/reply/netChange");
+
+    Ctrl->SetColumn(DTCNT, cfg::reply::cnt::onEnable, DT_CT_INT, 0, "kAway2/reply/onEnable");
+    Ctrl->SetColumn(DTCNT, cfg::reply::cnt::onDisable, DT_CT_INT, 0, "kAway2/reply/onDisable");
+    Ctrl->SetColumn(DTCNT, cfg::reply::cnt::onMsg, DT_CT_INT, 1, "kAway2/reply/onMsg");
+    Ctrl->SetColumn(DTCNT, cfg::reply::cnt::whenInvisible, DT_CT_INT, 1, "kAway2/reply/whenInvisible");
+    Ctrl->SetColumn(DTCNT, cfg::reply::cnt::minInterval, DT_CT_INT, 0, "kAway2/reply/minInterval");
+    Ctrl->SetColumn(DTCNT, cfg::reply::cnt::useHtml, DT_CT_INT, 0, "kAway2/reply/useHtml");
 
     Ctrl->SetColumn(DTCFG, cfg::sms::interval, DT_CT_INT, 150, "kAway2/sms/interval");
     Ctrl->SetColumn(DTCFG, cfg::sms::gate, DT_CT_STR, "", "kAway2/sms/gate");
@@ -104,9 +113,9 @@ namespace kAway2 {
     tHelpVars stVars, rVars;
 
     stVars.push_back( helpVar( "status", "Aktualny status" ) );
+    stVars.push_back( helpVar( "msg", "Przyczyna nieobecnoœci" ) );
     stVars.push_back( helpVar( "date", "Data w³¹czenia trybu away" ) );
     stVars.push_back( helpVar( "time", "Czas w³¹czenia trybu away" ) );
-    stVars.push_back( helpVar( "msg", "Przyczyna nieobecnoœci" ) );
 
     rVars.push_back( helpVar( "display", "Nazwa wyœwietlania przypisana do kontaktu" ) );
     rVars.push_back( helpVar( "name", "Imiê przypisane do kontaktu" ) );
@@ -124,6 +133,7 @@ namespace kAway2 {
     IconRegister(IML_16, ico::disable, Ctrl->hDll(), IDI_DISABLE);
 
     /* Adding configuration tabs */
+    UIGroupInsert(IMIG_NFO, ui::cntCfgGroup, -1, ACTR_SAVE, "kAway2", ico::logoSmall);
     UIGroupInsert(IMIG_CFG_PLUGS, ui::cfgGroup, -1, ACTR_SAVE, "kAway2", ico::logoSmall);
     UIGroupInsert(ui::cfgGroup, ui::statusCfgGroup, -1, ACTR_SAVE, "Status", 0x00000020);
     UIGroupInsert(ui::cfgGroup, ui::replyCfgGroup, -1, ACTR_SAVE, "Autoresponder", 0x50000010);
@@ -139,6 +149,8 @@ namespace kAway2 {
       poweredBy, __DATE__, __TIME__);
 
     UIActionCfgAddPluginInfoBox2(ui::cfgGroup, "Implementacja IRCowej funkcjonalnoœci <b>/away [...]</b>", 
+      header, shared::Icon32(ico::logoBig).c_str());
+    UIActionCfgAddPluginInfoBox2(ui::cntCfgGroup, "Implementacja IRCowej funkcjonalnoœci <b>/away [...]</b>", 
       header, shared::Icon32(ico::logoBig).c_str());
 
     /* Main tab */
@@ -183,7 +195,7 @@ namespace kAway2 {
     /* |-> Minimal reply interval group */
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_GROUP, "Minimalny interwa³ pomiêdzy wysy³anymi odpowiedziami [s]:");
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_SLIDER, "Ma³y\nDu¿y" AP_STEP "60" AP_MINIMUM "0" AP_MAXIMUM "3600" AP_TIP 
-      "0 = odpowiedŸ bêdzie wysy³ana tylko jeden raz\n3600 = 1h ;>", cfg::reply::minInterval);
+      "0 = odpowiedŸ bêdzie wys³ana tylko jeden raz\n3600 = 1h ;>", cfg::reply::minInterval);
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_GROUPEND);
 
     /* |-> Net selection group */
@@ -216,14 +228,58 @@ namespace kAway2 {
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_SEPARATOR);
 
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_COMMENT, "OdpowiedŸ:");
+    UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_TIPBUTTON | ACTSBUTTON_ALIGNRIGHT | ACTSC_INLINE, 
+      sCtrl->fCtrl->buildHtmlHelp(rVars).c_str());
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::reply);
 
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_COMMENT, "W³¹czenie trybu away:");
+    UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_TIPBUTTON | ACTSBUTTON_ALIGNRIGHT | ACTSC_INLINE, 
+      sCtrl->fCtrl->buildHtmlHelp(rVars).c_str());
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::enable);
 
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_COMMENT, "Wy³¹czenie trybu away:");
+    UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_TIPBUTTON | ACTSBUTTON_ALIGNRIGHT | ACTSC_INLINE, 
+      sCtrl->fCtrl->buildHtmlHelp(rVars).c_str());
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::disable);
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_GROUPEND);
+
+    /* Autoresponder tab */
+    /* |-> Minimal reply interval group */
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_GROUP, "Minimalny interwa³ pomiêdzy wysy³anymi odpowiedziami [s]:");
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_SLIDER, "Ma³y\nDu¿y" AP_STEP "60" AP_MINIMUM "0" AP_MAXIMUM "3600" AP_TIP 
+      "0 = odpowiedŸ bêdzie wys³ana tylko jeden raz\n3600 = 1h ;>", cfg::reply::cnt::minInterval);
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_GROUPEND);
+
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_GROUP, "Wysy³anie powiadomieñ");
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_CHECK, "Wysy³aj powiadomienia przy w³¹czonym statusie 'ukryty'", cfg::reply::cnt::whenInvisible);
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_SEPARATOR);
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_CHECK, "Odpowiadaj na odebrane wiadomoœci", cfg::reply::cnt::onMsg);
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_CHECK, "Wysy³aj powiadomienie o w³¹czeniu trybu away", cfg::reply::cnt::onEnable);
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_CHECK, "Wysy³aj powiadomienie o wy³¹czeniu trybu away", cfg::reply::cnt::onDisable);
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_GROUPEND);
+
+    /* |-> Settings group */
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_GROUP, "Szablony powiadomieñ");
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_CHECK, "Formatuj kod HTML" AP_TIP 
+      "Jeœli w³¹czone, znaki specjalne nale¿y zamieniaæ na ich HTML-owe odpowiedniki (np.: (< na &lt;), (> na &gt;))", 
+      cfg::reply::cnt::useHtml);
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_SEPARATOR);
+
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_COMMENT, "OdpowiedŸ:");
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_TIPBUTTON | ACTSBUTTON_ALIGNRIGHT | ACTSC_INLINE, 
+      sCtrl->fCtrl->buildHtmlHelp(rVars).c_str());
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::cnt::reply);
+
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_COMMENT, "W³¹czenie trybu away:");
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_TIPBUTTON | ACTSBUTTON_ALIGNRIGHT | ACTSC_INLINE, 
+      sCtrl->fCtrl->buildHtmlHelp(rVars).c_str());
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::cnt::enable);
+
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_COMMENT, "Wy³¹czenie trybu away:");
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_TIPBUTTON | ACTSBUTTON_ALIGNRIGHT | ACTSC_INLINE, 
+      sCtrl->fCtrl->buildHtmlHelp(rVars).c_str());
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::cnt::disable);
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_GROUPEND);
 
     /* Buttons */
     if (GETINT(cfg::btnInMainWindow))

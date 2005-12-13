@@ -17,8 +17,8 @@ namespace kAway2 {
     std::string name;
     bool use;
 
-    itemNet(int _id = NULL, int _net = NULL, std::string _name = "", bool _use = true):
-      id(_id), net(_net), name(_name), use(_use) {}
+    itemNet(int _id = NULL, int _net = NULL, std::string _name = "", bool _use = true) :
+      id(_id), net(_net), name(_name), use(_use) { }
   };
 
   typedef std::list<itemNet> tItemNets;

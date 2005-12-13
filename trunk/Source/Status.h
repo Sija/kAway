@@ -27,6 +27,14 @@ namespace kAway2 {
       net(_net), st(_st), info(_info) { }
   };
 
+  struct statusReplacement {
+    unsigned int net;
+    unsigned int before;
+    unsigned int after;
+
+    statusReplacement(int _net, int _before, int _after) : net(_net), before(_before), after(_after) { }
+  };
+
   // definicje max d³ugoœci statusów poszcz. dla sieci
   enum enMaxLength {
     normal = 255,
@@ -36,6 +44,7 @@ namespace kAway2 {
   };
 
   typedef std::list<itemInfo> tItemInfos;
+  typedef std::list<statusReplacement> tStReplacements;
 
   class Status {
     public:
@@ -89,5 +98,7 @@ namespace kAway2 {
       unsigned int onHiddenCfgCol;
       // lista z opisami na sieciach
       tItemInfos info;
+      // zamienniki nieobs³ugiwanych statusów
+      tStReplacements stReplacements;
   };
 }

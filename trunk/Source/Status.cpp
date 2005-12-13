@@ -18,12 +18,17 @@ namespace kAway2 {
 
     this->stInfoVar = stInfoVar;
     this->onHiddenCfgCol = onHiddenCfgCol;
+
+    this->stReplacements.push_back( statusReplacement( plugsNET::gg, ST_CHAT, ST_ONLINE ) );
+    this->stReplacements.push_back( statusReplacement( plugsNET::gg, ST_DND, ST_AWAY ) );
+    this->stReplacements.push_back( statusReplacement( plugsNET::gg, ST_NA, ST_AWAY ) );
   }
 
   Status::~Status() {
     delete this->fCtrl;
     this->fCtrl = NULL;
 
+    this->stReplacements.clear();
     this->info.clear();
   }
 
@@ -35,7 +40,6 @@ namespace kAway2 {
 
   void Status::changeStatus(int net, std::string info, int st) {
     if (this->isNetUseful(net)) {
-      st = st ? st : -1;
       if (info.length()) {
         bool dynSt = (this->stInfoVar.length() && !this->fCtrl->varExists(this->stInfoVar)) ? true : false;
         if (dynSt) this->fCtrl->addVar(this->stInfoVar, this->getInfo(net));
@@ -43,10 +47,22 @@ namespace kAway2 {
         info = this->fCtrl->parse(info);
         info = this->limitChars(info, net);
 
+        CStdString _info(info);
+        info = _info.Trim();
+
         if (dynSt) this->fCtrl->removeVar(this->stInfoVar);
       }
 
-      IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, (info.length() || st == -1) ? (int) info.c_str() : 0);
+      st = st ? st : -1;
+      if (st != -1) {
+        for (tStReplacements::iterator it = this->stReplacements.begin(); it != this->stReplacements.end(); it++) {
+          if (it->net == net && it->before == st) {
+            st = it->after; break;
+          }
+        }
+      }
+
+      IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, info.length() ? (int) info.c_str() : 0);
 
       Control::Debug("[Status::changeStatus().item]: net = %i, status = %i, info = %s",
         net, st, (info.length() ? info.c_str() : "(none)"));

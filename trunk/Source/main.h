@@ -95,6 +95,16 @@ namespace kAway2 {
       const unsigned int email = tpl + 6;
 
       const unsigned int status = tpl + 7;
+      const unsigned int autoAway = tpl + 8;
+
+      namespace cnt {
+        const unsigned int cnt = tpl + 50;
+
+        const unsigned int enable = cnt + 1;
+        const unsigned int disable = cnt + 2;
+
+        const unsigned int reply = cnt + 3;
+      }
     }
 
     namespace reply {
@@ -112,6 +122,18 @@ namespace kAway2 {
       const unsigned int magicKeyNotifyMethod = reply + 8;
 
       const unsigned int netChange = reply + 9;
+
+      namespace cnt {
+        const unsigned int cnt = reply + 50;
+
+        const unsigned int onEnable = cnt + 1;
+        const unsigned int onDisable = cnt + 2;
+        const unsigned int onMsg = cnt + 3;
+
+        const unsigned int whenInvisible = cnt + 4;
+        const unsigned int minInterval = cnt + 5;
+        const unsigned int useHtml = cnt + 6;
+      }
     }
 
     namespace sms {
