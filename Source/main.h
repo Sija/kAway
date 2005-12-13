@@ -82,6 +82,9 @@ namespace kAway2 {
     const unsigned int btnInCntWindow = cfg + 7;
     const unsigned int btnInTrayMenu = cfg + 8;
 
+    const unsigned int dateFormat = cfg + 9;
+    const unsigned int timeFormat = cfg + 10;
+
     namespace tpl {
       const unsigned int tpl = cfg + 100;
 

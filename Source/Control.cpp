@@ -42,8 +42,8 @@ namespace kAway2 {
       int chgInfo = GETINT(cfg::status::changeInfoOnEnable);
 
       if (chgInfo) {
-        this->sCtrl->fCtrl->addVar("date", this->awayTime->strftime("%d/%m/%Y"));
-        this->sCtrl->fCtrl->addVar("time", this->awayTime->strftime("%H:%M:%S"));
+        this->sCtrl->fCtrl->addVar("date", this->awayTime->strftime(GETSTRA(cfg::dateFormat)));
+        this->sCtrl->fCtrl->addVar("time", this->awayTime->strftime(GETSTRA(cfg::timeFormat)));
         this->sCtrl->fCtrl->addVar("msg", msg);
       }
 
@@ -60,7 +60,7 @@ namespace kAway2 {
     for (int i = 0; i < count; i++) {
       if (IMessage(IMI_MSG_WINDOWSTATE, 0, 0, i)) {
         if (GETINT(cfg::reply::onEnable) && !silent) {
-          this->sendMsg(i, cfg::tpl::enable);
+          this->sendMsgTpl(i, cfg::tpl::enable);
         }
         this->checkBtn(IMIG_MSGTB, ui::powerInCntWnd, i, true);
       }
@@ -86,7 +86,7 @@ namespace kAway2 {
     for (int i = 0; i < count; i++) {
       if (IMessage(IMI_MSG_WINDOWSTATE, 0, 0, i)) {
         if (GETINT(cfg::reply::onDisable) && !silent) {
-          this->sendMsg(i, cfg::tpl::disable);
+          this->sendMsgTpl(i, cfg::tpl::disable, msg);
         }
         this->checkBtn(IMIG_MSGTB, ui::powerInCntWnd, i, false);
       }
@@ -107,7 +107,7 @@ namespace kAway2 {
     Ctrl->IMessage(&KNotify::sIMessage_notify(text, ico));
   }
 
-  void Control::sendMsg(int cnt, int tplId) {
+  void Control::sendMsgTpl(int cnt, int tplId, std::string msgVar) {
     int net = GETCNTI(cnt, CNT_NET);
 
     if ((sCtrl->getActualStatus(net) == ST_HIDDEN && !GETINT(cfg::reply::whenInvisible)) || 
@@ -123,9 +123,9 @@ namespace kAway2 {
     format->addVar("name", GETCNTC(cnt, CNT_NAME));
     format->addVar("nick", GETCNTC(cnt, CNT_NICK));
     format->addVar("surname", GETCNTC(cnt, CNT_SURNAME));
-    format->addVar("date", this->awayTime->strftime("%d/%m/%Y"));
-    format->addVar("time", this->awayTime->strftime("%H:%M:%S"));
-    format->addVar("msg", this->awayMsg);
+    format->addVar("date", this->awayTime->strftime(GETSTRA(cfg::dateFormat)));
+    format->addVar("time", this->awayTime->strftime(GETSTRA(cfg::timeFormat)));
+    format->addVar("msg", (tplId == cfg::tpl::disable) ? msgVar : this->awayMsg);
 
     this->Debug("[Control::sendMsg()]: net = %i, uid = %s", net, GETCNTC(cnt, CNT_UID));
 
@@ -138,10 +138,10 @@ namespace kAway2 {
     sUIAction act(group, id, cnt);
     sUIActionInfo ai;
 
-    ai.mask = UIAIM_P1 | UIAIM_TXT | UIAIM_STATUS;
     ai.act = act;
-    ai.txt = (state) ? "Wy³¹cz tryb away" : "W³¹cz tryb away";
+    ai.mask = UIAIM_P1 | UIAIM_TXT | UIAIM_STATUS;
     ai.p1 = (state) ? ico::disable : ico::enable;
+    ai.txt = (state) ? "Wy³¹cz tryb away" : "W³¹cz tryb away";
     ai.status = (state && check) ? ACTS_CHECKED : 0;
 
     ICMessage(IMI_ACTION_SET , (int)&ai , 0);

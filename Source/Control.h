@@ -75,7 +75,7 @@ namespace kAway2 {
         return(this->awayTime);
       }
 
-      void sendMsg(int cnt, int tplId);
+      void sendMsgTpl(int cnt, int tplId, std::string msgVar = "");
       void showKNotify(char * text, int ico = ico::logoSmall);
 
     protected:
