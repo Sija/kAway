@@ -81,7 +81,10 @@ namespace kAway2 {
       Stamina::Date64 *awayTime;
       tIgnoredUids ignoredUids;
 
-      static void Control::Log(enDebugLevel level, const char * format, va_list ap);
+      static void Log(enDebugLevel level, const char * format, va_list ap);
+
+      void checkBtn(int group, int id, bool val, bool check = false);
+      void checkBtn(int group, int id, int cnt, bool val, bool check = true);
 
     private:
       Status *sCtrl;
