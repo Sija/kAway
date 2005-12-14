@@ -22,6 +22,7 @@ namespace kAway2 {
 
     this->awayMsg = "";
     this->ignoredUids.clear();
+    this->msgRcvTimes.clear();
     this->isOn = false;
   }
 
@@ -54,6 +55,7 @@ namespace kAway2 {
     }
 
     this->checkBtn(ICMessage(IMI_GETPLUGINSGROUP), ui::powerInMainWnd, true);
+    this->checkBtn(IMIG_MSGTB, ui::powerInCntWnd, true, true);
     this->checkBtn(IMIG_TRAY, ui::powerInTrayMenu, true);
 
     int count = IMessage(IMC_CNT_COUNT);
@@ -80,6 +82,7 @@ namespace kAway2 {
     }
 
     this->checkBtn(ICMessage(IMI_GETPLUGINSGROUP), ui::powerInMainWnd, false);
+    this->checkBtn(IMIG_MSGTB, ui::powerInCntWnd, false, true);
     this->checkBtn(IMIG_TRAY, ui::powerInTrayMenu, false);
 
     int count = IMessage(IMC_CNT_COUNT);
@@ -99,6 +102,7 @@ namespace kAway2 {
     this->awayMsg = "";
     this->awayTime->clear();
     this->ignoredUids.clear();
+    this->msgRcvTimes.clear();
     this->isOn = false;
   }
 
@@ -116,6 +120,7 @@ namespace kAway2 {
 
     std::string ext;
     ext = SetExtParam(ext, "kA2AutoMsg", "true");
+    ext = SetExtParam(ext, MEX_NOSOUND, "1");
 
     Format *format = new Format;
 
@@ -129,7 +134,7 @@ namespace kAway2 {
 
     this->Debug("[Control::sendMsg()]: net = %i, uid = %s", net, GETCNTC(cnt, CNT_UID));
 
-    Message::SendMsg(GETCNTC(cnt, CNT_UID), net, format->parse(GETSTRA(tplId)), 
+    Message::SendMsg(GETCNTC(cnt, CNT_UID), net, trim(format->parse(GETSTRA(tplId))), 
       MT_MESSAGE, ext, GETINT(cfg::reply::useHtml));
     delete format; format = NULL;
   }
@@ -144,7 +149,7 @@ namespace kAway2 {
     ai.txt = (state) ? "Wy³¹cz tryb away" : "W³¹cz tryb away";
     ai.status = (state && check) ? ACTS_CHECKED : 0;
 
-    ICMessage(IMI_ACTION_SET , (int)&ai , 0);
+    ICMessage(IMI_ACTION_SET, (int)&ai);
   }
 
   void Control::checkBtn(int group, int id, bool state, bool check) {

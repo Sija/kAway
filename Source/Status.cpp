@@ -46,9 +46,7 @@ namespace kAway2 {
 
         info = this->fCtrl->parse(info);
         info = this->limitChars(info, net);
-
-        CStdString _info(info);
-        info = _info.Trim();
+        info = trim(info);
 
         if (dynSt) this->fCtrl->removeVar(this->stInfoVar);
       }

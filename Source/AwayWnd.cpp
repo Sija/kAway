@@ -200,16 +200,15 @@ namespace kAway2 {
         }
 
         default: {
-          if(HIWORD(wParam)==CBN_SELCHANGE){
-            int len = SendMessage (GetDlgItem(hWnd, STATUS_EDIT), WM_GETTEXTLENGTH, 0, 0 ) + 1;
-            char * opis = new char[len];
-            
-            GetWindowText(GetDlgItem(hWnd, STATUS_EDIT), opis, len);
-            IMLOG("info len: %d, info: %s",len,opis);
-            SetWindowText(GetDlgItem(hWnd, STATUS_EDIT_INFO),opis);
-            delete [] opis;
+          if (HIWORD(wParam) == CBN_SELCHANGE) {
+            int len = SendMessage(GetDlgItem(hWnd, STATUS_EDIT), WM_GETTEXTLENGTH, 0, 0) + 1;
+            char * msg = new char[len];
 
-            return 1;
+            GetWindowText(GetDlgItem(hWnd, STATUS_EDIT), msg, len);
+            SetWindowText(GetDlgItem(hWnd, STATUS_EDIT_INFO), msg);
+            delete [] msg;
+
+            return(1);
           }
         }
       }

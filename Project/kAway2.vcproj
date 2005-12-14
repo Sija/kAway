@@ -226,6 +226,9 @@
 				RelativePath="..\Res\enable.ico">
 			</File>
 			<File
+				RelativePath="..\Res\logo.ico">
+			</File>
+			<File
 				RelativePath="..\Res\resource.rc">
 			</File>
 		</Filter>

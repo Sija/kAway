@@ -78,6 +78,8 @@ namespace kAway2 {
       void sendMsgTpl(int cnt, int tplId, std::string msgVar = "");
       void showKNotify(char * text, int ico = ico::logoSmall);
 
+      std::map<int, int> msgRcvTimes;
+
     protected:
       bool isOn;
       std::string awayMsg;
