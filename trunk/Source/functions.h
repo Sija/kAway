@@ -19,6 +19,11 @@ char * btoa(bool value) {
   return(value ? "true" : "false");
 }
 
+std::string trim(std::string txt) {
+  CStdString temp(txt); txt = temp.Trim();
+  return(txt);
+}
+
 std::string btos(bool value) {
   return(btoa(value));
 }

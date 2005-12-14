@@ -36,6 +36,8 @@ namespace kAway2 {
   }
 
   int IEnd() {
+    pCtrl->disable("", true);
+
     delete pCtrl, sCtrl, wCtrl;
     pCtrl, sCtrl, wCtrl = NULL;
 
@@ -57,7 +59,7 @@ namespace kAway2 {
     Ctrl->SetColumn(DTCFG, cfg::btnInTrayMenu, DT_CT_INT, 1, "kAway2/btnInTrayMenu");
 
     Ctrl->SetColumn(DTCFG, cfg::dateFormat, DT_CT_STR, "%d/%m/%Y", "kAway2/dateFormat");
-    Ctrl->SetColumn(DTCFG, cfg::timeFormat, DT_CT_STR, "%H:%M:%S", "kAway2/timeFormat");
+    Ctrl->SetColumn(DTCFG, cfg::timeFormat, DT_CT_STR, "%H:%M", "kAway2/timeFormat");
 
     Ctrl->SetColumn(DTCFG, cfg::tpl::enable, DT_CT_STR, "brb/afk {[msg]}", "kAway2/tpl/enable");
     Ctrl->SetColumn(DTCFG, cfg::tpl::disable, DT_CT_STR, "i'm back {[msg] }:>", "kAway2/tpl/disable");
@@ -68,7 +70,7 @@ namespace kAway2 {
     // Ctrl->SetColumn(DTCFG, cfg::tpl::sms, DT_CT_STR, "", "kAway2/tpl/sms");
     // Ctrl->SetColumn(DTCFG, cfg::tpl::email, DT_CT_STR, "", "kAway2/tpl/email");
     Ctrl->SetColumn(DTCFG, cfg::tpl::status, DT_CT_STR, "{status |} away {[msg]}", "kAway2/tpl/status");
-    Ctrl->SetColumn(DTCFG, cfg::tpl::autoAway, DT_CT_STR, "autoAway is on...", "kAway2/tpl/autoAway");
+    Ctrl->SetColumn(DTCFG, cfg::tpl::autoAway, DT_CT_STR, "autoAway is on, so... i'm off :>", "kAway2/tpl/autoAway");
 
     Ctrl->SetColumn(DTCFG, cfg::reply::onEnable, DT_CT_INT, 0, "kAway2/reply/onEnable");
     Ctrl->SetColumn(DTCFG, cfg::reply::onDisable, DT_CT_INT, 0, "kAway2/reply/onDisable");
@@ -118,7 +120,8 @@ namespace kAway2 {
     sCtrl = new Status(lCtrl::status, cfg::status::whenInvisible, "status");
     pCtrl->setStatusCtrl(sCtrl);
 
-    pCtrl->Log("net = %i, Ctrl = %i, pCtrl = %i, sCtrl = %i, wCtrl = %i", net, Ctrl, pCtrl, sCtrl, wCtrl);
+    pCtrl->Log("net = %i, Ctrl = %i, pCtrl = %i, sCtrl = %i, wCtrl = %i", 
+      net, Ctrl, pCtrl, sCtrl, wCtrl);
 
     /* Defining help variables */
     tHelpVars stVars, rVars;
@@ -128,7 +131,7 @@ namespace kAway2 {
     stVars.push_back( helpVar( "date", "Data w³¹czenia trybu away" ) );
     stVars.push_back( helpVar( "time", "Czas w³¹czenia trybu away" ) );
 
-    rVars.push_back( helpVar( "display", "Nazwa wyœwietlania przypisana do kontaktu" ) );
+    rVars.push_back( helpVar( "display", "Nazwa wyœwietlania kontaktu" ) );
     rVars.push_back( helpVar( "name", "Imiê przypisane do kontaktu" ) );
     rVars.push_back( helpVar( "nick", "Ksywka przypisana do kontaktu" ) );
     rVars.push_back( helpVar( "surname", "Nazwisko przypisane do kontaktu" ) );
@@ -137,9 +140,8 @@ namespace kAway2 {
     rVars.push_back( helpVar( "msg", "Przyczyna nieobecnoœci" ) );
 
     /* Registering icons */
-    // IconRegister(IML_32, ico::logoBig, Ctrl->hDll(), IDI_LOGO32);
-    // IconRegister(IML_16, ico::logoSmall, Ctrl->hDll(), IDI_LOGO16);
-    IconRegister(IML_16, ico::logoSmall, Ctrl->hDll(), IDI_ENABLE); // temp, will be deleted
+    IconRegister(IML_32, ico::logoBig, Ctrl->hDll(), IDI_LOGO);
+    IconRegister(IML_16, ico::logoSmall, Ctrl->hDll(), IDI_LOGO);
     IconRegister(IML_16, ico::enable, Ctrl->hDll(), IDI_ENABLE);
     IconRegister(IML_16, ico::disable, Ctrl->hDll(), IDI_DISABLE);
 
@@ -153,16 +155,49 @@ namespace kAway2 {
     char header[400];
     sprintf(header, "<span class='note'>Powered by: <b>%s</b></span><br/>"
       "<span class='note'>Skompilowano: <b>%s</b> [<b>%s</b>]</span><br/>"
-      "Informacje o wtyczce i Ÿród³a na stronie projektu "
+      "Informacje o wtyczce na stronie projektu "
       "<b>KPlugins</b> (http://kplugins.net/)<br/><br/>"
       "Copyright © 2004-2005 <b>Sijawusz Pur Rahnama</b><br/>"
       "Copyright © 2004-2005 <b>KPlugins Team</b>",
       poweredBy, __DATE__, __TIME__);
 
-    UIActionCfgAddPluginInfoBox2(ui::cfgGroup, "Implementacja IRCowej funkcjonalnoœci <b>/away [...]</b>", 
-      header, shared::Icon32(ico::logoBig).c_str());
-    UIActionCfgAddPluginInfoBox2(ui::cntCfgGroup, "Implementacja IRCowej funkcjonalnoœci <b>/away [...]</b>", 
-      header, shared::Icon32(ico::logoBig).c_str());
+    char desc[300] = 
+      "Wtyczka ma za zadanie zaj¹æ siê kwesti¹ Twojej nieobecnoœci przy komputerze :)<br/>"
+      "Osoby pisz¹ce do Ciebie zostan¹ powiadomione (albo i nie ;)) o tym od kiedy i dlaczego Cie nie ma, "
+      "ty za to dostaniesz informacjê o tym ile osób nawiedzi³o Ciê podczas Twoich godzin-bez-komputera ;>";
+
+    char dateFormat[1024] = AP_TIPRICH
+      "%<b>a</b> - Abbreviated weekday name<br/>"
+      "%<b>A</b> - Full weekday name<br/>"
+      "%<b>b</b> - Abbreviated month name<br/>"
+      "%<b>B</b> - Full month name<br/>"
+      "%<b>d</b> - Day of month as decimal number (01 – 31)<br/>"
+      "%<b>j</b> - Day of year as decimal number (001 – 366)<br/>"
+      "%<b>m</b> - Month as decimal number (01 – 12)<br/>"
+      "%<b>M</b> - Minute as decimal number (00 – 59)<br/>"
+      "%<b>U</b> - Week of year as decimal number, with Sunday as first day of week (00 – 53)<br/>"
+      "%<b>w</b> - Weekday as decimal number (0 – 6; Sunday is 0)<br/>"
+      "%<b>W</b> - Week of year as decimal number, with Monday as first day of week (00 – 53)<br/>"
+      "%<b>x</b> - Date representation for current locale<br/>"
+      "%<b>y</b> - Year without century, as decimal number (00 – 99)<br/>"
+      "%<b>Y</b> - Year with century, as decimal number<br/>"
+      "%<b>z</b>, %<b>Z</b> - Either the time-zone name or time zone abbreviation, depending on registry settings; "
+      "no characters if time zone is unknown<br/>"
+      "%<b>%</b> - Percent sign"
+      AP_TIP_WIDTH "300";
+
+    char timeFormat[512] = AP_TIPRICH
+      "%<b>c</b> - Date and time representation appropriate for locale<br/>"
+      "%<b>H</b> - Hour in 24-hour format (00 – 23)<br/>"
+      "%<b>I</b> - Hour in 12-hour format (01 – 12)<br/>"
+      "%<b>p</b> - Current locale's A.M./P.M. indicator for 12-hour clock<br/>"
+      "%<b>S</b> - Second as decimal number (00 – 59)<br/>"
+      "%<b>X</b> - Time representation for current locale<br/>"
+      "%<b>%</b> - Percent sign"
+      AP_TIP_WIDTH "285";
+
+    UIActionCfgAddPluginInfoBox2(ui::cfgGroup, desc, header, shared::Icon32(ico::logoBig).c_str(), -4);
+    UIActionCfgAddPluginInfoBox2(ui::cntCfgGroup, desc, header, shared::Icon32(ico::logoBig).c_str(), -5);
 
     /* Main tab */
     /* |-> General settings group */
@@ -170,15 +205,18 @@ namespace kAway2 {
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Synchronizuj z trybem auto-away", cfg::autoAwaySync);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Wy³¹czaj w momencie wys³ania wiadomoœci", cfg::disableOnMsgSend);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Zapisuj wiadomoœci w osobnej historii", cfg::saveToHistory);
-    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Komendy '/away' i '/back' z okna rozmów" AP_TIP 
-      "/away [...] w³¹cza tryb away, a /back [...] go wy³¹cza; mo¿na podaæ te¿ powód w³¹czenia/wy³¹czenia trybu", cfg::ircCmds);
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Komendy z okna rozmów (a'la IRC)" AP_TIPRICH 
+      "/<b>away</b> [...] - w³¹cza tryb away<br/>"
+      "/<b>brb</b> [...] - j.w. + nie wysy³a powiadomieñ o w³.<br/>"
+      "/<b>back</b> [...] - wy³¹cza tryb away<br/>"
+      "/<b>re</b> [...] - j.w. + nie wysy³a powiadomieñ o wy³." AP_TIP_WIDTH "240", cfg::ircCmds);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Pokazuj powiadomienia K.Notify", cfg::useKNotify);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
 
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUP, "Formatowanie czasu");
-    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_EDIT | ACTSC_INLINE, 0, cfg::dateFormat);
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_EDIT | ACTSC_INLINE, dateFormat, cfg::dateFormat);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_COMMENT, "Format daty");
-    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_EDIT | ACTSC_INLINE, 0, cfg::timeFormat);
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_EDIT | ACTSC_INLINE, timeFormat, cfg::timeFormat);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_COMMENT, "Format godziny");
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
 
@@ -188,9 +226,9 @@ namespace kAway2 {
 
     /* |-> Interface group */
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUP, "Interfejs");
-    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK | ACTSC_NEEDRESTART, "Pokazuj przycisk w menu tray'a", cfg::btnInTrayMenu);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK | ACTSC_NEEDRESTART, "Pokazuj przycisk w g³ównym oknie", cfg::btnInMainWindow);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK | ACTSC_NEEDRESTART, "Pokazuj przycisk w oknie rozmowy", cfg::btnInCntWindow);
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK | ACTSC_NEEDRESTART, "Pokazuj przycisk w menu tray'a", cfg::btnInTrayMenu);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
 
     /* Status tab */
@@ -203,8 +241,7 @@ namespace kAway2 {
     UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_GROUPEND);
 
     UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_GROUP, "Szablon statusu");
-    UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_TIPBUTTON | ACTSBUTTON_ALIGNRIGHT | ACTSC_INLINE, 
-      sCtrl->fCtrl->buildHtmlHelp(stVars).c_str());
+    sCtrl->fCtrl->UIDrawHelpBtn(stVars, ui::statusCfgGroup);
     UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::status);
     UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_GROUPEND);
 
@@ -250,18 +287,15 @@ namespace kAway2 {
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_SEPARATOR);
 
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_COMMENT, "OdpowiedŸ:");
-    UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_TIPBUTTON | ACTSBUTTON_ALIGNRIGHT | ACTSC_INLINE, 
-      sCtrl->fCtrl->buildHtmlHelp(rVars).c_str());
+    sCtrl->fCtrl->UIDrawHelpBtn(rVars, ui::replyCfgGroup);
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::reply);
 
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_COMMENT, "W³¹czenie trybu away:");
-    UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_TIPBUTTON | ACTSBUTTON_ALIGNRIGHT | ACTSC_INLINE, 
-      sCtrl->fCtrl->buildHtmlHelp(rVars).c_str());
+    sCtrl->fCtrl->UIDrawHelpBtn(rVars, ui::replyCfgGroup);
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::enable);
 
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_COMMENT, "Wy³¹czenie trybu away:");
-    UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_TIPBUTTON | ACTSBUTTON_ALIGNRIGHT | ACTSC_INLINE, 
-      sCtrl->fCtrl->buildHtmlHelp(rVars).c_str());
+    sCtrl->fCtrl->UIDrawHelpBtn(rVars, ui::replyCfgGroup);
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::disable);
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_GROUPEND);
 
@@ -288,18 +322,15 @@ namespace kAway2 {
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_SEPARATOR);
 
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_COMMENT, "OdpowiedŸ:");
-    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_TIPBUTTON | ACTSBUTTON_ALIGNRIGHT | ACTSC_INLINE, 
-      sCtrl->fCtrl->buildHtmlHelp(rVars).c_str());
+    sCtrl->fCtrl->UIDrawHelpBtn(rVars, ui::cntCfgGroup);
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::cnt::reply);
 
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_COMMENT, "W³¹czenie trybu away:");
-    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_TIPBUTTON | ACTSBUTTON_ALIGNRIGHT | ACTSC_INLINE, 
-      sCtrl->fCtrl->buildHtmlHelp(rVars).c_str());
+    sCtrl->fCtrl->UIDrawHelpBtn(rVars, ui::cntCfgGroup);
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::cnt::enable);
 
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_COMMENT, "Wy³¹czenie trybu away:");
-    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_TIPBUTTON | ACTSBUTTON_ALIGNRIGHT | ACTSC_INLINE, 
-      sCtrl->fCtrl->buildHtmlHelp(rVars).c_str());
+    sCtrl->fCtrl->UIDrawHelpBtn(rVars, ui::cntCfgGroup);
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::cnt::disable);
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_GROUPEND);
 
@@ -363,6 +394,20 @@ int __stdcall IMessageProc(sIMessage_base * msgBase) {
     case IM_END:             return(IEnd());
     case IM_UIACTION:        return(ActionProc((sUIActionNotify_base*)msg->p1));
 
+    case IM_ALLPLUGINSINITIALIZED: {
+      if (true) {
+        int oldId = ICMessage(IMC_FINDPLUG, plugsNET::kaway, IMT_ALL);
+
+        if (oldId) {
+          Ctrl->IMessage(&sIMessage_plugOut(oldId, 
+            "kAway2 jest nastêpc¹ wtyczki K.Away :)",
+            sIMessage_plugOut::erNo, sIMessage_plugOut::euNowAndOnNextStart));
+          return(-1);
+        }
+      }
+      return(1);
+    }
+
     case IM_AWAY: {
       if (!pCtrl->isEnabled() && GETINT(cfg::autoAwaySync)) {
         pCtrl->enable(GETSTRA(cfg::tpl::autoAway), -1, true);
@@ -381,19 +426,18 @@ int __stdcall IMessageProc(sIMessage_base * msgBase) {
 
     case IM_MSG_RCV: {
       cMessage * m = (cMessage*) msg->p1;
-      static std::map<int, int> times;
 
       if (m->type != MT_MESSAGE)
         return(0);
 
       if (strlen(m->fromUid) && GETINT(cfg::reply::onMsg) && pCtrl->isEnabled()) {
         int cnt = ICMessage(IMC_CNT_FIND, m->net, (int) m->fromUid);
-        bool found = times.find(cnt) != times.end();
+        bool found = pCtrl->msgRcvTimes.find(cnt) != pCtrl->msgRcvTimes.end();
         int interval = GETINT(cfg::reply::minInterval);
 
-        if ((!interval && !found) || interval && ((interval + times[cnt]) < m->time)) {
+        if ((!interval && !found) || interval && ((interval + pCtrl->msgRcvTimes[cnt]) < m->time)) {
           pCtrl->sendMsgTpl(cnt, cfg::tpl::reply);
-          times[cnt] = m->time;
+          pCtrl->msgRcvTimes[cnt] = m->time;
         }
       } else if (!strlen(m->fromUid) && GETINT(cfg::ircCmds) &&
         !GetExtParam(m->ext, "kA2AutoMsg").length() && m->body[0] == '/') {

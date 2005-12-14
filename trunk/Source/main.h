@@ -19,7 +19,7 @@ namespace kAway2 {
     plugsNET::actio
   };
   const bool debug = true;
-  const char poweredBy[64] = "Louis Armstrong and The Presage";
+  const char poweredBy[64] = "The Presage and Illogic";
 
   namespace ui {
     const unsigned int ui = net * 1000;
