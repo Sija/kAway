@@ -41,10 +41,8 @@
 #include <konnekt/plug_func.h>
 #include <konnekt/knotify.h>
 #include <konnekt/ksound.h>
+#include <konnekt/ui_message_controls.h>
 #include <konnekt/lib.h>
 
 #include "../res/resource.h"
 #include "plugsNET.h"
-
-#include "main.h"
-#include "functions.h"

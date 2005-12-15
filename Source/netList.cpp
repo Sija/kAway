@@ -1,7 +1,7 @@
 /*
  *  kAway2 NetList class
  *
- *  Please READ /License.txt FIRST! 
+ *  Please READ /License.txt FIRST!
  *
  *  Copyright (C)2005 Sijawusz Pur Rahnama
  *
@@ -134,8 +134,9 @@ namespace kAway2 {
       Control::Debug("[NetList::UIDraw().item]: name = %s, use = %s",
         it->name.c_str(), btoa(it->use));
 
-      UIActionCfgAdd(this->cfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, shared::Icon16(ico).c_str(), 0, (i > 0) ? 10 : 0);
-      UIActionCfgAdd(this->cfgGroup, this->dynActGroup + it->id, (i != (colCount - 1) && c != count) ? ACTT_CHECK | ACTSC_INLINE : ACTT_CHECK, it->name.c_str());
+      UIActionCfgAdd(this->cfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(ico).c_str(), 0, (i > 0) ? 10 : 0);
+      UIActionCfgAdd(this->cfgGroup, this->dynActGroup + it->id, (i != (colCount - 1) && c != count) ? ACTT_CHECK | 
+        ACTSC_INLINE : ACTT_CHECK, it->name.c_str());
     }
 
     UIActionCfgAdd(this->cfgGroup, this->actCreate, ACTT_HWND, 0, 0, 0, -20);

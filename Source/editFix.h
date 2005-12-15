@@ -1,6 +1,21 @@
-// usage:
-// include it & put it after CreateWindow("edit",...)
-// editProcOld = (WNDPROC) SetWindowLongPtr(my_edit, GWLP_WNDPROC, (LONG_PTR) editProc);
+/*
+ *  Fix for text controls
+ *
+ *  Please READ /License.txt FIRST!
+ *
+ *  Copyright (C)2005 Sijawusz Pur Rahnama
+ *  Copyright (C)2004 Kuba Niegowski
+ *  Copyright (C)2003-2004 Olórin
+ *
+ *  $Id$
+ */
+
+#pragma once
+
+/* usage:
+   include it & put it after CreateWindow("edit", ...)
+   editProcOld = (WNDPROC) SetWindowLongPtr(my_edit, GWLP_WNDPROC, (LONG_PTR) editProc);
+ */
 
 WNDPROC oldEditFix = NULL;
 
@@ -9,7 +24,7 @@ LRESULT CALLBACK EditFix(HWND hWnd,UINT iMsg,WPARAM wParam, LPARAM lParam){
     case WM_CHAR: {
       HWND parent = GetParent(hWnd);
 
-      short tmp =  GetKeyState(VK_CONTROL);     
+      short tmp = GetKeyState(VK_CONTROL);     
       short flag = HIBYTE(tmp) ? MOD_CONTROL : 0;
 
       tmp = GetKeyState(VK_MENU);

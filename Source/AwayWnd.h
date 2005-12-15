@@ -1,7 +1,7 @@
 /*
- *  Status Window class
+ *  kAway2 Status Window class
  *
- *  Please READ /License.txt FIRST! 
+ *  Please READ /License.txt FIRST!
  *
  *  Copyright (C)2005 Sijawusz Pur Rahnama
  *  Copyright (C)2004 Kuba Niegowski
@@ -47,7 +47,7 @@ namespace kAway2 {
 
   class AwayWnd {
     public:
-      AwayWnd(std::string className, std::string mruName);
+      AwayWnd(std::string className, std::string mruName, int mruSizeCfgCol);
       ~AwayWnd();
 
       LRESULT CALLBACK actionProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
@@ -77,6 +77,11 @@ namespace kAway2 {
         return(this->wndDesc);
       }
 
+      inline int getMruSize() {
+        int size = GETINT(this->mruSizeCfgCol);
+        return(size ? size : 1);
+      }
+
       void classRegister();
       void classUnRegister();
       void show(std::string title, std::string desc = "");
@@ -85,6 +90,7 @@ namespace kAway2 {
       std::string wndDesc;
       std::string className;
       std::string mruName;
+      int mruSizeCfgCol;
       std::map<int, HWND> instances;
   };
 }

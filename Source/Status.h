@@ -1,7 +1,7 @@
 /*
- *  Status class
+ *  kAway2 Status class
  *
- *  Please READ /License.txt FIRST! 
+ *  Please READ /License.txt FIRST!
  *
  *  Copyright (C)2005 Sijawusz Pur Rahnama
  *  Copyright (C)2005 Winthux
@@ -10,12 +10,6 @@
  */
 
 #pragma once
-
-/*
- *  TODO:
- *  - czy ustawianie zmiennej do ktorej wrzucony bedzie aktualny opis w konstruktorze to dobry pomysl ?
- *
- */
 
 namespace kAway2 {
   struct itemInfo {
@@ -59,7 +53,10 @@ namespace kAway2 {
 
       // Sprawdza czy sieæ 'nadaje siê do u¿ytku'
       bool isNetUseful(int net);
+      // Czy zmieniaæ przy statusie 'ukryty' ?
       bool onHidden();
+      // obs³uga akcji
+      void actionHandle(sIMessage_base *msgBase);
 
       // Zmienia status, txt - opis, st - id statusu
       void changeStatus(std::string info, int st = -1);
@@ -96,6 +93,7 @@ namespace kAway2 {
       std::string stInfoVar;
       // kolumna konfiguracji ktora odpowiada za opcje 'zmieniaj status przy statusie ukryty'
       unsigned int onHiddenCfgCol;
+      bool actionHandleIgnore;
       // lista z opisami na sieciach
       tItemInfos info;
       // zamienniki nieobs³ugiwanych statusów

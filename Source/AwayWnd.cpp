@@ -1,7 +1,7 @@
 /*
- *  Status Window class
+ *  kAway2 Status Window class
  *
- *  Please READ /License.txt FIRST! 
+ *  Please READ /License.txt FIRST!
  *
  *  Copyright (C)2005 Sijawusz Pur Rahnama
  *  Copyright (C)2004 Kuba Niegowski
@@ -124,7 +124,7 @@ namespace kAway2 {
         std::string name = wCtrl->getMruName();
 
         list.name = name.c_str();
-        list.count = 20;
+        list.count = wCtrl->getMruSize();
         list.flags = MRU_GET_USETEMP | MRU_SET_LOADFIRST;
         sIMessage_MRU mru(IMC_MRU_GET, &list);
         IMessage(&mru);
@@ -175,7 +175,7 @@ namespace kAway2 {
           list.name = name.c_str();
           list.flags = MRU_SET_LOADFIRST | MRU_GET_USETEMP;
           list.current = msg;
-          list.count = 20;
+          list.count = wCtrl->getMruSize();
           IMessage(&sIMessage_MRU(IMC_MRU_SET, &list));
 
           int status = -1;
@@ -216,9 +216,10 @@ namespace kAway2 {
     return(DefWindowProc(hWnd, iMsg, wParam, lParam));
   }
 
-  AwayWnd::AwayWnd(std::string className, std::string mruName) {
+  AwayWnd::AwayWnd(std::string className, std::string mruName, int mruSizeCfgCol) {
     this->className = className;
     this->mruName = mruName;
+    this->mruSizeCfgCol = mruSizeCfgCol;
 
     this->classRegister();
   }

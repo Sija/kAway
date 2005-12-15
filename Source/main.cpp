@@ -1,7 +1,7 @@
 /*
- *  kAway2
+ *  kAway2 Core
  *
- *  Please READ /License.txt FIRST! 
+ *  Please READ /License.txt FIRST!
  *
  *  Copyright (C)2005 Sijawusz Pur Rahnama
  *
@@ -9,6 +9,9 @@
  */
 
 #include "stdafx.h"
+#include "main.h"
+
+#include "Helpers.h"
 
 #include "NetList.h"
 #include "Format.h"
@@ -53,6 +56,9 @@ namespace kAway2 {
     Ctrl->SetColumn(DTCFG, cfg::ircCmds, DT_CT_INT, 1, "kAway2/ircCmds");
     Ctrl->SetColumn(DTCFG, cfg::disableOnMsgSend, DT_CT_INT, 0, "kAway2/disableOnMsgSend");
     Ctrl->SetColumn(DTCFG, cfg::saveToHistory, DT_CT_INT, 1, "kAway2/saveToHistory");
+    Ctrl->SetColumn(DTCFG, cfg::mruSize, DT_CT_INT, 20, "kAway2/mruSize");
+    Ctrl->SetColumn(DTCFG, cfg::muteOnEnable, DT_CT_INT, 0, "kAway2/muteOnEnable");
+    Ctrl->SetColumn(DTCFG, cfg::disableConfirmation, DT_CT_INT, 1, "kAway2/disableConfirmation");
 
     Ctrl->SetColumn(DTCFG, cfg::btnInMainWindow, DT_CT_INT, 1, "kAway2/btnInMainWindow");
     Ctrl->SetColumn(DTCFG, cfg::btnInCntWindow, DT_CT_INT, 1, "kAway2/btnInCntWindow");
@@ -76,21 +82,23 @@ namespace kAway2 {
     Ctrl->SetColumn(DTCFG, cfg::reply::onDisable, DT_CT_INT, 0, "kAway2/reply/onDisable");
     Ctrl->SetColumn(DTCFG, cfg::reply::onMsg, DT_CT_INT, 1, "kAway2/reply/onMsg");
     Ctrl->SetColumn(DTCFG, cfg::reply::whenInvisible, DT_CT_INT, 1, "kAway2/reply/whenInvisible");
+    Ctrl->SetColumn(DTCFG, cfg::reply::showInWnd, DT_CT_INT, 1, "kAway2/reply/showInWnd");
     Ctrl->SetColumn(DTCFG, cfg::reply::minInterval, DT_CT_INT, 900, "kAway2/reply/minInterval");
     Ctrl->SetColumn(DTCFG, cfg::reply::useHtml, DT_CT_INT, 1, "kAway2/reply/useHtml");
     Ctrl->SetColumn(DTCFG, cfg::reply::netChange, DT_CT_STR, "", "kAway2/reply/netChange");
 
     /*
-    Ctrl->SetColumn(DTCNT, cfg::tpl::cnt::enable, DT_CT_STR, "", "kAway2/tpl/enable");
-    Ctrl->SetColumn(DTCNT, cfg::tpl::cnt::disable, DT_CT_STR, "", "kAway2/tpl/disable");
-    Ctrl->SetColumn(DTCNT, cfg::tpl::cnt::reply, DT_CT_STR, "", "kAway2/tpl/reply");
+    Ctrl->SetColumn(DTCNT, cfg::tpl::enable, DT_CT_STR, "", "kAway2/tpl/enable");
+    Ctrl->SetColumn(DTCNT, cfg::tpl::disable, DT_CT_STR, "", "kAway2/tpl/disable");
+    Ctrl->SetColumn(DTCNT, cfg::tpl::reply, DT_CT_STR, "", "kAway2/tpl/reply");
 
-    Ctrl->SetColumn(DTCNT, cfg::reply::cnt::onEnable, DT_CT_INT, 0, "kAway2/reply/onEnable");
-    Ctrl->SetColumn(DTCNT, cfg::reply::cnt::onDisable, DT_CT_INT, 0, "kAway2/reply/onDisable");
-    Ctrl->SetColumn(DTCNT, cfg::reply::cnt::onMsg, DT_CT_INT, 1, "kAway2/reply/onMsg");
-    Ctrl->SetColumn(DTCNT, cfg::reply::cnt::whenInvisible, DT_CT_INT, 1, "kAway2/reply/whenInvisible");
-    Ctrl->SetColumn(DTCNT, cfg::reply::cnt::minInterval, DT_CT_INT, 0, "kAway2/reply/minInterval");
-    Ctrl->SetColumn(DTCNT, cfg::reply::cnt::useHtml, DT_CT_INT, 1, "kAway2/reply/useHtml");
+    Ctrl->SetColumn(DTCNT, cfg::reply::onEnable, DT_CT_INT, 0, "kAway2/reply/onEnable");
+    Ctrl->SetColumn(DTCNT, cfg::reply::onDisable, DT_CT_INT, 0, "kAway2/reply/onDisable");
+    Ctrl->SetColumn(DTCNT, cfg::reply::onMsg, DT_CT_INT, 1, "kAway2/reply/onMsg");
+    Ctrl->SetColumn(DTCNT, cfg::reply::whenInvisible, DT_CT_INT, 1, "kAway2/reply/whenInvisible");
+    Ctrl->SetColumn(DTCNT, cfg::reply::showInWnd, DT_CT_INT, 1, "kAway2/reply/showInWnd");
+    Ctrl->SetColumn(DTCNT, cfg::reply::minInterval, DT_CT_INT, 0, "kAway2/reply/minInterval");
+    Ctrl->SetColumn(DTCNT, cfg::reply::useHtml, DT_CT_INT, 1, "kAway2/reply/useHtml");
     */
 
     Ctrl->SetColumn(DTCFG, cfg::sms::interval, DT_CT_INT, 150, "kAway2/sms/interval");
@@ -107,7 +115,7 @@ namespace kAway2 {
 
   int IPrepare() {
     pCtrl = new Control();
-    wCtrl = new AwayWnd("kAway2AwayWnd", "kA2_awayMsg");
+    wCtrl = new AwayWnd("kAway2AwayWnd", "kA2_awayMsg", cfg::mruSize);
 
     lCtrl::status = new NetList(cfg::status::netChange, ui::statusCfgGroup, dynAct::status, 
       act::cfgGroupCheckCreate, act::cfgGroupCheckDestroy);
@@ -137,7 +145,7 @@ namespace kAway2 {
     rVars.push_back( helpVar( "surname", "Nazwisko przypisane do kontaktu" ) );
     rVars.push_back( helpVar( "date", "Data w³¹czenia trybu away" ) );
     rVars.push_back( helpVar( "time", "Czas w³¹czenia trybu away" ) );
-    rVars.push_back( helpVar( "msg", "Przyczyna nieobecnoœci" ) );
+    rVars.push_back( helpVar( "msg", "Przyczyna nieobecnoœci/powrotu" ) );
 
     /* Registering icons */
     IconRegister(IML_32, ico::logoBig, Ctrl->hDll(), IDI_LOGO);
@@ -186,8 +194,7 @@ namespace kAway2 {
       "%<b>%</b> - Percent sign"
       AP_TIP_WIDTH "300";
 
-    char timeFormat[512] = AP_TIPRICH
-      "%<b>c</b> - Date and time representation appropriate for locale<br/>"
+    char timeFormat[400] = AP_TIPRICH
       "%<b>H</b> - Hour in 24-hour format (00 – 23)<br/>"
       "%<b>I</b> - Hour in 12-hour format (01 – 12)<br/>"
       "%<b>p</b> - Current locale's A.M./P.M. indicator for 12-hour clock<br/>"
@@ -196,13 +203,14 @@ namespace kAway2 {
       "%<b>%</b> - Percent sign"
       AP_TIP_WIDTH "285";
 
-    UIActionCfgAddPluginInfoBox2(ui::cfgGroup, desc, header, shared::Icon32(ico::logoBig).c_str(), -4);
-    UIActionCfgAddPluginInfoBox2(ui::cntCfgGroup, desc, header, shared::Icon32(ico::logoBig).c_str(), -5);
+    UIActionCfgAddPluginInfoBox2(ui::cfgGroup, desc, header, Helpers::icon32(ico::logoBig).c_str(), -4);
+    UIActionCfgAddPluginInfoBox2(ui::cntCfgGroup, desc, header, Helpers::icon32(ico::logoBig).c_str(), -5);
 
     /* Main tab */
     /* |-> General settings group */
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUP, "Ustawienia");
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Synchronizuj z trybem auto-away", cfg::autoAwaySync);
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Wycisz przy w³¹czeniu trybu away", cfg::muteOnEnable);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Wy³¹czaj w momencie wys³ania wiadomoœci", cfg::disableOnMsgSend);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Zapisuj wiadomoœci w osobnej historii", cfg::saveToHistory);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Komendy z okna rozmów (a'la IRC)" AP_TIPRICH 
@@ -211,6 +219,7 @@ namespace kAway2 {
       "/<b>back</b> [...] - wy³¹cza tryb away<br/>"
       "/<b>re</b> [...] - j.w. + nie wysy³a powiadomieñ o wy³." AP_TIP_WIDTH "240", cfg::ircCmds);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Pokazuj powiadomienia K.Notify", cfg::useKNotify);
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Pytaj przed wyjœciem z trybu away", cfg::disableConfirmation);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
 
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUP, "Formatowanie czasu");
@@ -229,6 +238,13 @@ namespace kAway2 {
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK | ACTSC_NEEDRESTART, "Pokazuj przycisk w g³ównym oknie", cfg::btnInMainWindow);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK | ACTSC_NEEDRESTART, "Pokazuj przycisk w oknie rozmowy", cfg::btnInCntWindow);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK | ACTSC_NEEDRESTART, "Pokazuj przycisk w menu tray'a", cfg::btnInTrayMenu);
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
+
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUP, "Historia powodów nieobecnoœci");
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_COMMENT, "Iloœæ pozycji w historii:");
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_SLIDER, "Ma³o\nDu¿o" AP_MINIMUM "1" AP_MAXIMUM "25", cfg::mruSize);
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_SEPARATOR);
+    UIActionCfgAdd(ui::cfgGroup, act::clearMru, ACTT_BUTTON, "wyczyœæ" AP_ICO "32", 0, 0, 0, 80, 30);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
 
     /* Status tab */
@@ -280,8 +296,9 @@ namespace kAway2 {
     */
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_GROUPEND);
 
-    /* |-> Settings group */
+    /* |-> Templates group */
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_GROUP, "Szablony powiadomieñ");
+    UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_CHECK, "Pokazuj wys³ane powiadomienia w okienku rozmowy", cfg::reply::showInWnd);
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_CHECK, "Formatuj kod HTML" AP_TIP 
       "Jeœli w³¹czone, znaki specjalne nale¿y zamieniaæ na ich HTML-owe odpowiedniki (np.: (< na &lt;), (> na &gt;))", cfg::reply::useHtml);
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_SEPARATOR);
@@ -303,35 +320,36 @@ namespace kAway2 {
     /* |-> Minimal reply interval group */
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_GROUP, "Minimalny interwa³ pomiêdzy wysy³anymi odpowiedziami [s]:");
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_SLIDER, "Ma³y\nDu¿y" AP_STEP "60" AP_MINIMUM "0" AP_MAXIMUM "3600" AP_TIP 
-      "0 = odpowiedŸ bêdzie wys³ana tylko jeden raz\n3600 = 1h ;>", cfg::reply::cnt::minInterval);
+      "0 = odpowiedŸ bêdzie wys³ana tylko jeden raz\n3600 = 1h ;>", cfg::reply::minInterval);
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_GROUPEND);
 
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_GROUP, "Wysy³anie powiadomieñ");
-    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_CHECK, "Wysy³aj powiadomienia przy w³¹czonym statusie 'ukryty'", cfg::reply::cnt::whenInvisible);
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_CHECK, "Wysy³aj powiadomienia przy w³¹czonym statusie 'ukryty'", cfg::reply::whenInvisible);
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_SEPARATOR);
-    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_CHECK, "Odpowiadaj na odebrane wiadomoœci", cfg::reply::cnt::onMsg);
-    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_CHECK, "Wysy³aj powiadomienie o w³¹czeniu trybu away", cfg::reply::cnt::onEnable);
-    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_CHECK, "Wysy³aj powiadomienie o wy³¹czeniu trybu away", cfg::reply::cnt::onDisable);
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_CHECK, "Odpowiadaj na odebrane wiadomoœci", cfg::reply::onMsg);
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_CHECK, "Wysy³aj powiadomienie o w³¹czeniu trybu away", cfg::reply::onEnable);
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_CHECK, "Wysy³aj powiadomienie o wy³¹czeniu trybu away", cfg::reply::onDisable);
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_GROUPEND);
 
-    /* |-> Settings group */
+    /* |-> Templates group */
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_GROUP, "Szablony powiadomieñ");
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_CHECK, "Pokazuj wys³ane powiadomienia w okienku rozmowy", cfg::reply::showInWnd);
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_CHECK, "Formatuj kod HTML" AP_TIP 
       "Jeœli w³¹czone, znaki specjalne nale¿y zamieniaæ na ich HTML-owe odpowiedniki (np.: (< na &lt;), (> na &gt;))", 
-      cfg::reply::cnt::useHtml);
+      cfg::reply::useHtml);
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_SEPARATOR);
 
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_COMMENT, "OdpowiedŸ:");
     sCtrl->fCtrl->UIDrawHelpBtn(rVars, ui::cntCfgGroup);
-    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::cnt::reply);
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::reply);
 
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_COMMENT, "W³¹czenie trybu away:");
     sCtrl->fCtrl->UIDrawHelpBtn(rVars, ui::cntCfgGroup);
-    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::cnt::enable);
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::enable);
 
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_COMMENT, "Wy³¹czenie trybu away:");
     sCtrl->fCtrl->UIDrawHelpBtn(rVars, ui::cntCfgGroup);
-    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::cnt::disable);
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::disable);
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_GROUPEND);
 
     /* Buttons */
@@ -347,8 +365,8 @@ namespace kAway2 {
     return(1);
   }
 
-  ActionProc(sUIActionNotify_base * anBase) {
-    sUIActionNotify_2params * an = static_cast<sUIActionNotify_2params*>(anBase);
+  ActionProc(sUIActionNotify_base *anBase) {
+    sUIActionNotify_2params *an = static_cast<sUIActionNotify_2params*>(anBase);
 
     pCtrl->Debug("[ActionProc()]: anBase->act.id = %i, an->code = %i", anBase->act.id, an->code);
 
@@ -359,20 +377,25 @@ namespace kAway2 {
       case ui::powerInMainWnd:
       case ui::powerInCntWnd:
       case ui::powerInTrayMenu:
+        if (an->code != ACTN_ACTION) break;
         if (pCtrl->isEnabled()) {
-          if (ICMessage(IMI_CONFIRM, (int) "Na pewno chcesz wy³¹czyæ tryb away?")) 
+          if (!GETINT(cfg::disableConfirmation) || Ctrl->ICMessage(IMI_CONFIRM, (int) "Na pewno chcesz wy³¹czyæ tryb away?")) 
             pCtrl->disable();
         } else {
           wCtrl->show("Podaj powód nieobecnoœci", "Podaj przyczynê swojej nieobecnoœci");
         }
+        break;
+      case act::clearMru:
+        if (an->code != ACTN_ACTION) break;
+        Helpers::clearMru("kA2_awayMsg");
         break;
     }
     return(0);
   }
 }
 
-int __stdcall IMessageProc(sIMessage_base * msgBase) {
-  sIMessage_2params * msg = static_cast<sIMessage_2params*>(msgBase);
+int __stdcall IMessageProc(sIMessage_base *msgBase) {
+  sIMessage_2params *msg = static_cast<sIMessage_2params*>(msgBase);
   static bool isAutoAwayOn = false;
 
   switch (msgBase->id) {
@@ -380,7 +403,7 @@ int __stdcall IMessageProc(sIMessage_base * msgBase) {
     case IM_PLUG_TYPE:       return(IMT_UI | IMT_CONFIG | IMT_ALLMESSAGES);
     case IM_PLUG_VERSION:    return(0);
     case IM_PLUG_SDKVERSION: return(KONNEKT_SDK_V);
-    case IM_PLUG_SIG:        return((int)"kA2");
+    case IM_PLUG_SIG:        return((int)"KAWAY2");
     case IM_PLUG_CORE_V:     return((int)"W98");
     case IM_PLUG_UI_V:       return(0);
     case IM_PLUG_NAME:       return((int)"kAway2");
@@ -394,13 +417,16 @@ int __stdcall IMessageProc(sIMessage_base * msgBase) {
     case IM_END:             return(IEnd());
     case IM_UIACTION:        return(ActionProc((sUIActionNotify_base*)msg->p1));
 
+    case IM_STATUSCHANGE: {
+      if (pCtrl->isEnabled()) sCtrl->actionHandle(msgBase);
+    }
+
     case IM_ALLPLUGINSINITIALIZED: {
       if (true) {
         int oldId = ICMessage(IMC_FINDPLUG, plugsNET::kaway, IMT_ALL);
 
         if (oldId) {
-          Ctrl->IMessage(&sIMessage_plugOut(oldId, 
-            "kAway2 jest nastêpc¹ wtyczki K.Away :)",
+          Ctrl->IMessage(&sIMessage_plugOut(oldId,  "kAway2 jest nastêpc¹ wtyczki K.Away :)",
             sIMessage_plugOut::erNo, sIMessage_plugOut::euNowAndOnNextStart));
           return(-1);
         }
@@ -425,19 +451,33 @@ int __stdcall IMessageProc(sIMessage_base * msgBase) {
     }
 
     case IM_MSG_RCV: {
-      cMessage * m = (cMessage*) msg->p1;
+      cMessage *m = (cMessage*) msg->p1;
 
       if (m->type != MT_MESSAGE)
         return(0);
 
-      if (strlen(m->fromUid) && GETINT(cfg::reply::onMsg) && pCtrl->isEnabled()) {
+      if (strlen(m->fromUid) && pCtrl->isEnabled()) {
         int cnt = ICMessage(IMC_CNT_FIND, m->net, (int) m->fromUid);
-        bool found = pCtrl->msgRcvTimes.find(cnt) != pCtrl->msgRcvTimes.end();
-        int interval = GETINT(cfg::reply::minInterval);
+        bool firstTime = pCtrl->msgRcvTimes.find(cnt) == pCtrl->msgRcvTimes.end();
 
-        if ((!interval && !found) || interval && ((interval + pCtrl->msgRcvTimes[cnt]) < m->time)) {
-          pCtrl->sendMsgTpl(cnt, cfg::tpl::reply);
-          pCtrl->msgRcvTimes[cnt] = m->time;
+        if (GETINT(cfg::reply::onMsg)) {
+          int interval = GETINT(cfg::reply::minInterval);
+
+          if ((!interval && firstTime) || interval && ((interval + pCtrl->msgRcvTimes[cnt]) < m->time)) {
+            pCtrl->sendMsgTpl(cnt, cfg::tpl::reply);
+            pCtrl->msgRcvTimes[cnt] = m->time;
+          }
+        }
+
+        if (GETINT(cfg::saveToHistory)) {
+          std::string fileName = pCtrl->getAwayTime()->strftime("%d %B %Y, %A");
+
+          sHISTORYADD item;
+          item.m = m;
+          item.dir = "kAway2";
+          item.name = fileName.c_str();
+          item.session = firstTime ? 0 : 1;
+          ICMessage(IMI_HISTORY_ADD, (int) &item);
         }
       } else if (!strlen(m->fromUid) && GETINT(cfg::ircCmds) &&
         !GetExtParam(m->ext, "kA2AutoMsg").length() && m->body[0] == '/') {
@@ -446,9 +486,9 @@ int __stdcall IMessageProc(sIMessage_base * msgBase) {
         std::string body(m->body); 
         body = body.substr(1, body.length());
 
-        Stamina::splitCommand(body, (char) " ", params);
+        Stamina::split(body, " ", params);
         std::string cmd = params[0];
-        std::string msg = (params.size() > 1) ? params[1] : "";
+        std::string msg = (params.size() > 1) ? body.substr(params[0].length() + 1, body.length()) : "";
         bool del = false;
 
         if (cmd == "away") {
@@ -461,7 +501,12 @@ int __stdcall IMessageProc(sIMessage_base * msgBase) {
           del = true; pCtrl->disable(msg, true);
         }
 
-        if (del) return(IM_MSG_delete);
+        if (del) {
+          pCtrl->Debug("{IM_MSG_RCV}: cmd = %s, msg = %s, params = %i",
+            cmd.c_str(), (msg.length() ? msg.c_str() : "(none)"), params.size());
+
+          return(IM_MSG_delete);
+        }
       } else if (!strlen(m->fromUid) && GETINT(cfg::disableOnMsgSend) && pCtrl->isEnabled()) {
         if (!GetExtParam(m->ext, "kA2AutoMsg").length()) pCtrl->disable();
       }

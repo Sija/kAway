@@ -1,7 +1,7 @@
 /*
  *  kAway2 NetList class
  *
- *  Please READ /License.txt FIRST! 
+ *  Please READ /License.txt FIRST!
  *
  *  Copyright (C)2005 Sijawusz Pur Rahnama
  *

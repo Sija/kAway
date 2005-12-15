@@ -1,7 +1,7 @@
 /*
  *  kAway2 Control class
  *
- *  Please READ /License.txt FIRST! 
+ *  Please READ /License.txt FIRST!
  *
  *  Copyright (C)2005 Sijawusz Pur Rahnama
  *
@@ -71,17 +71,17 @@ namespace kAway2 {
         return(this->awayMsg);
       }
 
-      inline Stamina::Date64 getAwayTime() {
+      inline Stamina::Date64 *getAwayTime() {
         return(this->awayTime);
       }
 
       void sendMsgTpl(int cnt, int tplId, std::string msgVar = "");
-      void showKNotify(char * text, int ico = ico::logoSmall);
 
       std::map<int, int> msgRcvTimes;
 
     protected:
       bool isOn;
+      bool muteStateSwitched;
       std::string awayMsg;
       Stamina::Date64 *awayTime;
       tIgnoredUids ignoredUids;
