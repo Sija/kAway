@@ -1,7 +1,7 @@
 /*
  *  kAway2 Control class
  *
- *  Please READ /License.txt FIRST! 
+ *  Please READ /License.txt FIRST!
  *
  *  Copyright (C)2005 Sijawusz Pur Rahnama
  *
@@ -54,6 +54,11 @@ namespace kAway2 {
       }
     }
 
+    if (GETINT(cfg::muteOnEnable) && !GETINT(kSound::Cfg::mute)) {
+      Helpers::UIActionCall(ICMessage(IMI_GETPLUGINSGROUP), kSound::action::mute);
+      this->muteStateSwitched = true;
+    }
+
     this->checkBtn(ICMessage(IMI_GETPLUGINSGROUP), ui::powerInMainWnd, true);
     this->checkBtn(IMIG_MSGTB, ui::powerInCntWnd, true, true);
     this->checkBtn(IMIG_TRAY, ui::powerInTrayMenu, true);
@@ -68,7 +73,7 @@ namespace kAway2 {
       }
     }
 
-    this->showKNotify("Tryb away zosta³ <b>w³¹czony<b>", ico::enable);
+    Helpers::showKNotify("Tryb away zosta³ <b>w³¹czony<b>", ico::enable);
     this->Log("[Control::enable()]: msg = %s, silent = %s", 
       (msg.length() ? msg.c_str() : "(none)"), btoa(silent));
   }
@@ -79,6 +84,10 @@ namespace kAway2 {
     if (this->sCtrl) {
       this->sCtrl->fCtrl->clearVars();
       this->sCtrl->restoreInfo();
+    }
+
+    if (this->muteStateSwitched) {
+      Helpers::UIActionCall(ICMessage(IMI_GETPLUGINSGROUP), kSound::action::mute);
     }
 
     this->checkBtn(ICMessage(IMI_GETPLUGINSGROUP), ui::powerInMainWnd, false);
@@ -95,7 +104,7 @@ namespace kAway2 {
       }
     }
 
-    this->showKNotify("Tryb away zosta³ <b>wy³¹czony<b>", ico::disable);
+    Helpers::showKNotify("Tryb away zosta³ <b>wy³¹czony<b>", ico::disable);
     this->Log("[Control::disable()]: msg = %s, silent = %s", 
       (msg.length() ? msg.c_str() : "(none)"), btoa(silent));
 
@@ -104,11 +113,7 @@ namespace kAway2 {
     this->ignoredUids.clear();
     this->msgRcvTimes.clear();
     this->isOn = false;
-  }
-
-  void Control::showKNotify(char * text, int ico) {
-    if (!GETINT(cfg::useKNotify)) return;
-    Ctrl->IMessage(&KNotify::sIMessage_notify(text, ico));
+    this->muteStateSwitched = false;
   }
 
   void Control::sendMsgTpl(int cnt, int tplId, std::string msgVar) {
@@ -132,10 +137,11 @@ namespace kAway2 {
     format->addVar("time", this->awayTime->strftime(GETSTRA(cfg::timeFormat)));
     format->addVar("msg", (tplId == cfg::tpl::disable) ? msgVar : this->awayMsg);
 
-    this->Debug("[Control::sendMsg()]: net = %i, uid = %s", net, GETCNTC(cnt, CNT_UID));
+    this->Debug("[Control::sendMsgTpl()]: tpl.id = %i, msg.net = %i, msg.uid = %s", 
+      tplId, net, GETCNTC(cnt, CNT_UID));
 
-    Message::SendMsg(GETCNTC(cnt, CNT_UID), net, trim(format->parse(GETSTRA(tplId))), 
-      MT_MESSAGE, ext, GETINT(cfg::reply::useHtml));
+    Message::send(cnt, Helpers::trim(format->parse(GETSTRA(tplId))), 
+      MT_MESSAGE, ext, GETINT(cfg::reply::useHtml), GETINT(cfg::reply::showInWnd));
     delete format; format = NULL;
   }
 

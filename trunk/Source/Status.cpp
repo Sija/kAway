@@ -1,7 +1,7 @@
 /*
- *  Status class
+ *  kAway2 Status class
  *
- *  Please READ /License.txt FIRST! 
+ *  Please READ /License.txt FIRST!
  *
  *  Copyright (C)2005 Sijawusz Pur Rahnama
  *  Copyright (C)2005 Winthux
@@ -18,6 +18,7 @@ namespace kAway2 {
 
     this->stInfoVar = stInfoVar;
     this->onHiddenCfgCol = onHiddenCfgCol;
+    this->actionHandleIgnore = false;
 
     this->stReplacements.push_back( statusReplacement( plugsNET::gg, ST_CHAT, ST_ONLINE ) );
     this->stReplacements.push_back( statusReplacement( plugsNET::gg, ST_DND, ST_AWAY ) );
@@ -46,7 +47,7 @@ namespace kAway2 {
 
         info = this->fCtrl->parse(info);
         info = this->limitChars(info, net);
-        info = trim(info);
+        info = Helpers::trim(info);
 
         if (dynSt) this->fCtrl->removeVar(this->stInfoVar);
       }
@@ -60,7 +61,9 @@ namespace kAway2 {
         }
       }
 
+      this->actionHandleIgnore = true;
       IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, info.length() ? (int) info.c_str() : 0);
+      this->actionHandleIgnore = false;
 
       Control::Debug("[Status::changeStatus().item]: net = %i, status = %i, info = %s",
         net, st, (info.length() ? info.c_str() : "(none)"));
@@ -78,9 +81,7 @@ namespace kAway2 {
   }
 
   std::string Status::getActualInfo(int net) {
-    std::string status;
-
-    status = (char*) IMessage(IM_GET_STATUSINFO, net);
+    std::string status((char*) IMessage(IM_GET_STATUSINFO, net));
     return(status);
   }
 
@@ -121,6 +122,25 @@ namespace kAway2 {
 
       Control::Debug("[Status::restoreInfo().item]: net = %i, info = %s",
         net, (info.length() ? info.c_str() : "(none)"));
+    }
+  }
+
+  void Status::actionHandle(sIMessage_base *msgBase) {
+    if (this->actionHandleIgnore) return;
+
+    sIMessage_StatusChange *st = static_cast<sIMessage_StatusChange*>(msgBase);
+    int net = Ctrl->IMessageDirect(IM_PLUG_NET, st->plugID);
+
+    if (this->getStatus(net)) {
+      for (tItemInfos::iterator it = this->info.begin(); it != this->info.end(); it++) {
+        if (it->net == net) {
+          if (st->status) it->st = st->status;
+          if (st->info) it->info = st->info;
+          break;
+        }
+      }
+      Control::Debug("[Status::actionHandle()]: net = %i, status = %i, info = %s", 
+        net, st->status, st->info);
     }
   }
 

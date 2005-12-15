@@ -1,7 +1,7 @@
 /*
  *  kAway2
  *
- *  Please READ /License.txt FIRST! 
+ *  Please READ /License.txt FIRST!
  *
  *  Copyright (C)2005 Sijawusz Pur Rahnama
  *
@@ -56,6 +56,8 @@ namespace kAway2 {
 
     const unsigned int replyCfgGroupCheckCreate = act + 3;
     const unsigned int replyCfgGroupCheckDestroy = act + 4;
+
+    const unsigned int clearMru = act + 5;
   }
 
   // dynamiczne akcje
@@ -85,6 +87,10 @@ namespace kAway2 {
     const unsigned int dateFormat = cfg + 9;
     const unsigned int timeFormat = cfg + 10;
 
+    const unsigned int mruSize = cfg + 11;
+    const unsigned int muteOnEnable = cfg + 12;
+    const unsigned int disableConfirmation = cfg + 13;
+
     namespace tpl {
       const unsigned int tpl = cfg + 100;
 
@@ -99,15 +105,6 @@ namespace kAway2 {
 
       const unsigned int status = tpl + 7;
       const unsigned int autoAway = tpl + 8;
-
-      namespace cnt {
-        const unsigned int cnt = tpl + 50;
-
-        const unsigned int enable = cnt + 1;
-        const unsigned int disable = cnt + 2;
-
-        const unsigned int reply = cnt + 3;
-      }
     }
 
     namespace reply {
@@ -125,18 +122,7 @@ namespace kAway2 {
       const unsigned int magicKeyNotifyMethod = reply + 8;
 
       const unsigned int netChange = reply + 9;
-
-      namespace cnt {
-        const unsigned int cnt = reply + 50;
-
-        const unsigned int onEnable = cnt + 1;
-        const unsigned int onDisable = cnt + 2;
-        const unsigned int onMsg = cnt + 3;
-
-        const unsigned int whenInvisible = cnt + 4;
-        const unsigned int minInterval = cnt + 5;
-        const unsigned int useHtml = cnt + 6;
-      }
+      const unsigned int showInWnd = reply + 10;
     }
 
     namespace sms {

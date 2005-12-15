@@ -1,7 +1,7 @@
 /*
- *  Format class
+ *  kAway2 Format class
  *
- *  Please READ /License.txt FIRST! 
+ *  Please READ /License.txt FIRST!
  *
  *  Copyright (C)2005 Sijawusz Pur Rahnama
  *  Copyright (C)2005 Winthux

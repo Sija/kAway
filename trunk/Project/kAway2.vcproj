@@ -153,7 +153,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\Source\functions.h">
+				RelativePath="..\Source\Helpers.h">
 				<FileConfiguration
 					Name="Release|Win32"
 					ExcludedFromBuild="TRUE">
