@@ -220,16 +220,43 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
 			<File
+				RelativePath="..\Res\accept.ico">
+			</File>
+			<File
+				RelativePath="..\Res\cancel.ico">
+			</File>
+			<File
 				RelativePath="..\Res\disable.ico">
 			</File>
 			<File
 				RelativePath="..\Res\enable.ico">
 			</File>
 			<File
+				RelativePath="..\Res\help.ico">
+			</File>
+			<File
+				RelativePath="..\Res\ignore.ico">
+			</File>
+			<File
+				RelativePath="..\Res\lightbulb.ico">
+			</File>
+			<File
 				RelativePath="..\Res\logo.ico">
 			</File>
 			<File
+				RelativePath="..\Res\reply.ico">
+			</File>
+			<File
 				RelativePath="..\Res\resource.rc">
+			</File>
+			<File
+				RelativePath="..\Res\status.ico">
+			</File>
+			<File
+				RelativePath="..\Res\trashbin.ico">
+			</File>
+			<File
+				RelativePath="..\Res\unignore.ico">
 			</File>
 		</Filter>
 	</Files>

@@ -40,8 +40,21 @@ namespace kAway2 {
       return(txt);
     }
 
+    int altCfgVal(int cntId, int colId, bool isBool = true) {
+      if (isBool)
+        return((GETINT(colId) && (GETCNTI(cntId, colId) < 2) || 
+          (!GETINT(colId) && (GETCNTI(cntId, colId) == 1))) ? true : false);
+      else
+        return((GETCNTI(cntId, colId) >= 0) ? GETCNTI(cntId, colId) : GETINT(colId));
+    }
+
+    const char * altCfgStrVal(int cntId, int colId) {
+      return(strlen(GETCNTC(cntId, colId)) ? GETCNTC(cntId, colId) : GETSTRA(colId));
+    }
+
     void UIActionCall(int group, int act, int cntID = 0) {
-      UIActionCall(&sUIActionNotify_2params(sUIAction(group, act, cntID), ACTN_ACTION, 0, 0));
+      Ctrl->ICMessage(IMI_ACTION_CALL, 
+        (int) &sUIActionNotify_2params(sUIAction(group, act, cntID), ACTN_ACTION, 0, 0), 0);
     }
 
     void showKNotify(char * text, int ico) {

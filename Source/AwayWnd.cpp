@@ -15,10 +15,11 @@
 // dlg ctrl ID
 #define STATUS_OK           0x2000
 #define STATUS_EDIT         0x2001
-#define STATUS_INFO         0x2002
-#define STATUS_CHANGE_STAT  0x2003
+#define STATUS_WNDDESC      0x2002
+#define STATUS_CHANGE       0x2003
 #define STATUS_CHANGE_INFO  0x2004
 #define STATUS_EDIT_INFO    0x2005
+#define MUTE                0x2006
 
 namespace kAway2 {
   LRESULT CALLBACK AwayWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
@@ -96,28 +97,38 @@ namespace kAway2 {
 
         // napis
         hWndTmp = CreateWindow("static", wCtrl->getWndDesc().c_str(), WS_CHILD | WS_VISIBLE | SS_CENTER, 
-          13, 8, 274, 15, hWnd, (HMENU) STATUS_INFO, Ctrl->hInst(), NULL);
+          13, 8, 274, 15, hWnd, (HMENU) STATUS_WNDDESC, Ctrl->hInst(), NULL);
         SendMessage(hWndTmp, WM_SETFONT, (WPARAM) font, true);
 
         // checkbox - zmieñ status
         hWndTmp = CreateWindow("button", "status", WS_TABSTOP | WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX,
-          13, 193, 50, 20, hWnd, (HMENU) STATUS_CHANGE_STAT, Ctrl->hInst(), NULL);      
+          13, 193, 50, 20, hWnd, (HMENU) STATUS_CHANGE, Ctrl->hInst(), NULL);      
         SendMessage(hWndTmp, WM_SETFONT, (WPARAM) font, true);
 
         ti.hwnd = hWndTmp;
         ti.lpszText = "Zmieñ status";
         SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM) &ti);
-        CheckDlgButton(hWnd, STATUS_CHANGE_STAT, GETINT(cfg::status::changeOnEnable) ? BST_CHECKED : 0);
+        CheckDlgButton(hWnd, STATUS_CHANGE, GETINT(cfg::status::changeOnEnable) ? BST_CHECKED : 0);
 
         // checkbox - zmieñ opis
         hWndTmp = CreateWindow("button", "opis", WS_TABSTOP | WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX,
-          73, 193, 50, 20, hWnd, (HMENU) STATUS_CHANGE_INFO, Ctrl->hInst(), NULL);      
+          73, 193, 40, 20, hWnd, (HMENU) STATUS_CHANGE_INFO, Ctrl->hInst(), NULL);      
         SendMessage(hWndTmp, WM_SETFONT, (WPARAM) font, true);
 
         ti.hwnd = hWndTmp;
         ti.lpszText = "Zmieñ opis";
         SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM) &ti);
         CheckDlgButton(hWnd, STATUS_CHANGE_INFO, GETINT(cfg::status::changeInfoOnEnable) ? BST_CHECKED : 0);
+
+        // checkbox - wycisz
+        hWndTmp = CreateWindow("button", "wycisz", WS_TABSTOP | WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX,
+          123, 193, 50, 20, hWnd, (HMENU) MUTE, Ctrl->hInst(), NULL);      
+        SendMessage(hWndTmp, WM_SETFONT, (WPARAM) font, true);
+
+        ti.hwnd = hWndTmp;
+        ti.lpszText = "Wycisz wszystkie dŸwiêki";
+        SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM) &ti);
+        CheckDlgButton(hWnd, MUTE, GETINT(cfg::muteOnEnable) ? BST_CHECKED : 0);
 
         // odczytujemy liste mru
         sMRU list;
@@ -179,7 +190,7 @@ namespace kAway2 {
           IMessage(&sIMessage_MRU(IMC_MRU_SET, &list));
 
           int status = -1;
-          if (IsDlgButtonChecked(hWnd, STATUS_CHANGE_STAT) == BST_CHECKED) {
+          if (IsDlgButtonChecked(hWnd, STATUS_CHANGE) == BST_CHECKED) {
             if (IsDlgButtonChecked(hWnd, ST_ONLINE)) status = ST_ONLINE;
             if (IsDlgButtonChecked(hWnd, ST_CHAT)) status = ST_CHAT;
             if (IsDlgButtonChecked(hWnd, ST_AWAY)) status = ST_AWAY;
@@ -189,8 +200,9 @@ namespace kAway2 {
             if (IsDlgButtonChecked(hWnd, ST_OFFLINE)) status = ST_OFFLINE;
           }
 
-          SETINT(cfg::status::changeOnEnable, (IsDlgButtonChecked(hWnd, STATUS_CHANGE_STAT) == BST_CHECKED) ? 1 : 0);
+          SETINT(cfg::status::changeOnEnable, (IsDlgButtonChecked(hWnd, STATUS_CHANGE) == BST_CHECKED) ? 1 : 0);
           SETINT(cfg::status::changeInfoOnEnable, (IsDlgButtonChecked(hWnd, STATUS_CHANGE_INFO) == BST_CHECKED) ? 1 : 0);
+          SETINT(cfg::muteOnEnable, (IsDlgButtonChecked(hWnd, MUTE) == BST_CHECKED) ? 1 : 0);
 
           pCtrl->enable(msg, status);
 

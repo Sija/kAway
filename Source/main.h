@@ -46,6 +46,18 @@ namespace kAway2 {
 
     const unsigned int enable = ico + 3;
     const unsigned int disable = ico + 4;
+
+    const unsigned int ignore = ico + 5;
+    const unsigned int unIgnore = ico + 6;
+
+    const unsigned int status = ico + 7;
+    const unsigned int reply = ico + 8;
+
+    const unsigned int accept = ico + 9;
+    const unsigned int cancel = ico + 10;
+
+    const unsigned int help = ico + 11;
+    const unsigned int trash = ico + 12;
   }
 
   namespace act {
@@ -58,6 +70,7 @@ namespace kAway2 {
     const unsigned int replyCfgGroupCheckDestroy = act + 4;
 
     const unsigned int clearMru = act + 5;
+    const unsigned int resetCntSettings = act + 6;
   }
 
   // dynamiczne akcje

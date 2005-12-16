@@ -13,17 +13,18 @@
 namespace kAway2 {
   Control::Control() {
     this->awayTime = new Stamina::Date64(false);
+
     this->isOn = false;
+    this->muteStateSwitched = false;
+    this->autoAway = false;
   }
 
   Control::~Control() {
     delete this->awayTime;
     this->awayTime = NULL;
 
-    this->awayMsg = "";
     this->ignoredUids.clear();
     this->msgRcvTimes.clear();
-    this->isOn = false;
   }
 
   void Control::Log(enDebugLevel level, const char * format, va_list ap) {
@@ -66,7 +67,7 @@ namespace kAway2 {
     int count = IMessage(IMC_CNT_COUNT);
     for (int i = 0; i < count; i++) {
       if (IMessage(IMI_MSG_WINDOWSTATE, 0, 0, i)) {
-        if (GETINT(cfg::reply::onEnable) && !silent) {
+        if (Helpers::altCfgVal(i, cfg::reply::onEnable) && !silent && !this->isIgnoredUid(i)) {
           this->sendMsgTpl(i, cfg::tpl::enable);
         }
         this->checkBtn(IMIG_MSGTB, ui::powerInCntWnd, i, true);
@@ -97,7 +98,7 @@ namespace kAway2 {
     int count = IMessage(IMC_CNT_COUNT);
     for (int i = 0; i < count; i++) {
       if (IMessage(IMI_MSG_WINDOWSTATE, 0, 0, i)) {
-        if (GETINT(cfg::reply::onDisable) && !silent) {
+        if (Helpers::altCfgVal(i, cfg::reply::onDisable) && !silent && !this->isIgnoredUid(i)) {
           this->sendMsgTpl(i, cfg::tpl::disable, msg);
         }
         this->checkBtn(IMIG_MSGTB, ui::powerInCntWnd, i, false);
@@ -119,14 +120,15 @@ namespace kAway2 {
   void Control::sendMsgTpl(int cnt, int tplId, std::string msgVar) {
     int net = GETCNTI(cnt, CNT_NET);
 
-    if ((sCtrl->getActualStatus(net) == ST_HIDDEN && !GETINT(cfg::reply::whenInvisible)) || 
+    if ((sCtrl->getActualStatus(net) == ST_HIDDEN && !Helpers::altCfgVal(cnt, cfg::reply::whenInvisible)) || 
       !lCtrl::reply->getNetState(net) || !lCtrl::reply->isConnected(net))
       return;
 
-    std::string ext;
+    std::string ext, uid(GETCNTC(cnt, CNT_UID));
     ext = SetExtParam(ext, "kA2AutoMsg", "true");
     ext = SetExtParam(ext, MEX_NOSOUND, "1");
 
+    bool isReply = (tplId == cfg::tpl::reply);
     Format *format = new Format;
 
     format->addVar("display", GETCNTC(cnt, CNT_DISPLAY));
@@ -138,10 +140,17 @@ namespace kAway2 {
     format->addVar("msg", (tplId == cfg::tpl::disable) ? msgVar : this->awayMsg);
 
     this->Debug("[Control::sendMsgTpl()]: tpl.id = %i, msg.net = %i, msg.uid = %s", 
-      tplId, net, GETCNTC(cnt, CNT_UID));
+      tplId, net, uid.c_str());
 
-    Message::send(cnt, Helpers::trim(format->parse(GETSTRA(tplId))), 
-      MT_MESSAGE, ext, GETINT(cfg::reply::useHtml), GETINT(cfg::reply::showInWnd));
+    Message::send(cnt, Helpers::trim(format->parse(Helpers::altCfgStrVal(cnt, tplId))), 
+      MT_MESSAGE, ext, Helpers::altCfgVal(cnt, cfg::reply::useHtml), 
+      (/*!isReply && */Helpers::altCfgVal(cnt, cfg::reply::showInWnd)));
+
+    /*
+    if (Helpers::altCfgVal(cnt, cfg::reply::showInWnd) && isReply) {
+      Message::send("", uid, net, Helpers::trim(format->parse(GETSTRA(tplId))), 
+        MT_MESSAGE, ext, Helpers::altCfgVal(cnt, cfg::reply::useHtml));
+    }*/
     delete format; format = NULL;
   }
 
@@ -164,20 +173,23 @@ namespace kAway2 {
     UIActionSet(ai);
   }
 
-  bool Control::isIgnoredUid(int net, std::string uid) {
+  bool Control::isIgnoredUid(int cntId) {
     for (tIgnoredUids::iterator it = this->ignoredUids.begin(); it != this->ignoredUids.end(); it++) {
-      if ((it->net == net) && (it->uid == uid)) return(true);
+      if (it->cntId == cntId) return(true);
     }
     return(false);
   }
 
-  void Control::addIgnoredUid(int net, std::string uid) {
-    this->ignoredUids.push_back(ignoredUid(net, uid));
+  void Control::addIgnoredUid(int cntId) {
+    std::string uid(GETCNTC(cntId, CNT_UID));
+    int net = GETCNTI(cntId, CNT_NET);
+
+    this->ignoredUids.push_back(ignoredUid(cntId, net, uid));
   }
 
-  void Control::removeIgnoredUid(int net, std::string uid) {
+  void Control::removeIgnoredUid(int cntId) {
     for (tIgnoredUids::iterator it = this->ignoredUids.begin(); it != this->ignoredUids.end(); it++) {
-      if ((it->net == net) && (it->uid == uid)) {
+      if (it->cntId == cntId) {
         it = this->ignoredUids.erase(it); break;
       }
     }

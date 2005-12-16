@@ -71,14 +71,16 @@ namespace kAway2 {
     return(result);
   }
 
-  void Format::UIDrawHelpBtn(int cfgGroup) {
-    UIActionCfgAdd(cfgGroup, 0, ACTT_TIPBUTTON | ACTSBUTTON_ALIGNRIGHT | ACTSC_INLINE, 
-      this->buildHtmlHelp().c_str());
+  void Format::UIDrawHelpBtn(int cfgGroup, int ico) {
+    std::string val = this->buildHtmlHelp();
+    val += (ico) ? AP_ICO + itos(ico) : "";
+    UIActionCfgAdd(cfgGroup, 0, ACTT_TIPBUTTON | ACTSBUTTON_ALIGNRIGHT | ACTSC_INLINE, val.c_str());
   }
 
-  void Format::UIDrawHelpBtn(tHelpVars vars, int cfgGroup) {
-    UIActionCfgAdd(cfgGroup, 0, ACTT_TIPBUTTON | ACTSBUTTON_ALIGNRIGHT | ACTSC_INLINE, 
-      this->buildHtmlHelp(vars).c_str());
+  void Format::UIDrawHelpBtn(tHelpVars vars, int cfgGroup, int ico) {
+    std::string val = this->buildHtmlHelp(vars);
+    val += (ico) ? AP_ICO + itos(ico) : "";
+    UIActionCfgAdd(cfgGroup, 0, ACTT_TIPBUTTON | ACTSBUTTON_ALIGNRIGHT | ACTSC_INLINE, val.c_str());
   }
 
   std::string Format::buildHtmlHelp(tHelpVars vars) {

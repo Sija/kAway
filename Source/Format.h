@@ -61,8 +61,8 @@ namespace kAway2 {
       std::string buildHtmlHelp();
       std::string buildHtmlHelp(tHelpVars vars);
 
-      void UIDrawHelpBtn(int cfgGroup);
-      void UIDrawHelpBtn(tHelpVars vars, int cfgGroup);
+      void UIDrawHelpBtn(int cfgGroup, int ico = 0);
+      void UIDrawHelpBtn(tHelpVars vars, int cfgGroup, int ico = 0);
 
       inline void clearVars() {
         this->vars.clear();
