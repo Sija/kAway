@@ -10,13 +10,14 @@
 
 namespace kAway2 {
   void Message::reply(cMessage *msg, std::string body, std::string ext, bool useHtml) {
-    Message::send(msg->fromUid, msg->net, body, msg->type, ext, useHtml);
+    Message::send(msg->fromUid, "", msg->net, body, msg->type, ext, useHtml);
   }
 
-  cMessage Message::prepare(const std::string& to, int net, const std::string& body, int type, const std::string& ext, int flag) {
+  cMessage Message::prepare(const std::string& to, const std::string& from, int net, const std::string& body, 
+    int type, const std::string& ext, int flag) {
     cMessage msg;
     msg.flag = flag;
-    msg.fromUid = "";
+    msg.fromUid = (char*) from.c_str();
     msg.toUid = (char*) to.c_str();
     msg.net = net;
     msg.time = 0;
@@ -34,16 +35,16 @@ namespace kAway2 {
     }
   }
 
-  void Message::send(int cnt, std::string body, int type, std::string ext, bool useHtml, bool insInMsgWnd) {
+  void Message::send(int cnt, std::string from, std::string body, int type, std::string ext, bool useHtml, bool insInMsgWnd) {
     std::string to = GETCNTC(cnt, CNT_UID);
-    cMessage msg = Message::prepare(to, GETCNTI(cnt, CNT_NET), body, type, ext, MF_SEND | (useHtml ? MF_HTML : 0));
+    cMessage msg = Message::prepare(to, from, GETCNTI(cnt, CNT_NET), body, type, ext, MF_SEND | (useHtml ? MF_HTML : 0));
 
     Message::send(&msg);
     if (insInMsgWnd) Message::insInMsgWnd(&msg, cnt);
   }
 
-  void Message::send(std::string to, int net, std::string body, int type, std::string ext, bool useHtml) {
-    cMessage msg = Message::prepare(to, net, body, type, ext, MF_SEND | (useHtml ? MF_HTML : 0));
+  void Message::send(std::string to, std::string from, int net, std::string body, int type, std::string ext, bool useHtml) {
+    cMessage msg = Message::prepare(to, from, net, body, type, ext, MF_SEND | (useHtml ? MF_HTML : 0));
     Message::send(&msg);
   }
 

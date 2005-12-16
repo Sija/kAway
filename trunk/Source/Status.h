@@ -17,7 +17,7 @@ namespace kAway2 {
     unsigned int st;
     std::string info;
 
-    itemInfo(int _net, int _st, std::string _info): 
+    itemInfo(int _net = 0, int _st = 0, std::string _info = ""): 
       net(_net), st(_st), info(_info) { }
   };
 
@@ -38,6 +38,7 @@ namespace kAway2 {
   };
 
   typedef std::list<itemInfo> tItemInfos;
+  typedef std::map<int, itemInfo> tLastInfos;
   typedef std::list<statusReplacement> tStReplacements;
 
   class Status {
@@ -57,6 +58,10 @@ namespace kAway2 {
       bool onHidden();
       // obs³uga akcji
       void actionHandle(sIMessage_base *msgBase);
+
+      inline bool isRemembered() {
+        return(this->remember);
+      }
 
       // Zmienia status, txt - opis, st - id statusu
       void changeStatus(std::string info, int st = -1);
@@ -93,9 +98,10 @@ namespace kAway2 {
       std::string stInfoVar;
       // kolumna konfiguracji ktora odpowiada za opcje 'zmieniaj status przy statusie ukryty'
       unsigned int onHiddenCfgCol;
-      bool actionHandleIgnore;
-      // lista z opisami na sieciach
-      tItemInfos info;
+      bool remember;
+      tLastInfos lastSt;
+      // zapamietane statusy i ich opisy
+      tItemInfos rememberedSt;
       // zamienniki nieobs³ugiwanych statusów
       tStReplacements stReplacements;
   };

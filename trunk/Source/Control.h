@@ -12,10 +12,12 @@
 
 namespace kAway2 {
   struct ignoredUid {
+    unsigned int cntId;
     unsigned int net;
     std::string uid;
 
-    ignoredUid(int _net, std::string _uid): net(_net), uid(_uid) { }
+    ignoredUid(int _cntId, int _net, std::string _uid): cntId(_cntId), 
+      net(_net), uid(_uid) { }
   };
 
   typedef std::list<ignoredUid> tIgnoredUids;
@@ -28,16 +30,28 @@ namespace kAway2 {
       void enable(std::string msg = "", int status = -1, bool silent = false);
       void disable(std::string msg = "", bool silent = false);
 
-      bool isIgnoredUid(int net, std::string uid);
-      void addIgnoredUid(int net, std::string uid);
-      void removeIgnoredUid(int net, std::string uid);
+      bool isIgnoredUid(int cntId);
+      void addIgnoredUid(int cntId);
+      void removeIgnoredUid(int cntId);
+
+      inline bool isMuteSwitched() {
+        return(this->muteStateSwitched);
+      }
 
       inline bool isEnabled() {
-        return(this->isOn ? true : false);
+        return(this->isOn);
       }
 
       inline bool isAwayMsgSet() {
         return(this->awayMsg.length() ? true : false);
+      }
+
+      inline bool isAutoAway() {
+        return(this->autoAway);
+      }
+
+      inline void setAutoAway(bool state) {
+        this->autoAway = state;
       }
 
       static inline void Log(enDebugLevel level, const char * format, ...) {
@@ -82,6 +96,8 @@ namespace kAway2 {
     protected:
       bool isOn;
       bool muteStateSwitched;
+      bool autoAway;
+
       std::string awayMsg;
       Stamina::Date64 *awayTime;
       tIgnoredUids ignoredUids;

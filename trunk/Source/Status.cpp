@@ -18,7 +18,7 @@ namespace kAway2 {
 
     this->stInfoVar = stInfoVar;
     this->onHiddenCfgCol = onHiddenCfgCol;
-    this->actionHandleIgnore = false;
+    this->remember = false;
 
     this->stReplacements.push_back( statusReplacement( plugsNET::gg, ST_CHAT, ST_ONLINE ) );
     this->stReplacements.push_back( statusReplacement( plugsNET::gg, ST_DND, ST_AWAY ) );
@@ -30,7 +30,8 @@ namespace kAway2 {
     this->fCtrl = NULL;
 
     this->stReplacements.clear();
-    this->info.clear();
+    this->rememberedSt.clear();
+    this->lastSt.clear();
   }
 
   void Status::changeStatus(std::string info, int st) {
@@ -61,9 +62,10 @@ namespace kAway2 {
         }
       }
 
-      this->actionHandleIgnore = true;
-      IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, info.length() ? (int) info.c_str() : 0);
-      this->actionHandleIgnore = false;
+      if (this->isRemembered())
+        this->lastSt[net] = itemInfo(net, st, info);
+
+      Ctrl->IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, info.length() ? (int) info.c_str() : 0);
 
       Control::Debug("[Status::changeStatus().item]: net = %i, status = %i, info = %s",
         net, st, (info.length() ? info.c_str() : "(none)"));
@@ -71,30 +73,33 @@ namespace kAway2 {
   }
 
   int Status::getActualStatus(int net) {
-    return(IMessage(IM_GET_STATUS, net));
+    return(Ctrl->IMessage(IM_GET_STATUS, net));
   }
 
   int Status::getStatus(int net) {
-    for (tItemInfos::iterator it = this->info.begin(); it != this->info.end(); it++) {
+    for (tItemInfos::iterator it = this->rememberedSt.begin(); it != this->rememberedSt.end(); it++) {
       if (it->net == net) return(it->st);
     }
   }
 
   std::string Status::getActualInfo(int net) {
-    std::string status((char*) IMessage(IM_GET_STATUSINFO, net));
+    std::string status((char*) Ctrl->IMessage(IM_GET_STATUSINFO, net));
     return(status);
   }
 
   std::string Status::getInfo(int net) {
     std::string fake;
-    for (tItemInfos::iterator it = this->info.begin(); it != this->info.end(); it++) {
+    for (tItemInfos::iterator it = this->rememberedSt.begin(); it != this->rememberedSt.end(); it++) {
       if (it->net == net) return(it->info);
     }
     return(fake);
   }
 
   void Status::rememberInfo() {
-    this->info.clear();
+    this->remember = true;
+    this->lastSt.clear();
+    this->rememberedSt.clear();
+
     for (tItemNets::iterator it = this->lCtrl->nets.begin(); it != this->lCtrl->nets.end(); it++) {
       this->rememberInfo(it->net);
     }
@@ -103,14 +108,16 @@ namespace kAway2 {
   void Status::rememberInfo(int net) {
     if (this->isNetUseful(net)) {
       std::string info = this->getActualInfo(net);
-      this->info.push_back(itemInfo(net, this->getActualStatus(net), info));
+      this->rememberedSt.push_back(itemInfo(net, this->getActualStatus(net), info));
 
       Control::Debug("[Status::rememberInfo().item]: net = %i, info = %s", net, info.c_str());
     }
   }
 
   void Status::restoreInfo() {
-    for (tItemInfos::iterator it = this->info.begin(); it != this->info.end(); it++) {
+    this->remember = false;
+
+    for (tItemInfos::iterator it = this->rememberedSt.begin(); it != this->rememberedSt.end(); it++) {
       this->restoreInfo(it->net);
     }
   }
@@ -118,7 +125,7 @@ namespace kAway2 {
   void Status::restoreInfo(int net) {
     if (this->isNetUseful(net)) {
       std::string info = this->getInfo(net);
-      IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, this->getStatus(net), (int) info.c_str());
+      Ctrl->IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, this->getStatus(net), (int) info.c_str());
 
       Control::Debug("[Status::restoreInfo().item]: net = %i, info = %s",
         net, (info.length() ? info.c_str() : "(none)"));
@@ -126,16 +133,16 @@ namespace kAway2 {
   }
 
   void Status::actionHandle(sIMessage_base *msgBase) {
-    if (this->actionHandleIgnore) return;
+    if (!this->isRemembered()) return;
 
     sIMessage_StatusChange *st = static_cast<sIMessage_StatusChange*>(msgBase);
     int net = Ctrl->IMessageDirect(IM_PLUG_NET, st->plugID);
 
     if (this->getStatus(net)) {
-      for (tItemInfos::iterator it = this->info.begin(); it != this->info.end(); it++) {
+      for (tItemInfos::iterator it = this->rememberedSt.begin(); it != this->rememberedSt.end(); it++) {
         if (it->net == net) {
-          if (st->status) it->st = st->status;
-          if (st->info) it->info = st->info;
+          if (st->status != this->lastSt[net].st) it->st = st->status;
+          if (st->info != this->lastSt[net].info) it->info = st->info;
           break;
         }
       }
