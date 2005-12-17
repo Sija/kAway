@@ -92,6 +92,12 @@ namespace kAway2 {
     Ctrl->SetColumn(DTCFG, cfg::reply::useHtml, DT_CT_INT, 1, "kAway2/reply/useHtml");
     Ctrl->SetColumn(DTCFG, cfg::reply::netChange, DT_CT_STR, "", "kAway2/reply/netChange");
 
+    Ctrl->SetColumn(DTCFG, cfg::status::onEnableSt, DT_CT_INT, ST_NA, "kAway2/status/onEnableSt");
+    Ctrl->SetColumn(DTCFG, cfg::status::whenInvisible, DT_CT_INT, 1, "kAway2/status/whenInvisible");
+    Ctrl->SetColumn(DTCFG, cfg::status::changeOnEnable, DT_CT_INT, 1, "kAway2/status/changeOnEnable");
+    Ctrl->SetColumn(DTCFG, cfg::status::changeInfoOnEnable, DT_CT_INT, 1, "kAway2/status/changeInfoOnEnable");
+    Ctrl->SetColumn(DTCFG, cfg::status::netChange, DT_CT_STR, "", "kAway2/status/netChange");
+
     Ctrl->SetColumn(DTCNT, cfg::tpl::enable, DT_CT_STR, "", "kAway2/tpl/enable");
     Ctrl->SetColumn(DTCNT, cfg::tpl::disable, DT_CT_STR, "", "kAway2/tpl/disable");
     Ctrl->SetColumn(DTCNT, cfg::tpl::reply, DT_CT_STR, "", "kAway2/tpl/reply");
@@ -111,11 +117,6 @@ namespace kAway2 {
     Ctrl->SetColumn(DTCFG, cfg::sms::interval, DT_CT_INT, 150, "kAway2/sms/interval");
     Ctrl->SetColumn(DTCFG, cfg::sms::gate, DT_CT_STR, "", "kAway2/sms/gate");
     Ctrl->SetColumn(DTCFG, cfg::sms::number, DT_CT_INT, 0, "kAway2/sms/number");
-
-    Ctrl->SetColumn(DTCFG, cfg::status::whenInvisible, DT_CT_INT, 1, "kAway2/status/whenInvisible");
-    Ctrl->SetColumn(DTCFG, cfg::status::changeOnEnable, DT_CT_INT, 1, "kAway2/status/changeOnEnable");
-    Ctrl->SetColumn(DTCFG, cfg::status::changeInfoOnEnable, DT_CT_INT, 1, "kAway2/status/changeInfoOnEnable");
-    Ctrl->SetColumn(DTCFG, cfg::status::netChange, DT_CT_STR, "", "kAway2/status/netChange");
 
     return(1);
   }
@@ -271,10 +272,30 @@ namespace kAway2 {
     /* Status tab */
     /* |-> Settings group */
     UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_GROUP, "Ustawienia");
+    /*
+    UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_COMBO | ACTSCOMBO_LIST | ACTSC_INLINE, 
+      "Zaraz wracam" AP_ICO "#40000410" AP_VALUE "65\n"
+      "Nieosi¹galny" AP_ICO "#40000210" AP_VALUE "33\n"
+      "Nie przeszkadzaæ" AP_ICO "#40000220" AP_VALUE "34\n"
+      "Ukryty" AP_ICO "#40000420" AP_VALUE "66", 
+      cfg::status::onEnableSt);
+    UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_COMMENT, "Domyœlnie ustawiony status");
+    */
     UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_CHECK, "Zmieniaj status przy w³¹czonym statusie 'ukryty'", cfg::status::whenInvisible);
     UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_SEPARATOR);
     UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_CHECK, "Zmieniaj status przy w³¹czeniu trybu away", cfg::status::changeOnEnable);
     UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_CHECK, "Zmieniaj opis statusu przy w³¹czeniu trybu away", cfg::status::changeInfoOnEnable);
+    UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_GROUPEND);
+
+    UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_GROUP, "Domyœlnie zmieniaj status na:");
+    UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(UIIcon(IT_STATUS, 0, ST_AWAY, 0)).c_str());
+    UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_RADIO | ACTSC_INLINE, "Zaraz wracam" AP_VALUE "65", cfg::status::onEnableSt);
+    UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(UIIcon(IT_STATUS, 0, ST_NA, 0)).c_str());
+    UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_RADIO | ACTSC_INLINE, "Nieosi¹galny" AP_VALUE "33", cfg::status::onEnableSt);
+    UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(UIIcon(IT_STATUS, 0, ST_DND, 0)).c_str());
+    UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_RADIO | ACTSC_INLINE, "Nie przeszkadzaæ" AP_VALUE "34", cfg::status::onEnableSt);
+    UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(UIIcon(IT_STATUS, 0, ST_HIDDEN, 0)).c_str());
+    UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_RADIO | ACTSRADIO_LAST, "Ukryty" AP_VALUE "66", cfg::status::onEnableSt);
     UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_GROUPEND);
 
     UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_GROUP, "Szablon statusu");
@@ -487,7 +508,7 @@ int __stdcall IMessageProc(sIMessage_base *msgBase) {
     case IM_UIACTION:        return(ActionProc((sUIActionNotify_base*)msg->p1));
 
     case IM_STATUSCHANGE: {
-      if (pCtrl->isEnabled()) sCtrl->actionHandle(msgBase);
+      if (pCtrl->isEnabled() && !pCtrl->isAutoAway()) sCtrl->actionHandle(msgBase);
     }
 
     case IM_ALLPLUGINSINITIALIZED: {

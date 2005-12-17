@@ -180,6 +180,8 @@ namespace kAway2 {
 
       const unsigned int changeOnEnable = status + 3;
       const unsigned int changeInfoOnEnable = status + 4;
+
+      const unsigned int onEnableSt = status + 5;
     }
   }
 }

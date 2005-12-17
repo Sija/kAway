@@ -87,7 +87,7 @@ namespace kAway2 {
       this->sCtrl->restoreInfo();
     }
 
-    if (this->muteStateSwitched) {
+    if (this->muteStateSwitched && GETINT(kSound::Cfg::mute)) {
       Helpers::UIActionCall(ICMessage(IMI_GETPLUGINSGROUP), kSound::action::mute);
     }
 
@@ -175,21 +175,18 @@ namespace kAway2 {
 
   bool Control::isIgnoredUid(int cntId) {
     for (tIgnoredUids::iterator it = this->ignoredUids.begin(); it != this->ignoredUids.end(); it++) {
-      if (it->cntId == cntId) return(true);
+      if ((*it) == cntId) return(true);
     }
     return(false);
   }
 
   void Control::addIgnoredUid(int cntId) {
-    std::string uid(GETCNTC(cntId, CNT_UID));
-    int net = GETCNTI(cntId, CNT_NET);
-
-    this->ignoredUids.push_back(ignoredUid(cntId, net, uid));
+    this->ignoredUids.push_back(cntId);
   }
 
   void Control::removeIgnoredUid(int cntId) {
     for (tIgnoredUids::iterator it = this->ignoredUids.begin(); it != this->ignoredUids.end(); it++) {
-      if (it->cntId == cntId) {
+      if ((*it) == cntId) {
         it = this->ignoredUids.erase(it); break;
       }
     }
