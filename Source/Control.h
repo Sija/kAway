@@ -11,16 +11,7 @@
 #pragma once
 
 namespace kAway2 {
-  struct ignoredUid {
-    unsigned int cntId;
-    unsigned int net;
-    std::string uid;
-
-    ignoredUid(int _cntId, int _net, std::string _uid): cntId(_cntId), 
-      net(_net), uid(_uid) { }
-  };
-
-  typedef std::list<ignoredUid> tIgnoredUids;
+  typedef std::deque<int> tIgnoredUids;
 
   class Control {
     public:
