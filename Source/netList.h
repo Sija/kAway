@@ -22,6 +22,7 @@ namespace kAway2 {
   };
 
   typedef std::list<itemNet> tItemNets;
+  typedef std::deque<int> tIgnoredNets;
 
   class NetList {
     public:
@@ -45,9 +46,10 @@ namespace kAway2 {
         return(this->nets);
       }
       bool isConnected(int net);
-      bool isIgnored(int net);
 
-      tItemNets nets;
+      bool isIgnored(int net);
+      void addIgnored(int net);
+      void removeIgnored(int net);
 
     protected:
       unsigned int cfgCol;
@@ -55,6 +57,9 @@ namespace kAway2 {
       unsigned int dynActGroup;
       unsigned int actCreate;
       unsigned int actDestroy;
+
+      tIgnoredNets ignoredNets;
+      tItemNets nets;
 
       bool configSaved;
       bool netsDrawn;

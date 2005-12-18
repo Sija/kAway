@@ -23,6 +23,7 @@ namespace kAway2 {
   }
 
   NetList::~NetList() {
+    this->ignoredNets.clear();
     this->nets.clear();
   }
 
@@ -129,7 +130,7 @@ namespace kAway2 {
 
     for (tItemNets::iterator it = this->nets.begin(); it != this->nets.end(); it++, i++, c++) {
       ico = UIIcon(IT_LOGO, (int) it->net, 0, 0);
-      i %= colCount; 
+      i %= colCount;
 
       Control::Debug("[NetList::UIDraw().item]: name = %s, use = %s",
         it->name.c_str(), btoa(it->use));
@@ -199,9 +200,21 @@ namespace kAway2 {
   }
 
   bool NetList::isIgnored(int net) {
-    for (int i = 0; i < sizeof(ignoredNets) / sizeof(int); i++) {
-      if (net == ignoredNets[i]) return(true);
+    for (tIgnoredNets::iterator it = this->ignoredNets.begin(); it != this->ignoredNets.end(); it++) {
+      if ((*it) == net) return(true);
     }
     return(false);
+  }
+
+  void NetList::addIgnored(int net) {
+    this->ignoredNets.push_back(net);
+  }
+
+  void NetList::removeIgnored(int net) {
+    for (tIgnoredNets::iterator it = this->ignoredNets.begin(); it != this->ignoredNets.end(); it++) {
+      if ((*it) == net) {
+        it = this->ignoredNets.erase(it); break;
+      }
+    }
   }
 }

@@ -93,10 +93,15 @@ namespace kAway2 {
     Ctrl->SetColumn(DTCFG, cfg::reply::netChange, DT_CT_STR, "", "kAway2/reply/netChange");
 
     Ctrl->SetColumn(DTCFG, cfg::status::onEnableSt, DT_CT_INT, ST_NA, "kAway2/status/onEnableSt");
+    Ctrl->SetColumn(DTCFG, cfg::status::onAutoAwaySt, DT_CT_INT, ST_NA, "kAway2/status/onAutoAwaySt");
     Ctrl->SetColumn(DTCFG, cfg::status::whenInvisible, DT_CT_INT, 1, "kAway2/status/whenInvisible");
     Ctrl->SetColumn(DTCFG, cfg::status::changeOnEnable, DT_CT_INT, 1, "kAway2/status/changeOnEnable");
     Ctrl->SetColumn(DTCFG, cfg::status::changeInfoOnEnable, DT_CT_INT, 1, "kAway2/status/changeInfoOnEnable");
     Ctrl->SetColumn(DTCFG, cfg::status::netChange, DT_CT_STR, "", "kAway2/status/netChange");
+
+    Ctrl->SetColumn(DTCFG, cfg::sms::interval, DT_CT_INT, 150, "kAway2/sms/interval");
+    Ctrl->SetColumn(DTCFG, cfg::sms::gate, DT_CT_STR, "", "kAway2/sms/gate");
+    Ctrl->SetColumn(DTCFG, cfg::sms::number, DT_CT_INT, 0, "kAway2/sms/number");
 
     Ctrl->SetColumn(DTCNT, cfg::tpl::enable, DT_CT_STR, "", "kAway2/tpl/enable");
     Ctrl->SetColumn(DTCNT, cfg::tpl::disable, DT_CT_STR, "", "kAway2/tpl/disable");
@@ -114,10 +119,6 @@ namespace kAway2 {
     Ctrl->SetColumn(DTCNT, cfg::reply::minInterval, DT_CT_INT, -1, "kAway2/reply/minInterval");
     Ctrl->SetColumn(DTCNT, cfg::reply::useHtml, DT_CT_INT, 0, "kAway2/reply/useHtml");
 
-    Ctrl->SetColumn(DTCFG, cfg::sms::interval, DT_CT_INT, 150, "kAway2/sms/interval");
-    Ctrl->SetColumn(DTCFG, cfg::sms::gate, DT_CT_STR, "", "kAway2/sms/gate");
-    Ctrl->SetColumn(DTCFG, cfg::sms::number, DT_CT_INT, 0, "kAway2/sms/number");
-
     return(1);
   }
 
@@ -127,15 +128,25 @@ namespace kAway2 {
 
     lCtrl::status = new NetList(cfg::status::netChange, ui::statusCfgGroup, dynAct::status, 
       act::cfgGroupCheckCreate, act::cfgGroupCheckDestroy);
+    lCtrl::status->addIgnored(plugsNET::konnferencja);
+    lCtrl::status->addIgnored(plugsNET::klan);
+    lCtrl::status->addIgnored(plugsNET::checky);
+    lCtrl::status->addIgnored(plugsNET::actio);
     lCtrl::status->loadNets();
 
     lCtrl::reply = new NetList(cfg::reply::netChange, ui::replyCfgGroup, dynAct::reply, 
       act::replyCfgGroupCheckCreate, act::replyCfgGroupCheckDestroy);
+    lCtrl::reply->addIgnored(plugsNET::klan);
+    lCtrl::reply->addIgnored(plugsNET::checky);
+    lCtrl::reply->addIgnored(plugsNET::actio);
     lCtrl::reply->loadNets();
 
     sCtrl = new Status(lCtrl::status, cfg::status::whenInvisible, "status");
-    pCtrl->setStatusCtrl(sCtrl);
+    sCtrl->addReplacementSt(plugsNET::gg, ST_CHAT, ST_ONLINE);
+    sCtrl->addReplacementSt(plugsNET::gg, ST_DND, ST_AWAY);
+    sCtrl->addReplacementSt(plugsNET::gg, ST_NA, ST_AWAY);
 
+    pCtrl->setStatusCtrl(sCtrl);
     pCtrl->Log("net = %i, Ctrl = %i, pCtrl = %i, sCtrl = %i, wCtrl = %i", 
       net, Ctrl, pCtrl, sCtrl, wCtrl);
 
@@ -157,8 +168,8 @@ namespace kAway2 {
 
     /* Registering icons */
     IconRegister(IML_32, ico::logoBig, Ctrl->hDll(), IDI_LOGO);
-    IconRegister(IML_16, ico::logoSmall, Ctrl->hDll(), IDI_ENABLE);
     // IconRegister(IML_16, ico::logoSmall, Ctrl->hDll(), IDI_LOGO);
+    IconRegister(IML_16, ico::logoSmall, Ctrl->hDll(), IDI_ENABLE);
 
     IconRegister(IML_16, ico::enable, Ctrl->hDll(), IDI_ENABLE);
     IconRegister(IML_16, ico::disable, Ctrl->hDll(), IDI_DISABLE);
@@ -251,8 +262,19 @@ namespace kAway2 {
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_COMMENT, "Format godziny");
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
 
-    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUP, "Powód nieobecnoœci dla auto-away'a");
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUP, "Ustawienia auto-away'a");
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_COMMENT, "Powód nieobecnoœci:");
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::autoAway);
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_SEPARATOR);
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_COMMENT, "Zmieniaj status na:");
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(UIIcon(IT_STATUS, 0, ST_AWAY, 0)).c_str());
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_RADIO | ACTSC_INLINE, "Zaraz wracam" AP_VALUE "65", cfg::status::onAutoAwaySt);
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(UIIcon(IT_STATUS, 0, ST_NA, 0)).c_str());
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_RADIO | ACTSC_INLINE, "Nieosi¹galny" AP_VALUE "33", cfg::status::onAutoAwaySt);
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(UIIcon(IT_STATUS, 0, ST_DND, 0)).c_str());
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_RADIO | ACTSC_INLINE, "Nie przeszkadzaæ" AP_VALUE "34", cfg::status::onAutoAwaySt);
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(UIIcon(IT_STATUS, 0, ST_HIDDEN, 0)).c_str());
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_RADIO | ACTSRADIO_LAST, "Ukryty" AP_VALUE "66", cfg::status::onAutoAwaySt);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
 
     /* |-> Interface group */
@@ -527,13 +549,13 @@ int __stdcall IMessageProc(sIMessage_base *msgBase) {
     case IM_AWAY: {
       if (!pCtrl->isEnabled() && GETINT(cfg::autoAwaySync)) {
         pCtrl->setAutoAway(true);
-        pCtrl->enable(GETSTRA(cfg::tpl::autoAway), -1, true);
+        pCtrl->enable(GETSTRA(cfg::tpl::autoAway), GETINT(cfg::status::onAutoAwaySt), true);
       }
       return(0);
     }
 
     case IM_BACK: {
-      if (pCtrl->isEnabled() && GETINT(cfg::autoAwaySync) && pCtrl->isAutoAway()) {
+      if (pCtrl->isEnabled() && pCtrl->isAutoAway()) {
         pCtrl->setAutoAway(false);
         pCtrl->disable("", true);
       }

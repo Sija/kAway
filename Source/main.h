@@ -12,12 +12,6 @@
 
 namespace kAway2 {
   const unsigned int net = 667;
-  const unsigned int ignoredNets[] = {
-    plugsNET::konnferencja,
-    plugsNET::checky,
-    plugsNET::klan,
-    plugsNET::actio
-  };
   const bool debug = true;
   const char poweredBy[64] = "The Presage and Illogic";
 
@@ -182,6 +176,7 @@ namespace kAway2 {
       const unsigned int changeInfoOnEnable = status + 4;
 
       const unsigned int onEnableSt = status + 5;
+      const unsigned int onAutoAwaySt = status + 6;
     }
   }
 }
