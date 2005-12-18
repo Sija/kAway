@@ -19,10 +19,6 @@ namespace kAway2 {
     this->stInfoVar = stInfoVar;
     this->onHiddenCfgCol = onHiddenCfgCol;
     this->remember = false;
-
-    this->stReplacements.push_back( statusReplacement( plugsNET::gg, ST_CHAT, ST_ONLINE ) );
-    this->stReplacements.push_back( statusReplacement( plugsNET::gg, ST_DND, ST_AWAY ) );
-    this->stReplacements.push_back( statusReplacement( plugsNET::gg, ST_NA, ST_AWAY ) );
   }
 
   Status::~Status() {
@@ -34,8 +30,30 @@ namespace kAway2 {
     this->lastSt.clear();
   }
 
+  int Status::applyReplacementSt(int net, int st) {
+    for (tStReplacements::iterator it = this->stReplacements.begin(); it != this->stReplacements.end(); it++) {
+      if (it->net == net && it->before == st) {
+        st = it->after; break;
+      }
+    }
+    return(st);
+  }
+
+  void Status::addReplacementSt(int net, int before, int after) {
+    this->stReplacements.push_back(statusReplacement(net, before, after));
+  }
+
+  void Status::removeReplacementSt(int net, int before) {
+    for (tStReplacements::iterator it = this->stReplacements.begin(); it != this->stReplacements.end(); it++) {
+      if ((it->net == net) && (it->before == before)) {
+        it = this->stReplacements.erase(it); break;
+      }
+    }
+  }
+
   void Status::changeStatus(std::string info, int st) {
-    for (tItemNets::iterator it = this->lCtrl->nets.begin(); it != this->lCtrl->nets.end(); it++) {
+    tItemNets nets = this->lCtrl->getNets();
+    for (tItemNets::iterator it = nets.begin(); it != nets.end(); it++) {
       this->changeStatus(it->net, info, st);
     }
   }
@@ -54,13 +72,8 @@ namespace kAway2 {
       }
 
       st = st ? st : -1;
-      if (st != -1) {
-        for (tStReplacements::iterator it = this->stReplacements.begin(); it != this->stReplacements.end(); it++) {
-          if (it->net == net && it->before == st) {
-            st = it->after; break;
-          }
-        }
-      }
+      if (st != -1) 
+        st = this->applyReplacementSt(net, st);
 
       if (this->isRemembered())
         this->lastSt[net] = itemInfo(net, st, info);
@@ -100,17 +113,20 @@ namespace kAway2 {
     this->lastSt.clear();
     this->rememberedSt.clear();
 
-    for (tItemNets::iterator it = this->lCtrl->nets.begin(); it != this->lCtrl->nets.end(); it++) {
+    tItemNets nets = this->lCtrl->getNets();
+    for (tItemNets::iterator it = nets.begin(); it != nets.end(); it++) {
       this->rememberInfo(it->net);
     }
   }
 
   void Status::rememberInfo(int net) {
     if (this->isNetUseful(net)) {
+      int st = this->getActualStatus(net);
       std::string info = this->getActualInfo(net);
-      this->rememberedSt.push_back(itemInfo(net, this->getActualStatus(net), info));
+      this->rememberedSt.push_back(itemInfo(net, st, info));
 
-      Control::Debug("[Status::rememberInfo().item]: net = %i, info = %s", net, info.c_str());
+      Control::Debug("[Status::rememberInfo().item]: net = %i, status = %i, info = %s",
+        net, st, (info.length() ? info.c_str() : "(none)"));
     }
   }
 
@@ -124,11 +140,12 @@ namespace kAway2 {
 
   void Status::restoreInfo(int net) {
     if (this->isNetUseful(net)) {
+      int st = this->getStatus(net);
       std::string info = this->getInfo(net);
-      Ctrl->IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, this->getStatus(net), (int) info.c_str());
+      Ctrl->IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, (int) info.c_str());
 
-      Control::Debug("[Status::restoreInfo().item]: net = %i, info = %s",
-        net, (info.length() ? info.c_str() : "(none)"));
+      Control::Debug("[Status::restoreInfo().item]: net = %i, status = %i, info = %s",
+        net, st, (info.length() ? info.c_str() : "(none)"));
     }
   }
 

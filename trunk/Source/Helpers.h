@@ -26,7 +26,7 @@ std::string btos(bool value) {
 namespace kAway2 {
   namespace Helpers {
     std::string icon32(int ico) {
-      std::string buff = AP_IMGURL + std::string("reg://IML32/") + itos(ico) + ".ico";
+      std::string buff = "reg://IML32/" + itos(ico) + ".ico";
       return(buff);
     }
 

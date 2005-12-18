@@ -88,6 +88,10 @@ namespace kAway2 {
       // Zwraca status sieci net
       int getStatus(int net);
 
+      int applyReplacementSt(int net, int st);
+      void addReplacementSt(int net, int before, int after);
+      void removeReplacementSt(int net, int before);
+
       // lista z sieciami
       NetList *lCtrl;
       // formatowanie statusu
