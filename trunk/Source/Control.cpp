@@ -66,7 +66,7 @@ namespace kAway2 {
 
     int count = IMessage(IMC_CNT_COUNT);
     for (int i = 0; i < count; i++) {
-      if (IMessage(IMI_MSG_WINDOWSTATE, 0, 0, i)) {
+      if (Helpers::isMsgWndOpen(i)) {
         if (Helpers::altCfgVal(i, cfg::reply::onEnable) && !silent && !this->isIgnoredUid(i)) {
           this->sendMsgTpl(i, cfg::tpl::enable);
         }
@@ -97,7 +97,7 @@ namespace kAway2 {
 
     int count = IMessage(IMC_CNT_COUNT);
     for (int i = 0; i < count; i++) {
-      if (IMessage(IMI_MSG_WINDOWSTATE, 0, 0, i)) {
+      if (Helpers::isMsgWndOpen(i)) {
         if (Helpers::altCfgVal(i, cfg::reply::onDisable) && !silent && !this->isIgnoredUid(i)) {
           this->sendMsgTpl(i, cfg::tpl::disable, msg);
         }

@@ -131,11 +131,10 @@ namespace kAway2 {
   }
 
   void Status::restoreInfo() {
-    this->remember = false;
-
     for (tItemInfos::iterator it = this->rememberedSt.begin(); it != this->rememberedSt.end(); it++) {
       this->restoreInfo(it->net);
     }
+    this->remember = false;
   }
 
   void Status::restoreInfo(int net) {
@@ -174,10 +173,12 @@ namespace kAway2 {
 
   bool Status::isNetUseful(int net) {
     if (this->lCtrl->getNetState(net) && this->lCtrl->isConnected(net)) {
-      if (!this->onHidden() && (ST_HIDDEN == this->getActualStatus(net)))
+      if (!this->onHidden() && (ST_HIDDEN == this->getActualStatus(net))) {
+        if (this->isRemembered() && (this->lastSt[net].st == ST_HIDDEN))
+          return(true);
         return(false);
-      else
-        return(true);
+      }
+      return(true);
     }
     return(false);
   }

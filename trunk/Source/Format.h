@@ -52,7 +52,7 @@ namespace kAway2 {
 
   class Format {
     public:
-      Format(bool format = true, std::string pattern = "/\{([^a-z0-9]*)([a-z0-9]+)([^a-z0-9]*)\}/i");
+      Format(bool format = true, std::string pattern = "/\\{([^a-z0-9]*)([a-z0-9]+)([^a-z0-9]*)\\}/i");
       ~Format();
 
     public:
