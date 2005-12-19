@@ -610,12 +610,27 @@ int __stdcall IMessageProc(sIMessage_base *msgBase) {
         Stamina::split(body, " ", params);
         std::string cmd = params[0];
         std::string msg = (params.size() > 1) ? body.substr(params[0].length() + 1, body.length()) : "";
+
         bool del = false;
+        int st = GETINT(cfg::status::onEnableSt);
+
+        Stamina::RegEx reg;
+        reg.match("/^(away|brb)\\[(.+)\\]$/", cmd.c_str());
+
+        if (reg.isMatched()) {
+          cmd = reg[1];
+
+          if (reg[2] == "away") st = ST_AWAY;
+          else if (reg[2] == "xa") st = ST_NA;
+          else if (reg[2] == "dnd") st = ST_DND;
+          else if (reg[2] == "hidden") st = ST_HIDDEN;
+          else if (reg[2] == "-") st = -1;
+        }
 
         if (cmd == "away") {
-          del = true; pCtrl->enable(msg);
+          del = true; pCtrl->enable(msg, st);
         } else if (cmd == "brb") {
-          del = true; pCtrl->enable(msg, -1, true);
+          del = true; pCtrl->enable(msg, st, true);
         } else if (cmd == "back") {
           del = true; pCtrl->disable(msg);
         } else if (cmd == "re") {

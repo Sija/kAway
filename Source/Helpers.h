@@ -57,6 +57,10 @@ namespace kAway2 {
         (int) &sUIActionNotify_2params(sUIAction(group, act, cntID), ACTN_ACTION, 0, 0), 0);
     }
 
+    bool isMsgWndOpen(int cntID) {
+      return(UIGroupHandle(sUIAction(0, IMIG_MSGWND, cntID)) ? true : false);
+    }
+
     void showKNotify(char * text, int ico) {
       if (!GETINT(cfg::useKNotify)) return;
       Ctrl->IMessage(&KNotify::sIMessage_notify(text, ico));
