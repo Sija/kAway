@@ -18,9 +18,12 @@ std::string __stdcall fCallback(Stamina::RegEx *reg, void * param) {
   Stamina::String value;
 
   if (fCtrl->getVar(reg->getSub(2), buff)) {
+    if (!buff.length() && reg->getSub(3).length())
+      fCtrl->getVar(reg->getSub(3), buff);
+
     if (buff.length()) {
       prefix = reg->getSub(1);
-      suffix = reg->getSub(3);
+      suffix = reg->getSub(4);
       value = buff;
 
       if (fCtrl->format && prefix.length()) {
@@ -32,10 +35,10 @@ std::string __stdcall fCallback(Stamina::RegEx *reg, void * param) {
           prefix = prefix.substr(1, prefix.length());
         }
       }
+      kAway2::Control::Debug("[fCallback()]: prefix = %s, value = %s, suffix = %s",
+        prefix.c_str(), value.c_str(), suffix.c_str());
 
-      result += prefix;
-      result += value;
-      result += suffix;
+      result = prefix + value + suffix;
     }
   } else {
     result = reg->getSub(0);

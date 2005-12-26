@@ -20,7 +20,7 @@ namespace kAway2 {
     msg.fromUid = (char*) from.c_str();
     msg.toUid = (char*) to.c_str();
     msg.net = net;
-    msg.time = 0;
+    msg.time = _time64(0);
     msg.type = type;
     msg.body = (char*) body.c_str();
     msg.ext = (char*) ext.c_str();

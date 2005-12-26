@@ -12,21 +12,21 @@
 #pragma once
 
 namespace kAway2 {
-  struct itemInfo {
+  struct sItemInfo {
     unsigned int net;
     unsigned int st;
     std::string info;
 
-    itemInfo(int _net = 0, int _st = 0, std::string _info = ""): 
+    sItemInfo(int _net = 0, int _st = 0, std::string _info = ""): 
       net(_net), st(_st), info(_info) { }
   };
 
-  struct statusReplacement {
+  struct sStReplacement {
     unsigned int net;
     unsigned int before;
     unsigned int after;
 
-    statusReplacement(int _net, int _before, int _after) : net(_net), before(_before), after(_after) { }
+    sStReplacement(int _net, int _before, int _after) : net(_net), before(_before), after(_after) { }
   };
 
   // definicje max d³ugoœci statusów poszcz. dla sieci
@@ -37,13 +37,13 @@ namespace kAway2 {
     gg = 70
   };
 
-  typedef std::list<itemInfo> tItemInfos;
-  typedef std::map<int, itemInfo> tLastInfos;
-  typedef std::list<statusReplacement> tStReplacements;
+  typedef std::list<sItemInfo> tItemInfos;
+  typedef std::map<int, sItemInfo> tLastInfos;
+  typedef std::list<sStReplacement> tStReplacements;
 
   class Status {
     public:
-      Status(NetList *lCtrl, int onHiddenCfgCol = NULL, std::string stInfoVar = "");
+      Status(NetList *lCtrl, int onHiddenCfgCol = 0, std::string stInfoVar = "");
       ~Status();
 
     public:

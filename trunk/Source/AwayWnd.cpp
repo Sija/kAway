@@ -30,7 +30,7 @@ namespace kAway2 {
 
         LPCREATESTRUCT pCreate = (LPCREATESTRUCT) lParam;
         int net = (int) pCreate->lpCreateParams;
-        wndData *data = new wndData;
+        sWndData *data = new sWndData;
         SetWindowLong(hWnd, GWL_USERDATA, (LONG) data);
         data->net = net;
 
@@ -61,13 +61,13 @@ namespace kAway2 {
         ti.rect.bottom = rect.bottom;
 
         tStats stats;
-        // stats.push_back( tStat( ST_ONLINE, "Dostêpny", data->hImlOnline ) );
-        // stats.push_back( tStat( ST_CHAT, "Pogadam", data->hImlChat ) );
-        stats.push_back( tStat( ST_AWAY, "Zaraz wracam", data->hImlAway ) );
-        stats.push_back( tStat( ST_NA, "Nieosi¹galny", data->hImlNa ) );
-        stats.push_back( tStat( ST_DND, "Nie przeszkadzaæ", data->hImlDnd ) );
-        stats.push_back( tStat( ST_HIDDEN, "Ukryty", data->hImlInv ) );
-        // stats.push_back( tStat( ST_OFFLINE, "Niedostêpny", data->hImlOffline ) );
+        // stats.push_back( sStatus( ST_ONLINE, "Dostêpny", data->hImlOnline ) );
+        // stats.push_back( sStatus( ST_CHAT, "Pogadam", data->hImlChat ) );
+        stats.push_back( sStatus( ST_AWAY, "Zaraz wracam", data->hImlAway ) );
+        stats.push_back( sStatus( ST_NA, "Nieosi¹galny", data->hImlNa ) );
+        stats.push_back( sStatus( ST_DND, "Nie przeszkadzaæ", data->hImlDnd ) );
+        stats.push_back( sStatus( ST_HIDDEN, "Ukryty", data->hImlInv ) );
+        // stats.push_back( sStatus( ST_OFFLINE, "Niedostêpny", data->hImlOffline ) );
 
         int count = stats.size();
         int width = count * 40;
@@ -78,7 +78,7 @@ namespace kAway2 {
             x, 30, 40, 20, hWnd, (HMENU) it->id, Ctrl->hInst(), NULL);
           x += 40;
           ti.hwnd = hWndTmp;
-          ti.lpszText = (LPSTR) it->name.c_str();
+          ti.lpszText = (LPSTR) it->name;
           SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM) &ti);
           wCtrl->prepareButtonImage(it->img, hWnd, net, it->id);
         }
@@ -158,70 +158,74 @@ namespace kAway2 {
         break;
       }
 
-    case WM_DESTROY: {
-      wndData *data = (wndData *) GetWindowLong(hWnd, GWL_USERDATA);
-      wCtrl->removeInstance(data->net);
+      case WM_DESTROY: {
+        sWndData *data = (sWndData*) GetWindowLong(hWnd, GWL_USERDATA);
+        wCtrl->removeInstance(data->net);
 
-      delete data;
-      return(0);
-    }
+        delete data;
+        return(0);
+      }
 
-    case WM_COMMAND:
-      switch(LOWORD(wParam)) {
-        case 2:
-        case SC_CLOSE:
-        DestroyWindow(hWnd);
-        break;
+      case WM_COMMAND: {
+        switch(LOWORD(wParam)) {
+          case 2:
+          case SC_CLOSE: {
+            DestroyWindow(hWnd);
+            break;
+          }
 
-        case 1:
-        case STATUS_OK: {
-          wndData *data = (wndData *) GetWindowLong(hWnd, GWL_USERDATA);
-          int len = SendMessage(GetDlgItem(hWnd, STATUS_EDIT_INFO), WM_GETTEXTLENGTH, 0, 0) + 1;
-          char * msg = new char[len];
-          
-          GetWindowText(GetDlgItem(hWnd, STATUS_EDIT_INFO), msg, len);
-          sMRU list;
-          std::string name = wCtrl->getMruName();
-          int status = -1;
-
-          list.name = name.c_str();
-          list.flags = MRU_SET_LOADFIRST | MRU_GET_USETEMP;
-          list.current = msg;
-          list.count = wCtrl->getMruSize();
-          IMessage(&sIMessage_MRU(IMC_MRU_SET, &list));
-
-          if (IsDlgButtonChecked(hWnd, ST_ONLINE)) status = ST_ONLINE;
-          if (IsDlgButtonChecked(hWnd, ST_CHAT)) status = ST_CHAT;
-          if (IsDlgButtonChecked(hWnd, ST_AWAY)) status = ST_AWAY;
-          if (IsDlgButtonChecked(hWnd, ST_NA)) status = ST_NA;
-          if (IsDlgButtonChecked(hWnd, ST_DND)) status = ST_DND;
-          if (IsDlgButtonChecked(hWnd, ST_HIDDEN)) status = ST_HIDDEN;
-          if (IsDlgButtonChecked(hWnd, ST_OFFLINE)) status = ST_OFFLINE;
-
-          SETINT(cfg::status::changeOnEnable, (IsDlgButtonChecked(hWnd, STATUS_CHANGE) == BST_CHECKED) ? 1 : 0);
-          SETINT(cfg::status::changeInfoOnEnable, (IsDlgButtonChecked(hWnd, STATUS_CHANGE_INFO) == BST_CHECKED) ? 1 : 0);
-          SETINT(cfg::muteOnEnable, (IsDlgButtonChecked(hWnd, MUTE) == BST_CHECKED) ? 1 : 0);
-          SETINT(cfg::status::onEnableSt, status);
-
-          pCtrl->enable(msg, (IsDlgButtonChecked(hWnd, STATUS_CHANGE) == BST_CHECKED) ? status : -1);
-
-          delete [] msg;
-          DestroyWindow(hWnd);
-          break;
-        }
-
-        default: {
-          if (HIWORD(wParam) == CBN_SELCHANGE) {
-            int len = SendMessage(GetDlgItem(hWnd, STATUS_EDIT), WM_GETTEXTLENGTH, 0, 0) + 1;
+          case 1:
+          case STATUS_OK: {
+            sWndData *data = (sWndData*) GetWindowLong(hWnd, GWL_USERDATA);
+            int len = SendMessage(GetDlgItem(hWnd, STATUS_EDIT_INFO), WM_GETTEXTLENGTH, 0, 0) + 1;
             char * msg = new char[len];
+            
+            GetWindowText(GetDlgItem(hWnd, STATUS_EDIT_INFO), msg, len);
+            sMRU list;
+            std::string name = wCtrl->getMruName();
+            int status = -1;
 
-            GetWindowText(GetDlgItem(hWnd, STATUS_EDIT), msg, len);
-            SetWindowText(GetDlgItem(hWnd, STATUS_EDIT_INFO), msg);
+            list.name = name.c_str();
+            list.flags = MRU_SET_LOADFIRST | MRU_GET_USETEMP;
+            list.current = msg;
+            list.count = wCtrl->getMruSize();
+            IMessage(&sIMessage_MRU(IMC_MRU_SET, &list));
+
+            if (IsDlgButtonChecked(hWnd, ST_ONLINE)) status = ST_ONLINE;
+            if (IsDlgButtonChecked(hWnd, ST_CHAT)) status = ST_CHAT;
+            if (IsDlgButtonChecked(hWnd, ST_AWAY)) status = ST_AWAY;
+            if (IsDlgButtonChecked(hWnd, ST_NA)) status = ST_NA;
+            if (IsDlgButtonChecked(hWnd, ST_DND)) status = ST_DND;
+            if (IsDlgButtonChecked(hWnd, ST_HIDDEN)) status = ST_HIDDEN;
+            if (IsDlgButtonChecked(hWnd, ST_OFFLINE)) status = ST_OFFLINE;
+
+            SETINT(cfg::status::changeOnEnable, (IsDlgButtonChecked(hWnd, STATUS_CHANGE) == BST_CHECKED) ? 1 : 0);
+            SETINT(cfg::status::changeInfoOnEnable, (IsDlgButtonChecked(hWnd, STATUS_CHANGE_INFO) == BST_CHECKED) ? 1 : 0);
+            SETINT(cfg::muteOnEnable, (IsDlgButtonChecked(hWnd, MUTE) == BST_CHECKED) ? 1 : 0);
+            SETINT(cfg::status::onEnableSt, status);
+
+            pCtrl->enable(msg, (IsDlgButtonChecked(hWnd, STATUS_CHANGE) == BST_CHECKED) ? status : -1);
+
             delete [] msg;
+            DestroyWindow(hWnd);
+            break;
+          }
 
-            return(1);
+          default: {
+            if (HIWORD(wParam) == CBN_SELCHANGE) {
+              int len = SendMessage(GetDlgItem(hWnd, STATUS_EDIT), WM_GETTEXTLENGTH, 0, 0) + 1;
+              char * msg = new char[len];
+
+              GetWindowText(GetDlgItem(hWnd, STATUS_EDIT), msg, len);
+              SetWindowText(GetDlgItem(hWnd, STATUS_EDIT_INFO), msg);
+              delete [] msg;
+
+              return(1);
+            }
+            break;
           }
         }
+        break;
       }
     }
     return(DefWindowProc(hWnd, iMsg, wParam, lParam));

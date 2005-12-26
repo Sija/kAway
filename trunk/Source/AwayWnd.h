@@ -13,7 +13,7 @@
 #pragma once
 
 namespace kAway2 {
-  struct wndData {
+  struct sWndData {
     unsigned int net;
     HIMAGELIST hImlOnline;
     HIMAGELIST hImlChat;
@@ -23,8 +23,8 @@ namespace kAway2 {
     HIMAGELIST hImlInv;
     HIMAGELIST hImlOffline;
 
-    wndData(int _net = 0): net(_net), hImlOnline(0), hImlChat(0), hImlAway(0), hImlNa(0), hImlDnd(0), hImlInv(0), hImlOffline(0) { }
-    ~wndData() {
+    sWndData(int _net = 0): net(_net), hImlOnline(0), hImlChat(0), hImlAway(0), hImlNa(0), hImlDnd(0), hImlInv(0), hImlOffline(0) { }
+    ~sWndData() {
       if (hImlOnline)  ImageList_Destroy(hImlOnline);
       if (hImlChat)    ImageList_Destroy(hImlChat);
       if (hImlAway)    ImageList_Destroy(hImlAway);
@@ -35,22 +35,21 @@ namespace kAway2 {
     }
   };
 
-  struct tStat {
+  struct sStatus {
     unsigned int id;
-    std::string name;
+    const char * name;
     HIMAGELIST img;
 
-    tStat(int _id, std::string _name, HIMAGELIST _img) : id(_id), name(_name), img(_img) { }
+    sStatus(int _id, const char * _name, HIMAGELIST _img) : id(_id), name(_name), img(_img) { }
   };
 
-  typedef std::list<tStat> tStats;
+  typedef std::list<sStatus> tStats;
 
   class AwayWnd {
     public:
       AwayWnd(std::string className, std::string mruName, int mruSizeCfgCol);
       ~AwayWnd();
 
-      LRESULT CALLBACK actionProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
       void prepareButtonImage(HIMAGELIST &hIml, HWND hWnd, int net, int status);
 
       inline bool haveInstance(int key) {

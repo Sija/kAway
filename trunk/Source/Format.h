@@ -19,12 +19,12 @@ namespace kAway2 {
     STRING
   };
 
-  struct helpVar {
+  struct sHelpVar {
     const std::string name; // nazwa zmiennej
     const std::string desc; // opis zmiennej
 
     // konstruktor
-    helpVar(std::string _name, std::string _desc) : name(_name), desc(_desc) { }
+    sHelpVar(std::string _name, std::string _desc) : name(_name), desc(_desc) { }
   };
 
   struct sVar {
@@ -47,12 +47,13 @@ namespace kAway2 {
     }
   };
 
-  typedef std::list<helpVar> tHelpVars;
+  typedef std::list<sHelpVar> tHelpVars;
   typedef std::list<sVar> tVars;
 
   class Format {
     public:
-      Format(bool format = true, std::string pattern = "/\\{([^a-z0-9]*)([a-z0-9]+)([^a-z0-9]*)\\}/i");
+      Format(bool format = true, 
+        std::string pattern = "/\\{([^a-z0-9]*)([a-z0-9]+)(?:\\|([a-z0-9]+))?([^a-z0-9]*)\\}/i");
       ~Format();
 
     public:
