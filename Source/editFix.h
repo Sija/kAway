@@ -4,8 +4,7 @@
  *  Please READ /License.txt FIRST!
  *
  *  Copyright (C)2005 Sijawusz Pur Rahnama
- *  Copyright (C)2004 Kuba Niegowski
- *  Copyright (C)2003-2004 Olórin
+ *  Copyright (C)2004-2005 Olórin
  *
  *  $Id$
  */
@@ -19,7 +18,7 @@
 
 WNDPROC oldEditFix = NULL;
 
-LRESULT CALLBACK EditFix(HWND hWnd,UINT iMsg,WPARAM wParam, LPARAM lParam){
+LRESULT CALLBACK EditFix(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
   switch (iMsg) {
     case WM_CHAR: {
       HWND parent = GetParent(hWnd);
@@ -30,7 +29,10 @@ LRESULT CALLBACK EditFix(HWND hWnd,UINT iMsg,WPARAM wParam, LPARAM lParam){
       tmp = GetKeyState(VK_MENU);
       flag |= HIBYTE(tmp) ? MOD_ALT : 0;
 
-      if (!(flag & MOD_ALT) && (flag & MOD_CONTROL) && HIBYTE(GetKeyState(VK_BACK))) {
+      if ((flag & MOD_CONTROL) && HIBYTE(GetKeyState(0x41))) {
+        SendMessage(hWnd, EM_SETSEL, (WPARAM)0, (LPARAM)-1);
+        return(0);
+      } else if (!(flag & MOD_ALT) && (flag & MOD_CONTROL) && HIBYTE(GetKeyState(VK_BACK))) {
         int length = SendMessage(hWnd, WM_GETTEXTLENGTH, 0, 0) + 1;
         char * body_tmp = new char[length];
 
@@ -40,7 +42,10 @@ LRESULT CALLBACK EditFix(HWND hWnd,UINT iMsg,WPARAM wParam, LPARAM lParam){
         int selectionBeg, selectionEnd;
         SendMessage(hWnd, EM_GETSEL, (WPARAM) &selectionBeg, (LPARAM) &selectionEnd);
 
-        if (selectionBeg != selectionEnd) goto ret;
+        if (selectionBeg != selectionEnd) {
+          SendMessage(hWnd, EM_REPLACESEL, true, (LPARAM) "");
+          return(0);
+        }
           
         rest = temp.substr(selectionBeg);
         temp = temp.substr(0, selectionBeg);
@@ -68,7 +73,5 @@ LRESULT CALLBACK EditFix(HWND hWnd,UINT iMsg,WPARAM wParam, LPARAM lParam){
       break;
     }
   }
-
-ret:
   return(CallWindowProc(oldEditFix, hWnd, iMsg, wParam, lParam));
 }

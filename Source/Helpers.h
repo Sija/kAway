@@ -66,6 +66,40 @@ namespace kAway2 {
       Ctrl->IMessage(&KNotify::sIMessage_notify(text, ico));
     }
 
+    void addItemToHistory(cMessage* msg, int cnt, const char * dir, std::string name, int session = 0) {
+      sHISTORYADD item;
+
+      item.cnt = cnt;
+      item.m = msg;
+      item.dir = dir;
+      item.name = name.c_str();
+      item.session = session;
+
+      Ctrl->ICMessage(IMI_HISTORY_ADD, (int) &item);
+    }
+
+    int getPluginsGroup() {
+      return(ICMessage(IMI_GETPLUGINSGROUP));
+    }
+
+    void chgBtn(int group, int id, int cnt, const char * name = 0, int ico = 0, int flags = -1) {
+      sUIActionInfo ai;
+
+      if (name) ai.txt = (char*) name;
+      if (ico) ai.p1 = ico;
+      if (flags >= 0) ai.status = flags;
+      if (flags >= 0) ai.statusMask = -1;
+
+      ai.act = sUIAction(group, id, cnt);
+      ai.mask = (name ? UIAIM_TXT : 0) | (ico ? UIAIM_P1 : 0) | (flags >= 0 ? UIAIM_STATUS : 0);
+
+      UIActionSet(ai);
+    }
+
+    void chgBtn(int group, int id, const char * name, int ico = 0, int flags = 0) {
+      UIActionSet(sUIActionInfo(group, id, 0, flags, (char*) name, ico));
+    }
+
     void clearMru(const char * name) {
       sMRU mru;
 

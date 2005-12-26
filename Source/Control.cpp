@@ -13,6 +13,7 @@
 namespace kAway2 {
   Control::Control() {
     this->awayTime = new Stamina::Date64(false);
+    this->pluginsGroup = Helpers::getPluginsGroup();
 
     this->isOn = false;
     this->muteStateSwitched = false;
@@ -23,8 +24,7 @@ namespace kAway2 {
     delete this->awayTime;
     this->awayTime = NULL;
 
-    this->ignoredUids.clear();
-    this->msgRcvTimes.clear();
+    this->cntProps.clear();
   }
 
   void Control::Log(enDebugLevel level, const char * format, va_list ap) {
@@ -56,21 +56,18 @@ namespace kAway2 {
     }
 
     if (GETINT(cfg::muteOnEnable) && !GETINT(kSound::Cfg::mute)) {
-      Helpers::UIActionCall(ICMessage(IMI_GETPLUGINSGROUP), kSound::action::mute);
+      Helpers::UIActionCall(this->pluginsGroup, kSound::action::mute);
       this->muteStateSwitched = true;
     }
 
-    this->checkBtn(ICMessage(IMI_GETPLUGINSGROUP), ui::powerInMainWnd, true);
-    this->checkBtn(IMIG_MSGTB, ui::powerInCntWnd, true, true);
-    this->checkBtn(IMIG_TRAY, ui::powerInTrayMenu, true);
+    this->switchBtns(true);
 
     int count = IMessage(IMC_CNT_COUNT);
     for (int i = 0; i < count; i++) {
       if (Helpers::isMsgWndOpen(i)) {
-        if (Helpers::altCfgVal(i, cfg::reply::onEnable) && !silent && !this->isIgnoredUid(i)) {
+        if (Helpers::altCfgVal(i, cfg::reply::onEnable) && !silent && !this->cntProp(i)->ignored) {
           this->sendMsgTpl(i, cfg::tpl::enable);
         }
-        this->checkBtn(IMIG_MSGTB, ui::powerInCntWnd, i, true);
       }
     }
 
@@ -88,20 +85,17 @@ namespace kAway2 {
     }
 
     if (this->muteStateSwitched && GETINT(kSound::Cfg::mute)) {
-      Helpers::UIActionCall(ICMessage(IMI_GETPLUGINSGROUP), kSound::action::mute);
+      Helpers::UIActionCall(this->pluginsGroup, kSound::action::mute);
     }
 
-    this->checkBtn(ICMessage(IMI_GETPLUGINSGROUP), ui::powerInMainWnd, false);
-    this->checkBtn(IMIG_MSGTB, ui::powerInCntWnd, false, true);
-    this->checkBtn(IMIG_TRAY, ui::powerInTrayMenu, false);
+    this->switchBtns(false);
 
     int count = IMessage(IMC_CNT_COUNT);
     for (int i = 0; i < count; i++) {
       if (Helpers::isMsgWndOpen(i)) {
-        if (Helpers::altCfgVal(i, cfg::reply::onDisable) && !silent && !this->isIgnoredUid(i)) {
+        if (Helpers::altCfgVal(i, cfg::reply::onDisable) && !silent && !this->cntProp(i)->ignored) {
           this->sendMsgTpl(i, cfg::tpl::disable, msg);
         }
-        this->checkBtn(IMIG_MSGTB, ui::powerInCntWnd, i, false);
       }
     }
 
@@ -111,10 +105,30 @@ namespace kAway2 {
 
     this->awayMsg = "";
     this->awayTime->clear();
-    this->ignoredUids.clear();
-    this->msgRcvTimes.clear();
+    this->cntProps.clear();
+
     this->isOn = false;
     this->muteStateSwitched = false;
+  }
+
+  void Control::switchBtns(bool state) {
+    int pIco = (state) ? ico::disable : ico::enable;
+    const char * pName = (state) ? "Wy³¹cz tryb away" : "W³¹cz tryb away";
+
+    Helpers::chgBtn(IMIG_TRAY, ui::powerInTrayMenu, pName, pIco);
+    Helpers::chgBtn(this->pluginsGroup, ui::powerInMainWnd, pName, pIco, 
+      (state && (this->pluginsGroup != IMIG_PLUGINS)) ? ACTS_CHECKED : 0);
+    Helpers::chgBtn(IMIG_MSGTB, ui::msgTbGrp, "kAway2", ico::logoSmall, 
+      ACTR_INIT | ACTS_GROUP | (state ? ACTS_CHECKED : 0));
+
+    int count = IMessage(IMC_CNT_COUNT);
+    for (int i = 0; i < count; i++) {
+      if (Helpers::isMsgWndOpen(i)) {
+        Helpers::chgBtn(IMIG_MSGTB, ui::msgTbGrp, i, "kAway2", ico::logoSmall, 
+          ACTR_INIT | ACTS_GROUP | (state ? ACTS_CHECKED : 0));
+      }
+    }
+    delete [] pName;
   }
 
   void Control::sendMsgTpl(int cnt, int tplId, std::string msgVar) {
@@ -128,9 +142,9 @@ namespace kAway2 {
     ext = SetExtParam(ext, "kA2AutoMsg", "true");
     ext = SetExtParam(ext, MEX_NOSOUND, "1");
 
-    bool isReply = (tplId == cfg::tpl::reply);
     Format *format = new Format;
 
+    format->addVar("uid", uid);
     format->addVar("display", GETCNTC(cnt, CNT_DISPLAY));
     format->addVar("name", GETCNTC(cnt, CNT_NAME));
     format->addVar("nick", GETCNTC(cnt, CNT_NICK));
@@ -139,56 +153,20 @@ namespace kAway2 {
     format->addVar("time", this->awayTime->strftime(GETSTRA(cfg::timeFormat)));
     format->addVar("msg", (tplId == cfg::tpl::disable) ? msgVar : this->awayMsg);
 
+    std::string body = Helpers::trim(format->parse(Helpers::altCfgStrVal(cnt, tplId)));
+    cMessage msg = Message::prepare(uid, "", net, body, MT_MESSAGE, ext, 
+      MF_SEND | (Helpers::altCfgVal(cnt, cfg::reply::useHtml) ? MF_HTML : 0));
+
+    HWND hwndMsg = (HWND) UIGroupHandle(sUIAction(0, IMIG_MSGWND, cnt));
+    int session = (int) GetProp(hwndMsg, "MsgSession");
+    if (!session) SetProp(hwndMsg, "MsgSession", (HANDLE) 1);
+
+    Message::send(&msg);
+    Helpers::addItemToHistory(&msg, cnt, "messages", "", session);
+
     this->Debug("[Control::sendMsgTpl()]: tpl.id = %i, msg.net = %i, msg.uid = %s", 
       tplId, net, uid.c_str());
 
-    Message::send(cnt, Helpers::trim(format->parse(Helpers::altCfgStrVal(cnt, tplId))), 
-      MT_MESSAGE, ext, Helpers::altCfgVal(cnt, cfg::reply::useHtml), 
-      (/*!isReply && */Helpers::altCfgVal(cnt, cfg::reply::showInWnd)));
-
-    /*
-    if (Helpers::altCfgVal(cnt, cfg::reply::showInWnd) && isReply) {
-      Message::send("", uid, net, Helpers::trim(format->parse(GETSTRA(tplId))), 
-        MT_MESSAGE, ext, Helpers::altCfgVal(cnt, cfg::reply::useHtml));
-    }*/
     delete format; format = NULL;
-  }
-
-  void Control::checkBtn(int group, int id, int cnt, bool state, bool check) {
-    sUIAction act(group, id, cnt);
-    sUIActionInfo ai;
-
-    ai.act = act;
-    ai.mask = UIAIM_P1 | UIAIM_TXT | UIAIM_STATUS;
-    ai.p1 = (state) ? ico::disable : ico::enable;
-    ai.txt = (state) ? "Wy³¹cz tryb away" : "W³¹cz tryb away";
-    ai.status = (state && check) ? ACTS_CHECKED : 0;
-
-    ICMessage(IMI_ACTION_SET, (int)&ai);
-  }
-
-  void Control::checkBtn(int group, int id, bool state, bool check) {
-    sUIActionInfo ai(group, id, 0, (state && check) ? ACTS_CHECKED : 0, 
-      (state) ? "Wy³¹cz tryb away" : "W³¹cz tryb away", (state) ? ico::disable : ico::enable);
-    UIActionSet(ai);
-  }
-
-  bool Control::isIgnoredUid(int cntId) {
-    for (tIgnoredUids::iterator it = this->ignoredUids.begin(); it != this->ignoredUids.end(); it++) {
-      if ((*it) == cntId) return(true);
-    }
-    return(false);
-  }
-
-  void Control::addIgnoredUid(int cntId) {
-    this->ignoredUids.push_back(cntId);
-  }
-
-  void Control::removeIgnoredUid(int cntId) {
-    for (tIgnoredUids::iterator it = this->ignoredUids.begin(); it != this->ignoredUids.end(); it++) {
-      if ((*it) == cntId) {
-        it = this->ignoredUids.erase(it); break;
-      }
-    }
   }
 }

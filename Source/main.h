@@ -13,7 +13,7 @@
 namespace kAway2 {
   const unsigned int net = 667;
   const bool debug = true;
-  const char poweredBy[64] = "The Presage and Illogic";
+  const char poweredBy[64] = "Bonobo";
 
   namespace ui {
     const unsigned int ui = net * 1000;
@@ -30,6 +30,9 @@ namespace kAway2 {
     const unsigned int powerInMainWnd = ui + 8;
     const unsigned int powerInCntWnd = ui + 9;
     const unsigned int powerInTrayMenu = ui + 10;
+
+    const unsigned int ignoreBtn = ui + 11;
+    const unsigned int msgTbGrp = ui + 12;
   }
 
   namespace ico {
@@ -97,6 +100,8 @@ namespace kAway2 {
     const unsigned int mruSize = cfg + 11;
     const unsigned int muteOnEnable = cfg + 12;
     const unsigned int disableConfirmation = cfg + 13;
+
+    const char historyFolder[16] = "kAway2";
 
     namespace tpl {
       const unsigned int tpl = cfg + 100;

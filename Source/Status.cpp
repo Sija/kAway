@@ -40,7 +40,7 @@ namespace kAway2 {
   }
 
   void Status::addReplacementSt(int net, int before, int after) {
-    this->stReplacements.push_back(statusReplacement(net, before, after));
+    this->stReplacements.push_back(sStReplacement(net, before, after));
   }
 
   void Status::removeReplacementSt(int net, int before) {
@@ -76,7 +76,7 @@ namespace kAway2 {
         st = this->applyReplacementSt(net, st);
 
       if (this->isRemembered())
-        this->lastSt[net] = itemInfo(net, st, info);
+        this->lastSt[net] = sItemInfo(net, st, info);
 
       Ctrl->IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, info.length() ? (int) info.c_str() : 0);
 
@@ -93,6 +93,7 @@ namespace kAway2 {
     for (tItemInfos::iterator it = this->rememberedSt.begin(); it != this->rememberedSt.end(); it++) {
       if (it->net == net) return(it->st);
     }
+    return(0);
   }
 
   std::string Status::getActualInfo(int net) {
@@ -123,7 +124,7 @@ namespace kAway2 {
     if (this->isNetUseful(net)) {
       int st = this->getActualStatus(net);
       std::string info = this->getActualInfo(net);
-      this->rememberedSt.push_back(itemInfo(net, st, info));
+      this->rememberedSt.push_back(sItemInfo(net, st, info));
 
       Control::Debug("[Status::rememberInfo().item]: net = %i, status = %i, info = %s",
         net, st, (info.length() ? info.c_str() : "(none)"));

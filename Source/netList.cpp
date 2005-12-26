@@ -32,7 +32,7 @@ namespace kAway2 {
     tItemNets nets;
 
     if (!buff.empty()) {
-      itemNet item;
+      sItemNet item;
 
       int pos = (int) buff.find("|");
       int off = 0;
@@ -56,7 +56,7 @@ namespace kAway2 {
     int plugs = IMessage(IMC_PLUG_COUNT);
 
     std::string name;
-    itemNet item;
+    sItemNet item;
 
     for (int i = 1, n = 1; i < plugs; i++) {
       id = IMessage(IMC_PLUG_ID, 0, 0, i);

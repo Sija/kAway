@@ -11,7 +11,17 @@
 #pragma once
 
 namespace kAway2 {
-  typedef std::deque<int> tIgnoredUids;
+  struct sCnt {
+    bool ignored;
+    bool historySessOpen;
+    int lastMsgRcvTime;
+
+    // konstruktor
+    sCnt(bool _ignored = false, bool _historySessOpen = false, int _lastMsgRcvTime = 0) : 
+      ignored(_ignored), historySessOpen(_historySessOpen), lastMsgRcvTime(_lastMsgRcvTime) { }
+  };
+
+  typedef std::map<int, sCnt> tCnts;
 
   class Control {
     public:
@@ -21,9 +31,7 @@ namespace kAway2 {
       void enable(std::string msg = "", int status = -1, bool silent = false);
       void disable(std::string msg = "", bool silent = false);
 
-      bool isIgnoredUid(int cntId);
-      void addIgnoredUid(int cntId);
-      void removeIgnoredUid(int cntId);
+      void sendMsgTpl(int cnt, int tplId, std::string msgVar = "");
 
       inline bool isMuteSwitched() {
         return(this->muteStateSwitched);
@@ -43,6 +51,27 @@ namespace kAway2 {
 
       inline void setAutoAway(bool state) {
         this->autoAway = state;
+      }
+
+      inline void setStatusCtrl(Status *handle) {
+        this->sCtrl = handle;
+      }
+
+      inline int getPluginsGroup() {
+        return(this->pluginsGroup);
+      }
+
+      inline std::string getAwayMsg() {
+        return(this->awayMsg);
+      }
+
+      inline Stamina::Date64 *getAwayTime() {
+        return(this->awayTime);
+      }
+
+      inline sCnt *cntProp(int id) {
+        id = Ctrl->DTgetID(DTCNT, id);
+        return(&this->cntProps[id]);
       }
 
       static inline void Log(enDebugLevel level, const char * format, ...) {
@@ -68,35 +97,19 @@ namespace kAway2 {
         va_end(ap);
       }
 
-      inline void setStatusCtrl(Status *handle) {
-        this->sCtrl = handle;
-      }
-
-      inline std::string getAwayMsg() {
-        return(this->awayMsg);
-      }
-
-      inline Stamina::Date64 *getAwayTime() {
-        return(this->awayTime);
-      }
-
-      void sendMsgTpl(int cnt, int tplId, std::string msgVar = "");
-
-      std::map<int, int> msgRcvTimes;
-
     protected:
       bool isOn;
       bool muteStateSwitched;
       bool autoAway;
+      int pluginsGroup;
 
+      tCnts cntProps;
       std::string awayMsg;
       Stamina::Date64 *awayTime;
-      tIgnoredUids ignoredUids;
 
       static void Log(enDebugLevel level, const char * format, va_list ap);
 
-      void checkBtn(int group, int id, bool state, bool check = false);
-      void checkBtn(int group, int id, int cnt, bool state, bool check = true);
+      void switchBtns(bool state);
 
     private:
       Status *sCtrl;

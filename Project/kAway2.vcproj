@@ -169,6 +169,15 @@
 				RelativePath="..\Source\main.cpp">
 			</File>
 			<File
+				RelativePath="..\Source\Message.cpp">
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\Source\netList.cpp">
 				<FileConfiguration
 					Name="Release|Win32"
@@ -202,6 +211,9 @@
 			</File>
 			<File
 				RelativePath="..\Source\main.h">
+			</File>
+			<File
+				RelativePath="..\Source\Message.h">
 			</File>
 			<File
 				RelativePath="..\Source\netList.h">

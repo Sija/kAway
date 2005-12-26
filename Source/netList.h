@@ -11,17 +11,17 @@
 #pragma once
 
 namespace kAway2 {
-  struct itemNet {
+  struct sItemNet {
     unsigned int id;
     unsigned int net;
     std::string name;
     bool use;
 
-    itemNet(int _id = NULL, int _net = NULL, std::string _name = "", bool _use = true) :
+    sItemNet(int _id = 0, int _net = 0, std::string _name = "", bool _use = true) :
       id(_id), net(_net), name(_name), use(_use) { }
   };
 
-  typedef std::list<itemNet> tItemNets;
+  typedef std::list<sItemNet> tItemNets;
   typedef std::deque<int> tIgnoredNets;
 
   class NetList {
