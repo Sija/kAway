@@ -30,9 +30,8 @@ namespace kAway2 {
 
         LPCREATESTRUCT pCreate = (LPCREATESTRUCT) lParam;
         int net = (int) pCreate->lpCreateParams;
-        sWndData *data = new sWndData;
+        sWndData *data = new sWndData(net);
         SetWindowLong(hWnd, GWL_USERDATA, (LONG) data);
-        data->net = net;
 
         wCtrl->addInstance(net, hWnd);
 
@@ -82,13 +81,14 @@ namespace kAway2 {
           SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM) &ti);
           wCtrl->prepareButtonImage(it->img, hWnd, net, it->id);
         }
+        // int chkSt = IMessage(IM_GET_STATUS, net);
+        CheckDlgButton(hWnd, GETINT(cfg::status::onEnableSt), BST_CHECKED);
 
         // pole combo - wybór opisu
         HWND hWndCombo = CreateWindow("combobox", "", WS_TABSTOP | WS_CHILD | WS_VISIBLE | CBS_AUTOHSCROLL | WS_EX_CONTROLPARENT | 
           WS_EX_NOPARENTNOTIFY | CBS_DROPDOWNLIST, 13, 58, 274, 100, hWnd, (HMENU) STATUS_EDIT, Ctrl->hInst(), NULL);
-        SendMessage (hWndCombo, WM_SETFONT, (WPARAM) font, true);
-        
-        // oldEditFix = (WNDPROC) SetWindowLongPtr(GetDlgItem(hWndCombo, 0x3e9), GWLP_WNDPROC, (LONG_PTR) EditFix);
+        SendMessage(hWndCombo, WM_SETFONT, (WPARAM) font, true);
+        // SetProp(edit, "oldWndProc", (HANDLE) SetWindowLongPtr(GetDlgItem(hWndCombo, 0x3e9), GWLP_WNDPROC, (LONG_PTR) EditFix));
 
         // przycisk OK
         HWND hWndTmp = CreateWindowEx(WS_EX_CONTROLPARENT, "button", "OK", BS_DEFPUSHBUTTON | BS_TEXT | WS_TABSTOP | WS_CHILD | WS_VISIBLE, 
@@ -148,12 +148,9 @@ namespace kAway2 {
         HWND edit = CreateWindowEx(WS_EX_CLIENTEDGE, "edit", mru.MRU->values[0], WS_TABSTOP | WS_VISIBLE | WS_CHILD | WS_VSCROLL | 
           ES_MULTILINE | ES_WANTRETURN, 13, 88, 274, 100, hWnd, (HMENU) STATUS_EDIT_INFO, Ctrl->hInst(), NULL);
         SendMessage(edit, WM_SETFONT, (WPARAM) font, true);
+        SetProp(edit, "oldWndProc", (HANDLE) SetWindowLongPtr(edit, GWLP_WNDPROC, (LONG_PTR) EditFix));
 
-        oldEditFix = (WNDPROC) SetWindowLongPtr(edit, GWLP_WNDPROC, (LONG_PTR) EditFix);
-
-        // int chkSt = IMessage(IM_GET_STATUS, net);
-        int chkSt = GETINT(cfg::status::onEnableSt);
-        CheckDlgButton(hWnd, chkSt, BST_CHECKED);
+        SetFocus(edit);
         SendMessage(hWndCombo, CB_SETCURSEL, 0, 0);
         break;
       }
@@ -168,12 +165,6 @@ namespace kAway2 {
 
       case WM_COMMAND: {
         switch(LOWORD(wParam)) {
-          case 2:
-          case SC_CLOSE: {
-            DestroyWindow(hWnd);
-            break;
-          }
-
           case 1:
           case STATUS_OK: {
             sWndData *data = (sWndData*) GetWindowLong(hWnd, GWL_USERDATA);
@@ -181,10 +172,10 @@ namespace kAway2 {
             char * msg = new char[len];
             
             GetWindowText(GetDlgItem(hWnd, STATUS_EDIT_INFO), msg, len);
-            sMRU list;
             std::string name = wCtrl->getMruName();
             int status = -1;
 
+            sMRU list;
             list.name = name.c_str();
             list.flags = MRU_SET_LOADFIRST | MRU_GET_USETEMP;
             list.current = msg;
@@ -207,6 +198,12 @@ namespace kAway2 {
             pCtrl->enable(msg, (IsDlgButtonChecked(hWnd, STATUS_CHANGE) == BST_CHECKED) ? status : -1);
 
             delete [] msg;
+            DestroyWindow(hWnd);
+            break;
+          }
+
+          case 2:
+          case SC_CLOSE: {
             DestroyWindow(hWnd);
             break;
           }

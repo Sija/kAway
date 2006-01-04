@@ -65,13 +65,12 @@ namespace kAway2 {
         if (dynSt) this->fCtrl->addVar(this->stInfoVar, this->getInfo(net));
 
         info = this->fCtrl->parse(info);
-        info = this->limitChars(info, net);
         info = Helpers::trim(info);
+        info = this->limitChars(info, net);
 
         if (dynSt) this->fCtrl->removeVar(this->stInfoVar);
       }
 
-      st = st ? st : -1;
       if (st != -1) 
         st = this->applyReplacementSt(net, st);
 
@@ -81,11 +80,11 @@ namespace kAway2 {
       Ctrl->IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, info.length() ? (int) info.c_str() : 0);
 
       Control::Debug("[Status::changeStatus().item]: net = %i, status = %i, info = %s",
-        net, st, (info.length() ? info.c_str() : "(none)"));
+        net, st, nullChk(info));
     }
   }
 
-  int Status::getActualStatus(int net) {
+  tStatus Status::getActualStatus(int net) {
     return(Ctrl->IMessage(IM_GET_STATUS, net));
   }
 
@@ -93,7 +92,7 @@ namespace kAway2 {
     for (tItemInfos::iterator it = this->rememberedSt.begin(); it != this->rememberedSt.end(); it++) {
       if (it->net == net) return(it->st);
     }
-    return(0);
+    return(-1);
   }
 
   std::string Status::getActualInfo(int net) {
@@ -127,7 +126,7 @@ namespace kAway2 {
       this->rememberedSt.push_back(sItemInfo(net, st, info));
 
       Control::Debug("[Status::rememberInfo().item]: net = %i, status = %i, info = %s",
-        net, st, (info.length() ? info.c_str() : "(none)"));
+        net, st, nullChk(info));
     }
   }
 
@@ -145,7 +144,7 @@ namespace kAway2 {
       Ctrl->IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, (int) info.c_str());
 
       Control::Debug("[Status::restoreInfo().item]: net = %i, status = %i, info = %s",
-        net, st, (info.length() ? info.c_str() : "(none)"));
+        net, st, nullChk(info));
     }
   }
 
@@ -155,7 +154,7 @@ namespace kAway2 {
     sIMessage_StatusChange *st = static_cast<sIMessage_StatusChange*>(msgBase);
     int net = Ctrl->IMessageDirect(IM_PLUG_NET, st->plugID);
 
-    if (this->getStatus(net)) {
+    if ((this->getStatus(net) != -1) && (st->status != ST_CONNECTING) && (st->status != ST_OFFLINE)) {
       for (tItemInfos::iterator it = this->rememberedSt.begin(); it != this->rememberedSt.end(); it++) {
         if (it->net == net) {
           if (st->status != this->lastSt[net].st) it->st = st->status;
@@ -164,7 +163,7 @@ namespace kAway2 {
         }
       }
       Control::Debug("[Status::actionHandle()]: net = %i, status = %i, info = %s", 
-        net, st->status, st->info);
+        net, st->status, nullChk(st->info));
     }
   }
 
@@ -177,7 +176,8 @@ namespace kAway2 {
       if (!this->onHidden() && (ST_HIDDEN == this->getActualStatus(net))) {
         if (this->isRemembered() && (this->lastSt[net].st == ST_HIDDEN))
           return(true);
-        return(false);
+        else
+          return(false);
       }
       return(true);
     }
@@ -205,7 +205,7 @@ namespace kAway2 {
         limit = tlen;
         break;
       case plugsNET::gg:
-        limit = gg;
+        limit = gaduGadu;
         break;
       default:
         limit = normal;

@@ -39,11 +39,11 @@
 #include <stamina/threadrun.h>
 #include <stamina/thread.h>
 #include <stamina/threadinvoke.h>
+#include <stamina/string.h>
+#include <stamina/timer.h>
 */
 
 #include <stamina/helpers.h>
-#include <stamina/timer.h>
-#include <stamina/string.h>
 #include <stamina/regex.h>
 #include <stamina/time64.h>
 
@@ -51,6 +51,7 @@
 #include <konnekt/ui.h>
 #include <konnekt/plug_func.h>
 #include <konnekt/knotify.h>
+#include <konnekt/tabletka.h>
 #include <konnekt/ksound.h>
 #include <konnekt/ui_message_controls.h>
 #include <konnekt/lib.h>

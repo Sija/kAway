@@ -27,8 +27,8 @@ LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,7,25
- PRODUCTVERSION 1,0,7,25
+ FILEVERSION 1,0,8,26
+ PRODUCTVERSION 1,0,8,26
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -45,12 +45,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Sijawusz Pur Rahnama"
             VALUE "FileDescription", "Implementacja IRCowej komendy /away"
-            VALUE "FileVersion", "1, 0, 7, 25"
+            VALUE "FileVersion", "1, 0, 8, 26"
             VALUE "InternalName", "kAway2"
             VALUE "LegalCopyright", "Copyright (C) 2005 Sijawusz Pur Rahnama"
             VALUE "OriginalFilename", "kAway2.dll"
             VALUE "ProductName", "kAway2"
-            VALUE "ProductVersion", "1, 0, 7, 25"
+            VALUE "ProductVersion", "1, 0, 8, 26"
             VALUE "URL", "http://www.kplugins.net/"
         END
     END

@@ -184,14 +184,14 @@ namespace kAway2 {
     IconRegister(IML_16, ico::accept, Ctrl->hDll(), IDI_ACCEPT);
     IconRegister(IML_16, ico::cancel, Ctrl->hDll(), IDI_CANCEL);
 
-    IconRegister(IML_16, ico::help, Ctrl->hDll(), IDI_HELP);
+    // IconRegister(IML_16, ico::help, Ctrl->hDll(), IDI_HELP);
     IconRegister(IML_16, ico::trash, Ctrl->hDll(), IDI_TRASH);
 
     /* Adding configuration tabs */
     UIGroupAdd(IMIG_NFO, ui::cntCfgGroup, ACTR_SAVE, "kAway2", ico::logoSmall);
     UIGroupAdd(IMIG_CFG_PLUGS, ui::cfgGroup, ACTR_SAVE, "kAway2", ico::logoSmall);
     UIGroupAdd(ui::cfgGroup, ui::replyCfgGroup, ACTR_SAVE, "Autoresponder", ico::reply);
-    UIGroupAdd(ui::cfgGroup, ui::statusCfgGroup, ACTR_SAVE, "Status", ico::status);
+    UIGroupAdd(ui::cfgGroup, ui::statusCfgGroup, ACTR_SAVE, "Opcje statusu", ico::status);
 
     /* Plugin info box */
     char header[400];
@@ -199,8 +199,8 @@ namespace kAway2 {
       "<span class='note'>Skompilowano: <b>%s</b> [<b>%s</b>]</span><br/>"
       "Informacje o wtyczce na stronie projektu "
       "<b>KPlugins</b> (http://kplugins.net/)<br/><br/>"
-      "Copyright © 2004-2005 <b>Sijawusz Pur Rahnama</b><br/>"
-      "Copyright © 2004-2005 <b>KPlugins Team</b>",
+      "Copyright © 2004-2006 <b>Sijawusz Pur Rahnama</b><br/>"
+      "Copyright © 2004-2006 <b>KPlugins Team</b>",
       poweredBy, __DATE__, __TIME__);
 
     char desc[300] = 
@@ -321,7 +321,7 @@ namespace kAway2 {
     UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_GROUPEND);
 
     UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_GROUP, "Szablon statusu");
-    sCtrl->fCtrl->UIDrawHelpBtn(stVars, ui::statusCfgGroup, ico::help);
+    sCtrl->fCtrl->UIDrawHelpBtn(stVars, ui::statusCfgGroup);
     UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::status);
     UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_GROUPEND);
 
@@ -368,15 +368,15 @@ namespace kAway2 {
       "Jeœli w³¹czone, znaki specjalne nale¿y zamieniaæ na ich HTML-owe odpowiedniki (np.: (< na &lt;), (> na &gt;))", cfg::reply::useHtml);
 
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_SEPARATOR, "OdpowiedŸ:");
-    sCtrl->fCtrl->UIDrawHelpBtn(rVars, ui::replyCfgGroup, ico::help);
+    sCtrl->fCtrl->UIDrawHelpBtn(rVars, ui::replyCfgGroup);
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::reply);
 
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_SEPARATOR, "W³¹czenie trybu away:");
-    sCtrl->fCtrl->UIDrawHelpBtn(rVars, ui::replyCfgGroup, ico::help);
+    sCtrl->fCtrl->UIDrawHelpBtn(rVars, ui::replyCfgGroup);
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::enable);
 
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_SEPARATOR, "Wy³¹czenie trybu away:");
-    sCtrl->fCtrl->UIDrawHelpBtn(rVars, ui::replyCfgGroup, ico::help);
+    sCtrl->fCtrl->UIDrawHelpBtn(rVars, ui::replyCfgGroup);
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::disable);
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_GROUPEND);
 
@@ -433,15 +433,15 @@ namespace kAway2 {
       "Jeœli w³¹czone, znaki specjalne nale¿y zamieniaæ na ich HTML-owe odpowiedniki (np.: (< na &lt;), (> na &gt;), etc.)");
 
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_SEPARATOR, "OdpowiedŸ:");
-    sCtrl->fCtrl->UIDrawHelpBtn(rVars, ui::cntCfgGroup, ico::help);
+    sCtrl->fCtrl->UIDrawHelpBtn(rVars, ui::cntCfgGroup);
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::reply);
 
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_SEPARATOR, "W³¹czenie trybu away:");
-    sCtrl->fCtrl->UIDrawHelpBtn(rVars, ui::cntCfgGroup, ico::help);
+    sCtrl->fCtrl->UIDrawHelpBtn(rVars, ui::cntCfgGroup);
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::enable);
 
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_SEPARATOR, "Wy³¹czenie trybu away:");
-    sCtrl->fCtrl->UIDrawHelpBtn(rVars, ui::cntCfgGroup, ico::help);
+    sCtrl->fCtrl->UIDrawHelpBtn(rVars, ui::cntCfgGroup);
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::disable);
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_GROUPEND);
 
@@ -571,7 +571,7 @@ int __stdcall IMessageProc(sIMessage_base *msgBase) {
       int oldId = Ctrl->ICMessage(IMC_FINDPLUG, plugsNET::kaway, IMT_ALL);
 
       if (oldId) {
-        Ctrl->IMessage(&sIMessage_plugOut(oldId,  "kAway2 jest nastêpc¹ wtyczki K.Away :)",
+        Ctrl->IMessage(&sIMessage_plugOut(oldId, "kAway2 jest nastêpc¹ wtyczki K.Away :)",
           sIMessage_plugOut::erNo, sIMessage_plugOut::euNowAndOnNextStart));
         return(-1);
       }
@@ -614,8 +614,8 @@ int __stdcall IMessageProc(sIMessage_base *msgBase) {
         std::string cmd = params[0];
         std::string msg = (params.size() > 1) ? body.substr(params[0].length() + 1, body.length()) : "";
 
-        bool del = false;
         int st = GETINT(cfg::status::onEnableSt);
+        bool del = false;
 
         Stamina::RegEx reg;
         reg.match("/^(away|brb)\\[(.+)\\]$/", cmd.c_str());
@@ -642,7 +642,7 @@ int __stdcall IMessageProc(sIMessage_base *msgBase) {
 
         if (del) {
           pCtrl->Debug("{IM_MSG_RCV}: cmd = %s, msg = %s, params = %i",
-            cmd.c_str(), (msg.length() ? msg.c_str() : "(none)"), params.size());
+            cmd.c_str(), nullChk(msg), params.size());
 
           m->flag |= MF_DONTADDTOHISTORY;
           m->flag |= MF_HIDE;
@@ -650,16 +650,14 @@ int __stdcall IMessageProc(sIMessage_base *msgBase) {
         }
       }
 
-      if (pCtrl->isEnabled()) {
+      if (pCtrl->isEnabled() && !pCtrl->cntProp(cnt)->ignored) {
         if (userMsg && Helpers::altCfgVal(cnt, cfg::disableOnMsgSend)) {
           pCtrl->disable(); break;
-        } else if (pCtrl->cntProp(cnt)->ignored) {
-          break;
         }
 
         if (Helpers::altCfgVal(cnt, cfg::saveToHistory)) {
-          Helpers::addItemToHistory(m, cnt, cfg::historyFolder, "", (int) pCtrl->cntProp(cnt)->historySessOpen);
-          pCtrl->cntProp(cnt)->historySessOpen = true;
+          Helpers::addItemToHistory(m, cnt, cfg::historyFolder, "", pCtrl->cntProp(cnt)->historySess);
+          pCtrl->cntProp(cnt)->historySess = 1;
         }
 
         if (strlen(m->fromUid) && Helpers::altCfgVal(cnt, cfg::reply::onMsg)) {

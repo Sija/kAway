@@ -13,7 +13,7 @@
 namespace kAway2 {
   const unsigned int net = 667;
   const bool debug = true;
-  const char poweredBy[64] = "Bonobo";
+  const char poweredBy[64] = "Jan Jelinek";
 
   namespace ui {
     const unsigned int ui = net * 1000;
