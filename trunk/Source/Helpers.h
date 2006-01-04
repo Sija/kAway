@@ -23,6 +23,14 @@ std::string btos(bool value) {
   return(btoa(value));
 }
 
+char * nullChk(const std::string& value) {
+  return(value.length() ? value.c_str() : "(none)");
+}
+
+char * nullChk(char * value) {
+  return(strlen(value) ? value : "(none)");
+}
+
 namespace kAway2 {
   namespace Helpers {
     std::string icon32(int ico) {
@@ -58,7 +66,7 @@ namespace kAway2 {
     }
 
     bool isMsgWndOpen(int cntID) {
-      return(UIGroupHandle(sUIAction(0, IMIG_MSGWND, cntID)) ? true : false);
+      return(Tabs::GetWindowState(cntID));
     }
 
     void showKNotify(char * text, int ico) {
@@ -79,7 +87,11 @@ namespace kAway2 {
     }
 
     int getPluginsGroup() {
-      return(ICMessage(IMI_GETPLUGINSGROUP));
+      return(Ctrl->ICMessage(IMI_GETPLUGINSGROUP));
+    }
+
+    int findParentAction(int group, int id) {
+      return(Ctrl->ICMessage(IMI_ACTION_FINDPARENT, (int) &sUIAction(group, id)));
     }
 
     void chgBtn(int group, int id, int cnt, const char * name = 0, int ico = 0, int flags = -1) {
@@ -87,8 +99,10 @@ namespace kAway2 {
 
       if (name) ai.txt = (char*) name;
       if (ico) ai.p1 = ico;
-      if (flags >= 0) ai.status = flags;
-      if (flags >= 0) ai.statusMask = -1;
+      if (flags >= 0) {
+        ai.status = flags;
+        ai.statusMask = -1;
+      }
 
       ai.act = sUIAction(group, id, cnt);
       ai.mask = (name ? UIAIM_TXT : 0) | (ico ? UIAIM_P1 : 0) | (flags >= 0 ? UIAIM_STATUS : 0);

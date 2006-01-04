@@ -12,7 +12,7 @@
 #pragma once
 
 namespace kAway2 {
-  typedef std::string (*tFunc)();
+  typedef std::string (__stdcall*tFunc)(class Format * fCtrl);
 
   enum enType {
     FUNCTION,
@@ -52,15 +52,17 @@ namespace kAway2 {
 
   class Format {
     public:
-      Format(bool format = true, 
-        std::string pattern = "/\\{([^a-z0-9]*)([a-z0-9]+)(?:\\|([a-z0-9]+))?([^a-z0-9]*)\\}/i");
+      Format(bool format = true, std::string pattern = 
+        "/\\{([^a-z0-9]*)([a-z0-9]+)"
+        "(?:\\|([a-z0-9]+|(?:\\((?:\"[^\"]+\"|'[^']+')\\))))?"
+        "([^a-z0-9]*)\\}/i");
       ~Format();
 
     public:
       std::string parse(std::string txt);
 
-      std::string buildHtmlHelp();
-      std::string buildHtmlHelp(tHelpVars vars);
+      std::string buildVarsList();
+      std::string buildVarsList(tHelpVars vars);
 
       void UIDrawHelpBtn(int cfgGroup, int ico = 0);
       void UIDrawHelpBtn(tHelpVars vars, int cfgGroup, int ico = 0);

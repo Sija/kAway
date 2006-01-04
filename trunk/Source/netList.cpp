@@ -106,12 +106,12 @@ namespace kAway2 {
   void NetList::actionHandle(int id, int code) {
     if (!this) return;
 
-    if (id == this->cfgGroup && code == ACTN_SAVE) {
+    if ((id == this->cfgGroup) && (code == ACTN_SAVE)) {
       this->configSaved = true;
-    } else if (id == this->actCreate && code == ACTN_CREATEWINDOW) {
+    } else if ((id == this->actCreate) && (code == ACTN_CREATEWINDOW)) {
       this->netsDrawn = true;
       this->UISetState();
-    } else if (id == this->actDestroy && code == ACTN_DESTROYWINDOW) {
+    } else if ((id == this->actDestroy) && (code == ACTN_DESTROYWINDOW)) {
       if (this->configSaved && this->netsDrawn) {
         Control::Debug("[NetList::actionHandle()]: id = %i, code = %i", id, code);
         this->UIGetState();
@@ -123,21 +123,21 @@ namespace kAway2 {
   }
 
   void NetList::UIDraw(int colCount) {
-    int c = 1, i = 0, ico;
-    int count = this->nets.size();
+    int i = 0, col = 0, ico;
+    int netsCount = this->nets.size();
 
     UIActionCfgAdd(this->cfgGroup, this->actDestroy, ACTT_HWND, 0, 0, 0, -20);
 
-    for (tItemNets::iterator it = this->nets.begin(); it != this->nets.end(); it++, i++, c++) {
+    for (tItemNets::iterator it = this->nets.begin(); it != this->nets.end(); it++, i++, col++) {
       ico = UIIcon(IT_LOGO, (int) it->net, 0, 0);
-      i %= colCount;
+      col %= colCount;
 
       Control::Debug("[NetList::UIDraw().item]: name = %s, use = %s",
         it->name.c_str(), btoa(it->use));
 
-      UIActionCfgAdd(this->cfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(ico).c_str(), 0, (i > 0) ? 10 : 0);
-      UIActionCfgAdd(this->cfgGroup, this->dynActGroup + it->id, (i != (colCount - 1) && c != count) ? ACTT_CHECK | 
-        ACTSC_INLINE : ACTT_CHECK, it->name.c_str());
+      UIActionCfgAdd(this->cfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(ico).c_str(), 0, (col > 0) ? 10 : 0);
+      UIActionCfgAdd(this->cfgGroup, this->dynActGroup + it->id, ACTT_CHECK | 
+        ((col != (colCount - 1) && i != (netsCount - 1)) ? ACTSC_INLINE : 0), it->name.c_str());
     }
 
     UIActionCfgAdd(this->cfgGroup, this->actCreate, ACTT_HWND, 0, 0, 0, -20);
@@ -193,10 +193,7 @@ namespace kAway2 {
   }
 
   bool NetList::isConnected(int net) {
-    if (IMessage(IM_ISCONNECTED, net, IMT_PROTOCOL))
-      return(true);
-    else
-      return(false);
+    return(Ctrl->IMessage(IM_ISCONNECTED, net, IMT_PROTOCOL));
   }
 
   bool NetList::isIgnored(int net) {

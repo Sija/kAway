@@ -13,12 +13,12 @@
 namespace kAway2 {
   struct sCnt {
     bool ignored;
-    bool historySessOpen;
+    int historySess;
     int lastMsgRcvTime;
 
     // konstruktor
-    sCnt(bool _ignored = false, bool _historySessOpen = false, int _lastMsgRcvTime = 0) : 
-      ignored(_ignored), historySessOpen(_historySessOpen), lastMsgRcvTime(_lastMsgRcvTime) { }
+    sCnt(bool _ignored = false, int _historySess = 0, int _lastMsgRcvTime = 0) : 
+      ignored(_ignored), historySess(_historySess), lastMsgRcvTime(_lastMsgRcvTime) { }
   };
 
   typedef std::map<int, sCnt> tCnts;
@@ -70,8 +70,7 @@ namespace kAway2 {
       }
 
       inline sCnt *cntProp(int id) {
-        id = Ctrl->DTgetID(DTCNT, id);
-        return(&this->cntProps[id]);
+        return(&this->cntProps[Ctrl->DTgetID(DTCNT, id)]);
       }
 
       static inline void Log(enDebugLevel level, const char * format, ...) {

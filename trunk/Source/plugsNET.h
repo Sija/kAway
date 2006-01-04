@@ -66,7 +66,8 @@ namespace plugsNET {
   const int kstatuslog = 267;
   const int klawa = 301;
   const int kdodatki = 302;
-  const int favicon = 306;
+  const int tabletka = 306;
+  const int krss = 324;
   const int olewk = 336;
   const int kterminarz = 368;
   const int kpilot = 444;

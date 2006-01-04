@@ -17,7 +17,7 @@ namespace kAway2 {
     unsigned int st;
     std::string info;
 
-    sItemInfo(int _net = 0, int _st = 0, std::string _info = ""): 
+    sItemInfo(int _net = 0, int _st = 0, std::string _info = "") : 
       net(_net), st(_st), info(_info) { }
   };
 
@@ -26,15 +26,16 @@ namespace kAway2 {
     unsigned int before;
     unsigned int after;
 
-    sStReplacement(int _net, int _before, int _after) : net(_net), before(_before), after(_after) { }
+    sStReplacement(int _net, int _before, int _after) : 
+      net(_net), before(_before), after(_after) { }
   };
 
-  // definicje max d³ugoœci statusów poszcz. dla sieci
+  // definicje max d³ugoœci statusów dla poszcz. sieci
   enum enMaxLength {
     normal = 255,
     jabber = 255,
     tlen = 255,
-    gg = 70
+    gaduGadu = 70
   };
 
   typedef std::list<sItemInfo> tItemInfos;
@@ -84,7 +85,7 @@ namespace kAway2 {
       std::string getInfo(int net);
 
       // Zwraca aktualny status sieci net
-      int getActualStatus(int net);
+      tStatus getActualStatus(int net);
       // Zwraca status sieci net
       int getStatus(int net);
 

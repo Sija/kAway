@@ -73,7 +73,7 @@ namespace kAway2 {
 
     Helpers::showKNotify("Tryb away zosta³ <b>w³¹czony<b>", ico::enable);
     this->Log("[Control::enable()]: msg = %s, silent = %s", 
-      (msg.length() ? msg.c_str() : "(none)"), btoa(silent));
+      nullChk(msg), btoa(silent));
   }
 
   void Control::disable(std::string msg, bool silent) {
@@ -101,7 +101,7 @@ namespace kAway2 {
 
     Helpers::showKNotify("Tryb away zosta³ <b>wy³¹czony<b>", ico::disable);
     this->Log("[Control::disable()]: msg = %s, silent = %s", 
-      (msg.length() ? msg.c_str() : "(none)"), btoa(silent));
+      nullChk(msg), btoa(silent));
 
     this->awayMsg = "";
     this->awayTime->clear();
@@ -112,12 +112,12 @@ namespace kAway2 {
   }
 
   void Control::switchBtns(bool state) {
-    int pIco = (state) ? ico::disable : ico::enable;
-    const char * pName = (state) ? "Wy³¹cz tryb away" : "W³¹cz tryb away";
+    int ico = (state) ? ico::disable : ico::enable;
+    char * name = (state) ? "Wy³¹cz tryb away" : "W³¹cz tryb away";
 
-    Helpers::chgBtn(IMIG_TRAY, ui::powerInTrayMenu, pName, pIco);
-    Helpers::chgBtn(this->pluginsGroup, ui::powerInMainWnd, pName, pIco, 
-      (state && (this->pluginsGroup != IMIG_PLUGINS)) ? ACTS_CHECKED : 0);
+    Helpers::chgBtn(IMIG_TRAY, ui::powerInTrayMenu, name, ico);
+    Helpers::chgBtn(this->pluginsGroup, ui::powerInMainWnd, name, ico, 
+      (state && (Helpers::findParentAction(IMIG_MAINWND, this->pluginsGroup) != IMIG_MAINTB)) ? ACTS_CHECKED : 0);
     Helpers::chgBtn(IMIG_MSGTB, ui::msgTbGrp, "kAway2", ico::logoSmall, 
       ACTR_INIT | ACTS_GROUP | (state ? ACTS_CHECKED : 0));
 
@@ -128,13 +128,13 @@ namespace kAway2 {
           ACTR_INIT | ACTS_GROUP | (state ? ACTS_CHECKED : 0));
       }
     }
-    delete [] pName;
+    delete [] name;
   }
 
   void Control::sendMsgTpl(int cnt, int tplId, std::string msgVar) {
-    int net = GETCNTI(cnt, CNT_NET);
+    int session, net = GETCNTI(cnt, CNT_NET);
 
-    if ((sCtrl->getActualStatus(net) == ST_HIDDEN && !Helpers::altCfgVal(cnt, cfg::reply::whenInvisible)) || 
+    if (((sCtrl->getActualStatus(net) == ST_HIDDEN) && !Helpers::altCfgVal(cnt, cfg::reply::whenInvisible)) || 
       !lCtrl::reply->getNetState(net) || !lCtrl::reply->isConnected(net))
       return;
 
@@ -158,11 +158,15 @@ namespace kAway2 {
       MF_SEND | (Helpers::altCfgVal(cnt, cfg::reply::useHtml) ? MF_HTML : 0));
 
     HWND hwndMsg = (HWND) UIGroupHandle(sUIAction(0, IMIG_MSGWND, cnt));
-    int session = (int) GetProp(hwndMsg, "MsgSession");
-    if (!session) SetProp(hwndMsg, "MsgSession", (HANDLE) 1);
+    if (!(session = (int) GetProp(hwndMsg, "MsgSession")))
+      SetProp(hwndMsg, "MsgSession", (HANDLE) 1);
 
-    Message::send(&msg);
     Helpers::addItemToHistory(&msg, cnt, "messages", "", session);
+    Message::send(&msg);
+    /*
+    if (Helpers::altCfgVal(cnt, cfg::reply::showInWnd))
+       Message::insInMsgWnd(&msg, cnt);
+    */
 
     this->Debug("[Control::sendMsgTpl()]: tpl.id = %i, msg.net = %i, msg.uid = %s", 
       tplId, net, uid.c_str());
