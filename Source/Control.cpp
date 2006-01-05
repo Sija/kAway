@@ -11,6 +11,16 @@
 #pragma once
 
 namespace kAway2 {
+  std::string __stdcall fGetAwayDateString(Format *fCtrl) {
+    Stamina::Date64 *awayTime = pCtrl->getAwayTime();
+    Stamina::Date64 today(true);
+
+    if ((awayTime->day != today.day) || (awayTime->month != today.month) || (awayTime->year != today.year))
+      return(awayTime->strftime(GETSTRA(cfg::dateFormat)));
+    else
+      return("");
+  }
+
   Control::Control() {
     this->awayTime = new Stamina::Date64(false);
     this->pluginsGroup = Helpers::getPluginsGroup();
@@ -62,7 +72,7 @@ namespace kAway2 {
 
     this->switchBtns(true);
 
-    int count = IMessage(IMC_CNT_COUNT);
+    int count = Ctrl->IMessage(IMC_CNT_COUNT);
     for (int i = 0; i < count; i++) {
       if (Helpers::isMsgWndOpen(i)) {
         if (Helpers::altCfgVal(i, cfg::reply::onEnable) && !silent && !this->cntProp(i)->ignored) {
@@ -71,7 +81,7 @@ namespace kAway2 {
       }
     }
 
-    Helpers::showKNotify("Tryb away zosta³ <b>w³¹czony<b>", ico::enable);
+    this->showKNotify("Tryb away zosta³ <b>w³¹czony<b>", ico::enable);
     this->Log("[Control::enable()]: msg = %s, silent = %s", 
       nullChk(msg), btoa(silent));
   }
@@ -90,7 +100,7 @@ namespace kAway2 {
 
     this->switchBtns(false);
 
-    int count = IMessage(IMC_CNT_COUNT);
+    int count = Ctrl->IMessage(IMC_CNT_COUNT);
     for (int i = 0; i < count; i++) {
       if (Helpers::isMsgWndOpen(i)) {
         if (Helpers::altCfgVal(i, cfg::reply::onDisable) && !silent && !this->cntProp(i)->ignored) {
@@ -99,7 +109,7 @@ namespace kAway2 {
       }
     }
 
-    Helpers::showKNotify("Tryb away zosta³ <b>wy³¹czony<b>", ico::disable);
+    this->showKNotify("Tryb away zosta³ <b>wy³¹czony<b>", ico::disable);
     this->Log("[Control::disable()]: msg = %s, silent = %s", 
       nullChk(msg), btoa(silent));
 
@@ -109,6 +119,11 @@ namespace kAway2 {
 
     this->isOn = false;
     this->muteStateSwitched = false;
+  }
+
+  void Control::showKNotify(const char * text, int ico) {
+    if (!GETINT(cfg::useKNotify) || !Helpers::pluginExists(plugsNET::knotify)) return;
+    Helpers::showKNotify((char*) text, ico);
   }
 
   void Control::switchBtns(bool state) {
@@ -121,7 +136,7 @@ namespace kAway2 {
     Helpers::chgBtn(IMIG_MSGTB, ui::msgTbGrp, "kAway2", ico::logoSmall, 
       ACTR_INIT | ACTS_GROUP | (state ? ACTS_CHECKED : 0));
 
-    int count = IMessage(IMC_CNT_COUNT);
+    int count = Ctrl->IMessage(IMC_CNT_COUNT);
     for (int i = 0; i < count; i++) {
       if (Helpers::isMsgWndOpen(i)) {
         Helpers::chgBtn(IMIG_MSGTB, ui::msgTbGrp, i, "kAway2", ico::logoSmall, 
@@ -149,7 +164,7 @@ namespace kAway2 {
     format->addVar("name", GETCNTC(cnt, CNT_NAME));
     format->addVar("nick", GETCNTC(cnt, CNT_NICK));
     format->addVar("surname", GETCNTC(cnt, CNT_SURNAME));
-    format->addVar("date", this->awayTime->strftime(GETSTRA(cfg::dateFormat)));
+    format->addVar("date", fGetAwayDateString);
     format->addVar("time", this->awayTime->strftime(GETSTRA(cfg::timeFormat)));
     format->addVar("msg", (tplId == cfg::tpl::disable) ? msgVar : this->awayMsg);
 

@@ -75,7 +75,7 @@ namespace kAway2 {
     Ctrl->SetColumn(DTCFG, cfg::tpl::enable, DT_CT_STR, "brb/afk {[msg]}", "kAway2/tpl/enable");
     Ctrl->SetColumn(DTCFG, cfg::tpl::disable, DT_CT_STR, "i'm back {[msg] }:>", "kAway2/tpl/disable");
     Ctrl->SetColumn(DTCFG, cfg::tpl::reply, DT_CT_STR, 
-      "Hello <b>{display|uid}</b>, i'm away from {date} @ {time} {[msg]}.\r\n"
+      "Hello <b>{display|uid}</b>, i'm away from {date, }<b>{time}</b> {[msg]}.\r\n"
       "Leave a message after the beep. Byeee.", "kAway2/tpl/reply");
     // Ctrl->SetColumn(DTCFG, cfg::tpl::forward, DT_CT_STR, "", "kAway2/tpl/forward");
     // Ctrl->SetColumn(DTCFG, cfg::tpl::sms, DT_CT_STR, "", "kAway2/tpl/sms");
@@ -252,7 +252,8 @@ namespace kAway2 {
       "/<b>brb</b> [...] - j.w. + nie wysy³a powiadomieñ o w³.<br/>"
       "/<b>back</b> [...] - wy³¹cza tryb away<br/>"
       "/<b>re</b> [...] - j.w. + nie wysy³a powiadomieñ o wy³." AP_TIP_WIDTH "240", cfg::ircCmds);
-    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Pokazuj powiadomienia K.Notify", cfg::useKNotify);
+    if (Helpers::pluginExists(plugsNET::knotify))
+      UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Pokazuj powiadomienia K.Notify", cfg::useKNotify);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Pytaj przed wyjœciem z trybu away", cfg::disableConfirmation);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
 

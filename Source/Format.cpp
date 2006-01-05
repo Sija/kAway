@@ -122,11 +122,11 @@ namespace kAway2 {
     Control::Debug("[Format::addVar()]: name = %s, type = function", name.c_str());
 
     this->removeVar(name);
-    this->vars.push_back(sVar(name, FUNCTION, function, NULL));
+    this->vars.push_back(sVar(name, FUNCTION, function, ""));
   }
 
   void Format::addVar(std::string name, std::string value) {
-    Control::Debug("[Format::addVar()]: name = %s, value = %s", 
+    Control::Debug("[Format::addVar()]: name = %s, type = string, value = %s", 
       name.c_str(), nullChk(value));
 
     this->removeVar(name);
