@@ -72,7 +72,6 @@ namespace kAway2 {
     }
 
     void showKNotify(char * text, int ico) {
-      if (!GETINT(cfg::useKNotify)) return;
       Ctrl->IMessage(&KNotify::sIMessage_notify(text, ico));
     }
 

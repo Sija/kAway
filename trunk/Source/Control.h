@@ -32,6 +32,7 @@ namespace kAway2 {
       void disable(std::string msg = "", bool silent = false);
 
       void sendMsgTpl(int cnt, int tplId, std::string msgVar = "");
+      void showKNotify(const char * text, int ico = ico::logoSmall);
 
       inline bool isMuteSwitched() {
         return(this->muteStateSwitched);
