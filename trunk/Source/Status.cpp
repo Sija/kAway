@@ -59,29 +59,29 @@ namespace kAway2 {
   }
 
   void Status::changeStatus(int net, std::string info, int st) {
-    if (this->isNetUseful(net)) {
-      if (info.length()) {
-        bool dynSt = (this->stInfoVar.length() && !this->fCtrl->varExists(this->stInfoVar)) ? true : false;
-        if (dynSt) this->fCtrl->addVar(this->stInfoVar, this->getInfo(net));
+    if (!this->isNetUseful(net)) return;
 
-        info = this->fCtrl->parse(info);
-        info = Helpers::trim(info);
-        info = this->limitChars(info, net);
+    if (info.length()) {
+      bool dynSt = (this->stInfoVar.length() && !this->fCtrl->varExists(this->stInfoVar)) ? true : false;
+      if (dynSt) this->fCtrl->addVar(this->stInfoVar, this->getInfo(net));
 
-        if (dynSt) this->fCtrl->removeVar(this->stInfoVar);
-      }
+      info = this->fCtrl->parse(info);
+      info = Helpers::trim(info);
+      info = this->limitChars(info, net);
 
-      if (st != -1) 
-        st = this->applyReplacementSt(net, st);
-
-      if (this->isRemembered())
-        this->lastSt[net] = sItemInfo(net, st, info);
-
-      Ctrl->IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, info.length() ? (int) info.c_str() : 0);
-
-      Control::Debug("[Status::changeStatus().item]: net = %i, status = %i, info = %s",
-        net, st, nullChk(info));
+      if (dynSt) this->fCtrl->removeVar(this->stInfoVar);
     }
+
+    if (st != -1) 
+      st = this->applyReplacementSt(net, st);
+
+    if (this->isRemembered())
+      this->lastSt[net] = sItemInfo(net, st, info);
+
+    Ctrl->IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, info.length() ? (int) info.c_str() : 0);
+
+    Control::Debug("[Status::changeStatus().item]: net = %i, status = %i, info = %s",
+      net, st, nullChk(info));
   }
 
   tStatus Status::getActualStatus(int net) {
@@ -120,14 +120,14 @@ namespace kAway2 {
   }
 
   void Status::rememberInfo(int net) {
-    if (this->isNetUseful(net)) {
-      int st = this->getActualStatus(net);
-      std::string info = this->getActualInfo(net);
-      this->rememberedSt.push_back(sItemInfo(net, st, info));
+    if (!this->isNetUseful(net)) return;
 
-      Control::Debug("[Status::rememberInfo().item]: net = %i, status = %i, info = %s",
-        net, st, nullChk(info));
-    }
+    int st = this->getActualStatus(net);
+    std::string info = this->getActualInfo(net);
+    this->rememberedSt.push_back(sItemInfo(net, st, info));
+
+    Control::Debug("[Status::rememberInfo().item]: net = %i, status = %i, info = %s",
+      net, st, nullChk(info));
   }
 
   void Status::restoreInfo() {
@@ -138,14 +138,14 @@ namespace kAway2 {
   }
 
   void Status::restoreInfo(int net) {
-    if (this->isNetUseful(net)) {
-      int st = this->getStatus(net);
-      std::string info = this->getInfo(net);
-      Ctrl->IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, (int) info.c_str());
+    if (!this->isRemembered(net)) return;
 
-      Control::Debug("[Status::restoreInfo().item]: net = %i, status = %i, info = %s",
-        net, st, nullChk(info));
-    }
+    int st = !this->getActualStatus(net) ? ST_OFFLINE : this->getStatus(net);
+    std::string info = this->getInfo(net);
+    Ctrl->IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, (int) info.c_str());
+
+    Control::Debug("[Status::restoreInfo().item]: net = %i, status = %i, info = %s",
+      net, st, nullChk(info));
   }
 
   void Status::actionHandle(sIMessage_base *msgBase) {
@@ -167,18 +167,14 @@ namespace kAway2 {
     }
   }
 
-  bool Status::onHidden() {
+  bool Status::chgOnHidden() {
     return(this->onHiddenCfgCol ? (bool) GETINT(this->onHiddenCfgCol) : true);
   }
 
   bool Status::isNetUseful(int net) {
     if (this->lCtrl->getNetState(net) && this->lCtrl->isConnected(net)) {
-      if (!this->onHidden() && (ST_HIDDEN == this->getActualStatus(net))) {
-        if (this->isRemembered() && (this->lastSt[net].st == ST_HIDDEN))
-          return(true);
-        else
-          return(false);
-      }
+      if (!this->chgOnHidden() && (ST_HIDDEN == this->getActualStatus(net)))
+        return(false);
       return(true);
     }
     return(false);
