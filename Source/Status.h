@@ -56,12 +56,19 @@ namespace kAway2 {
       // Sprawdza czy sieæ 'nadaje siê do u¿ytku'
       bool isNetUseful(int net);
       // Czy zmieniaæ przy statusie 'ukryty' ?
-      bool onHidden();
+      bool chgOnHidden();
       // obs³uga akcji
       void actionHandle(sIMessage_base *msgBase);
 
-      inline bool isRemembered() {
-        return(this->remember);
+      inline bool isRemembered(int net = 0) {
+        if (!net) {
+          return(this->remember);
+        } else {
+          for (tItemInfos::iterator it = this->rememberedSt.begin(); it != this->rememberedSt.end(); it++) {
+            if (it->net == net) return(true);
+          }
+          return(false);
+        }
       }
 
       // Zmienia status, txt - opis, st - id statusu

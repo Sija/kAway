@@ -124,7 +124,7 @@ namespace kAway2 {
 
   int IPrepare() {
     pCtrl = new Control();
-    wCtrl = new AwayWnd("kAway2AwayWnd", "kA2_awayMsg", cfg::mruSize);
+    wCtrl = new AwayWnd("kAway2AwayWnd", cfg::mruName, cfg::mruSize);
 
     lCtrl::status = new NetList(cfg::status::netChange, ui::statusCfgGroup, dynAct::status, 
       act::cfgGroupCheckCreate, act::cfgGroupCheckDestroy);
@@ -188,7 +188,7 @@ namespace kAway2 {
     IconRegister(IML_16, ico::trash, Ctrl->hDll(), IDI_TRASH);
 
     /* Adding configuration tabs */
-    UIGroupAdd(IMIG_NFO, ui::cntCfgGroup, ACTR_SAVE, "kAway2", ico::logoSmall);
+    UIGroupAdd(IMIG_NFO, ui::cntCfgGroup, ACTR_SAVE | ACTR_INIT, "kAway2", ico::logoSmall);
     UIGroupAdd(IMIG_CFG_PLUGS, ui::cfgGroup, ACTR_SAVE, "kAway2", ico::logoSmall);
     UIGroupAdd(ui::cfgGroup, ui::replyCfgGroup, ACTR_SAVE, "Autoresponder", ico::reply);
     UIGroupAdd(ui::cfgGroup, ui::statusCfgGroup, ACTR_SAVE, "Opcje statusu", ico::status);
@@ -461,8 +461,9 @@ namespace kAway2 {
     return(1);
   }
 
-  ActionProc(sUIActionNotify_base *anBase) {
+  actionProc(sUIActionNotify_base *anBase) {
     sUIActionNotify_2params *an = static_cast<sUIActionNotify_2params*>(anBase);
+    int cnt = anBase->act.cnt;
 
     pCtrl->Debug("[ActionProc()]: anBase->act.id = %i, anBase->act.cnt = %i, an->code = %i", 
       anBase->act.id, anBase->act.cnt, an->code);
@@ -476,7 +477,6 @@ namespace kAway2 {
       case ui::powerInCntWnd:
       case ui::powerInTrayMenu: {
         if ((anBase->act.id == ui::msgTbGrp) && (an->code == ACTN_CREATEGROUP)) {
-          int cnt = anBase->act.cnt;
           bool isIgnored = pCtrl->cntProp(cnt)->ignored;
           bool isEnabled = pCtrl->isEnabled();
 
@@ -497,25 +497,31 @@ namespace kAway2 {
         break;
       }
 
-      case ui::ignoreBtn: {
-        if (an->code != ACTN_ACTION || !pCtrl->isEnabled()) break;
+      case ui::cntCfgGroup: {
+        if ((an->code == ACTN_CREATE) && !Ctrl->DTgetPos(DTCNT, cnt)) {
+          UIActionSetStatus(anBase->act, -1, ACTS_HIDDEN);
+        }
+        break;
+      }
 
-        int cnt = anBase->act.cnt;
-        pCtrl->cntProp(cnt)->ignored = !pCtrl->cntProp(cnt)->ignored;
+      case ui::ignoreBtn: {
+        if ((an->code == ACTN_ACTION) && pCtrl->isEnabled()) {
+          pCtrl->cntProp(cnt)->ignored = !pCtrl->cntProp(cnt)->ignored;
+        }
         break;
       }
 
       case act::clearMru: {
-        if (an->code != ACTN_ACTION) break;
-
-        Helpers::clearMru("kA2_awayMsg");
+        if (an->code == ACTN_ACTION) {
+          Helpers::clearMru(cfg::mruName);
+        }
         break;
       }
 
       case act::resetCntSettings: {
         if (an->code != ACTN_ACTION) break;
 
-        int count = IMessage(IMC_CNT_COUNT);
+        int count = Ctrl->IMessage(IMC_CNT_COUNT);
         for (int i = 0; i < count; i++) {
           SETCNTI(i, cfg::saveToHistory, 0);
           SETCNTI(i, cfg::disableOnMsgSend, 0);
@@ -560,7 +566,7 @@ int __stdcall IMessageProc(sIMessage_base *msgBase) {
     case IM_UI_PREPARE:      return(IPrepare());
     case IM_START:           return(IStart());
     case IM_END:             return(IEnd());
-    case IM_UIACTION:        return(ActionProc((sUIActionNotify_base*)msg->p1));
+    case IM_UIACTION:        return(actionProc((sUIActionNotify_base*)msg->p1));
 
     case IM_STATUSCHANGE: {
       if (pCtrl->isEnabled() && !pCtrl->isAutoAway()) sCtrl->actionHandle(msgBase);
@@ -568,9 +574,7 @@ int __stdcall IMessageProc(sIMessage_base *msgBase) {
     }
 
     case IM_ALLPLUGINSINITIALIZED: {
-      int oldId = Ctrl->ICMessage(IMC_FINDPLUG, plugsNET::kaway, IMT_ALL);
-
-      if (oldId) {
+      if (int oldId = Helpers::pluginExists(plugsNET::kaway)) {
         Ctrl->IMessage(&sIMessage_plugOut(oldId, "kAway2 jest nastêpc¹ wtyczki K.Away :)",
           sIMessage_plugOut::erNo, sIMessage_plugOut::euNowAndOnNextStart));
         return(-1);

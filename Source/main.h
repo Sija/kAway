@@ -102,6 +102,7 @@ namespace kAway2 {
     const unsigned int disableConfirmation = cfg + 13;
 
     const char historyFolder[16] = "kAway2";
+    const char mruName[16] = "kA2_awayMsg";
 
     namespace tpl {
       const unsigned int tpl = cfg + 100;

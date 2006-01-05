@@ -2,7 +2,7 @@
  * Konnekt SDK (Software Development Kit)
  *
  * Nag³ówek: wartoœci NET wszystkich wtyczek
- * Modyfikowany: 2005-11-26
+ * Modyfikowany: 2006-01-04
  * Zgodny z wersj¹: 0.6.x.x
  * Info: namespace zawieraj¹cy wartoœci NET wszystkich wtyczek
  *
@@ -70,7 +70,7 @@ namespace plugsNET {
   const int krss = 324;
   const int olewk = 336;
   const int kterminarz = 368;
-  const int kpilot = 444;
+  const int kpilot2 = 444;
   const int impgg = 551;
   const int kaway = 666; ///< stara wersja
   const int kaway2 = 667;

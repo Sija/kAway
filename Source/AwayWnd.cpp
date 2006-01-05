@@ -22,7 +22,7 @@
 #define MUTE                0x2006
 
 namespace kAway2 {
-  LRESULT CALLBACK AwayWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
+  LRESULT CALLBACK awayWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
     switch(iMsg) {
       case WM_CREATE: {
         SendMessage(hWnd, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) ICMessage(IMI_ICONGET, 0x1f7, IML_16));
@@ -88,7 +88,7 @@ namespace kAway2 {
         HWND hWndCombo = CreateWindow("combobox", "", WS_TABSTOP | WS_CHILD | WS_VISIBLE | CBS_AUTOHSCROLL | WS_EX_CONTROLPARENT | 
           WS_EX_NOPARENTNOTIFY | CBS_DROPDOWNLIST, 13, 58, 274, 100, hWnd, (HMENU) STATUS_EDIT, Ctrl->hInst(), NULL);
         SendMessage(hWndCombo, WM_SETFONT, (WPARAM) font, true);
-        // SetProp(edit, "oldWndProc", (HANDLE) SetWindowLongPtr(GetDlgItem(hWndCombo, 0x3e9), GWLP_WNDPROC, (LONG_PTR) EditFix));
+        // SetProp(edit, "oldWndProc", (HANDLE) SetWindowLongPtr(GetDlgItem(hWndCombo, 0x3e9), GWLP_WNDPROC, (LONG_PTR) editFix));
 
         // przycisk OK
         HWND hWndTmp = CreateWindowEx(WS_EX_CONTROLPARENT, "button", "OK", BS_DEFPUSHBUTTON | BS_TEXT | WS_TABSTOP | WS_CHILD | WS_VISIBLE, 
@@ -148,7 +148,7 @@ namespace kAway2 {
         HWND edit = CreateWindowEx(WS_EX_CLIENTEDGE, "edit", mru.MRU->values[0], WS_TABSTOP | WS_VISIBLE | WS_CHILD | WS_VSCROLL | 
           ES_MULTILINE | ES_WANTRETURN, 13, 88, 274, 100, hWnd, (HMENU) STATUS_EDIT_INFO, Ctrl->hInst(), NULL);
         SendMessage(edit, WM_SETFONT, (WPARAM) font, true);
-        SetProp(edit, "oldWndProc", (HANDLE) SetWindowLongPtr(edit, GWLP_WNDPROC, (LONG_PTR) EditFix));
+        SetProp(edit, "oldWndProc", (HANDLE) SetWindowLongPtr(edit, GWLP_WNDPROC, (LONG_PTR) editFix));
 
         SetFocus(edit);
         SendMessage(hWndCombo, CB_SETCURSEL, 0, 0);
@@ -245,7 +245,7 @@ namespace kAway2 {
     ZeroMemory(&awayWnd, sizeof(WNDCLASSEX));
     awayWnd.cbSize = sizeof(awayWnd);
     awayWnd.style = CS_HREDRAW | CS_VREDRAW;
-    awayWnd.lpfnWndProc = AwayWndProc;
+    awayWnd.lpfnWndProc = awayWndProc;
     awayWnd.cbClsExtra = 0;
     awayWnd.cbWndExtra = 0;
     awayWnd.hInstance = Ctrl->hInst();

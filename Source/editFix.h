@@ -13,10 +13,10 @@
 
 /* usage:
    include it & put it after CreateWindow("edit", ...)
-   SetProp(hwnd, "oldWndProc", (HANDLE) SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR) EditFix));
+   SetProp(hwnd, "oldWndProc", (HANDLE) SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR) editFix));
  */
 
-LRESULT CALLBACK EditFix(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK editFix(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
   switch (iMsg) {
     case WM_CHAR: {
       HWND parent = GetParent(hWnd);

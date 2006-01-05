@@ -34,13 +34,11 @@ char * nullChk(char * value) {
 namespace kAway2 {
   namespace Helpers {
     std::string icon32(int ico) {
-      std::string buff = "reg://IML32/" + itos(ico) + ".ico";
-      return(buff);
+      return("reg://IML32/" + itos(ico) + ".ico");
     }
 
     std::string icon16(int ico) {
-      std::string buff = "reg://IML16/" + itos(ico) + ".ico";
-      return(buff);
+      return("reg://IML16/" + itos(ico) + ".ico");
     }
 
     std::string trim(std::string txt) {
@@ -63,6 +61,10 @@ namespace kAway2 {
     void UIActionCall(int group, int act, int cntID = 0) {
       Ctrl->ICMessage(IMI_ACTION_CALL, 
         (int) &sUIActionNotify_2params(sUIAction(group, act, cntID), ACTN_ACTION, 0, 0), 0);
+    }
+
+    int pluginExists(int net, int type = IMT_ALL) {
+      return(Ctrl->ICMessage(IMC_FINDPLUG, net, type));
     }
 
     bool isMsgWndOpen(int cntID) {
