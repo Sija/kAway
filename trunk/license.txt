@@ -1,10 +1,11 @@
+ $Id$
 
  kAway2
 
  Jakiekolwiek wykorzystywanie, modyfikowanie, lub publikowanie kodu 
  bez wiedzy i zgody posiadacza praw autorskich jest ZABRONIONE!
  Prawa autorskie do wszystkich wprowadzonych modyfikacji przechodz¹ 
- automatycznie na w³aœciciela wtyczki w osobie Sijawusz Pur Rahnama.
+ automatycznie na w³aœciciela wtyczki w osobie Sijawusza Pur Rahnama.
 
  Brak informacji licencyjnej w poszczególnych plikach oznacza, 
  ¿e w mocy jest powy¿sze postanowienie!
@@ -26,4 +27,4 @@
  rules.
 
 
- Copyright (C)2002-2005 Sijawusz Pur Rahnama
+ Copyright (C)2004-2006 Sijawusz Pur Rahnama

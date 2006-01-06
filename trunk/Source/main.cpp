@@ -3,7 +3,7 @@
  *
  *  Please READ /License.txt FIRST!
  *
- *  Copyright (C)2005 Sijawusz Pur Rahnama
+ *  Copyright (C)2005-2006 Sijawusz Pur Rahnama
  *
  *  $Id$
  */
@@ -147,8 +147,8 @@ namespace kAway2 {
     sCtrl->addReplacementSt(plugsNET::gg, ST_NA, ST_AWAY);
 
     pCtrl->setStatusCtrl(sCtrl);
-    pCtrl->Log("net = %i, Ctrl = %i, pCtrl = %i, sCtrl = %i, wCtrl = %i", 
-      net, Ctrl, pCtrl, sCtrl, wCtrl);
+    log("[kAway2::IPrepare()]: Ctrl = %i, pCtrl = %i, sCtrl = %i, wCtrl = %i", 
+      Ctrl, pCtrl, sCtrl, wCtrl);
 
     /* Defining help variables */
     tHelpVars stVars, rVars;
@@ -203,12 +203,12 @@ namespace kAway2 {
       "Copyright © 2004-2006 <b>KPlugins Team</b>",
       poweredBy, __DATE__, __TIME__);
 
-    char desc[300] = 
+    char desc[] = 
       "Wtyczka ma za zadanie zaj¹æ siê kwesti¹ Twojej nieobecnoœci przy komputerze :)<br/>"
       "Osoby pisz¹ce do Ciebie zostan¹ powiadomione (albo i nie ;)) o tym od kiedy i dlaczego Cie nie ma, "
       "ty za to dostaniesz informacjê o tym ile osób nawiedzi³o Ciê podczas Twoich godzin-bez-komputera ;>";
 
-    char dateFormat[1024] = AP_TIPRICH
+    char dateFormat[] = AP_TIPRICH
       "%<b>a</b> - Abbreviated weekday name<br/>"
       "%<b>A</b> - Full weekday name<br/>"
       "%<b>b</b> - Abbreviated month name<br/>"
@@ -228,7 +228,7 @@ namespace kAway2 {
       "%<b>%</b> - Percent sign"
       AP_TIP_WIDTH "300";
 
-    char timeFormat[400] = AP_TIPRICH
+    char timeFormat[] = AP_TIPRICH
       "%<b>H</b> - Hour in 24-hour format (00 – 23)<br/>"
       "%<b>I</b> - Hour in 12-hour format (01 – 12)<br/>"
       "%<b>p</b> - Current locale's A.M./P.M. indicator for 12-hour clock<br/>"
@@ -466,7 +466,7 @@ namespace kAway2 {
     sUIActionNotify_2params *an = static_cast<sUIActionNotify_2params*>(anBase);
     int cnt = anBase->act.cnt;
 
-    pCtrl->Debug("[ActionProc()]: anBase->act.id = %i, anBase->act.cnt = %i, an->code = %i", 
+    logDebug("[kAway2::actionProc()]: anBase->act.id = %i, anBase->act.cnt = %i, an->code = %i", 
       anBase->act.id, anBase->act.cnt, an->code);
 
     lCtrl::status->actionHandle(anBase->act.id, an->code);
@@ -608,7 +608,7 @@ int __stdcall IMessageProc(sIMessage_base *msgBase) {
 
       // we're searchin' for contact id
       int cnt = Ctrl->ICMessage(IMC_CNT_FIND, m->net, (int) (strlen(m->fromUid) ? m->fromUid : m->toUid));
-      bool userMsg = !strlen(m->fromUid) && !GetExtParam(m->ext, "kA2AutoMsg").length() && (m->type == MT_MESSAGE);
+      bool userMsg = !strlen(m->fromUid) && !GetExtParam(m->ext, cfg::extParamName).length() && (m->type == MT_MESSAGE);
 
       if (userMsg && (m->body[0] == '/' && strlen(m->body) > 1) && Helpers::altCfgVal(cnt, cfg::ircCmds)) {
         Stamina::tStringVector params;
@@ -646,7 +646,7 @@ int __stdcall IMessageProc(sIMessage_base *msgBase) {
         }
 
         if (del) {
-          pCtrl->Debug("{IM_MSG_RCV}: cmd = %s, msg = %s, params = %i",
+          logDebug("{IM_MSG_RCV}: cmd = %s, msg = %s, params = %i",
             cmd.c_str(), nullChk(msg), params.size());
 
           m->flag |= MF_DONTADDTOHISTORY;

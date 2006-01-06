@@ -3,7 +3,7 @@
  *
  *  Please READ /License.txt FIRST!
  *
- *  Copyright (C)2005 Sijawusz Pur Rahnama
+ *  Copyright (C)2005-2006 Sijawusz Pur Rahnama
  *  Copyright (C)2004 Kuba Niegowski
  *  Copyright (C)2003-2004 Olórin
  *

@@ -2,13 +2,13 @@
  * Konnekt SDK (Software Development Kit)
  *
  * Nag³ówek: wartoœci NET wszystkich wtyczek
- * Modyfikowany: 2006-01-04
+ * Modyfikowany: 2006-01-06
  * Zgodny z wersj¹: 0.6.x.x
  * Info: namespace zawieraj¹cy wartoœci NET wszystkich wtyczek
  *
  * Œrodowisko: Borland C++ i MS Visual C++
  *
- * (C)2002-2005 Stamina, (C)2005 KPlugins
+ * (C)2002-2006 Stamina, (C)2005-2006 KPlugins
  * SDK s³u¿y do przygotowania oprogramowania wspó³pracuj¹cego
  * z programem Konnekt. Autorzy nie ponosz¹ ¿adnej odpowiedzialnoœci
  * za wykorzystanie tego kodu.
@@ -44,6 +44,7 @@ namespace plugsNET {
   const int gadacz = 78;
   const int irc = 80;
   const int checky = 82;
+  const int linkerold = 109; ///< stara wersja
   const int sprzataczk = 115;
   const int temacik = 123;
   const int ktransfer = 130;
@@ -84,6 +85,7 @@ namespace plugsNET {
   const int kieview = 780;
   const int kallstatus = 781;
   const int kik = 888;
+  const int linker = 1001;
   const int ggimage = 1331;
   const int knotes = 1337;
   const int kpaleta = 1338;

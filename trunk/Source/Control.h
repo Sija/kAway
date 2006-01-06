@@ -3,7 +3,7 @@
  *
  *  Please READ /License.txt FIRST!
  *
- *  Copyright (C)2005 Sijawusz Pur Rahnama
+ *  Copyright (C)2005-2006 Sijawusz Pur Rahnama
  *
  *  $Id$
  */
@@ -74,29 +74,6 @@ namespace kAway2 {
         return(&this->cntProps[Ctrl->DTgetID(DTCNT, id)]);
       }
 
-      static inline void Log(enDebugLevel level, const char * format, ...) {
-        va_list ap;
-        va_start(ap, format);
-        Control::Log(level, format, ap);
-        va_end(ap);
-      }
-
-      static inline void Log(const char * format, ...) {
-        va_list ap;
-        va_start(ap, format);
-        Control::Log(DBG_LOG, format, ap);
-        va_end(ap);
-      }
-
-      static inline void Debug(const char * format, ...) {
-        if(!debug) return;
-
-        va_list ap;
-        va_start(ap, format);
-        Control::Log(DBG_DEBUG, format, ap);
-        va_end(ap);
-      }
-
     protected:
       bool isOn;
       bool muteStateSwitched;
@@ -106,8 +83,6 @@ namespace kAway2 {
       tCnts cntProps;
       std::string awayMsg;
       Stamina::Date64 *awayTime;
-
-      static void Log(enDebugLevel level, const char * format, va_list ap);
 
       void switchBtns(bool state);
 
