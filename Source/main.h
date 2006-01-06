@@ -3,7 +3,7 @@
  *
  *  Please READ /License.txt FIRST!
  *
- *  Copyright (C)2005 Sijawusz Pur Rahnama
+ *  Copyright (C)2005-2006 Sijawusz Pur Rahnama
  *
  *  $Id$
  */
@@ -13,7 +13,7 @@
 namespace kAway2 {
   const unsigned int net = 667;
   const bool debug = true;
-  const char poweredBy[64] = "Jan Jelinek";
+  const char poweredBy[] = "Jan Jelinek";
 
   namespace ui {
     const unsigned int ui = net * 1000;
@@ -101,8 +101,9 @@ namespace kAway2 {
     const unsigned int muteOnEnable = cfg + 12;
     const unsigned int disableConfirmation = cfg + 13;
 
-    const char historyFolder[16] = "kAway2";
-    const char mruName[16] = "kA2_awayMsg";
+    const char historyFolder[] = "kAway2";
+    const char extParamName[] = "kA2AutoMsg";
+    const char mruName[] = "kA2_awayMsg";
 
     namespace tpl {
       const unsigned int tpl = cfg + 100;

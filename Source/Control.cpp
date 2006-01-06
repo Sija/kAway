@@ -3,7 +3,7 @@
  *
  *  Please READ /License.txt FIRST!
  *
- *  Copyright (C)2005 Sijawusz Pur Rahnama
+ *  Copyright (C)2005-2006 Sijawusz Pur Rahnama
  *
  *  $Id$
  */
@@ -35,11 +35,6 @@ namespace kAway2 {
     this->awayTime = NULL;
 
     this->cntProps.clear();
-  }
-
-  void Control::Log(enDebugLevel level, const char * format, va_list ap) {
-    if (Ctrl && Ctrl->DebugLevel(level))
-      Ctrl->IMLOG_(level, format, ap);
   }
 
   void Control::enable(std::string msg, int status, bool silent) {
@@ -82,7 +77,7 @@ namespace kAway2 {
     }
 
     this->showKNotify("Tryb away zosta³ <b>w³¹czony<b>", ico::enable);
-    this->Log("[Control::enable()]: msg = %s, silent = %s", 
+    log("[Control::enable()]: msg = %s, silent = %s", 
       nullChk(msg), btoa(silent));
   }
 
@@ -110,7 +105,7 @@ namespace kAway2 {
     }
 
     this->showKNotify("Tryb away zosta³ <b>wy³¹czony<b>", ico::disable);
-    this->Log("[Control::disable()]: msg = %s, silent = %s", 
+    log("[Control::disable()]: msg = %s, silent = %s", 
       nullChk(msg), btoa(silent));
 
     this->awayMsg = "";
@@ -154,21 +149,20 @@ namespace kAway2 {
       return;
 
     std::string ext, uid(GETCNTC(cnt, CNT_UID));
-    ext = SetExtParam(ext, "kA2AutoMsg", "true");
+    ext = SetExtParam(ext, cfg::extParamName, "1");
     ext = SetExtParam(ext, MEX_NOSOUND, "1");
 
-    Format *format = new Format;
+    Format format;
+    format.addVar("uid", uid);
+    format.addVar("display", GETCNTC(cnt, CNT_DISPLAY));
+    format.addVar("name", GETCNTC(cnt, CNT_NAME));
+    format.addVar("nick", GETCNTC(cnt, CNT_NICK));
+    format.addVar("surname", GETCNTC(cnt, CNT_SURNAME));
+    format.addVar("date", fGetAwayDateString);
+    format.addVar("time", this->awayTime->strftime(GETSTRA(cfg::timeFormat)));
+    format.addVar("msg", (tplId == cfg::tpl::disable) ? msgVar : this->awayMsg);
 
-    format->addVar("uid", uid);
-    format->addVar("display", GETCNTC(cnt, CNT_DISPLAY));
-    format->addVar("name", GETCNTC(cnt, CNT_NAME));
-    format->addVar("nick", GETCNTC(cnt, CNT_NICK));
-    format->addVar("surname", GETCNTC(cnt, CNT_SURNAME));
-    format->addVar("date", fGetAwayDateString);
-    format->addVar("time", this->awayTime->strftime(GETSTRA(cfg::timeFormat)));
-    format->addVar("msg", (tplId == cfg::tpl::disable) ? msgVar : this->awayMsg);
-
-    std::string body = Helpers::trim(format->parse(Helpers::altCfgStrVal(cnt, tplId)));
+    std::string body = Helpers::trim(format.parse(Helpers::altCfgStrVal(cnt, tplId)));
     cMessage msg = Message::prepare(uid, "", net, body, MT_MESSAGE, ext, 
       MF_SEND | (Helpers::altCfgVal(cnt, cfg::reply::useHtml) ? MF_HTML : 0));
 
@@ -183,9 +177,7 @@ namespace kAway2 {
        Message::insInMsgWnd(&msg, cnt);
     */
 
-    this->Debug("[Control::sendMsgTpl()]: tpl.id = %i, msg.net = %i, msg.uid = %s", 
+    logDebug("[Control::sendMsgTpl()]: tpl.id = %i, msg.net = %i, msg.uid = %s", 
       tplId, net, uid.c_str());
-
-    delete format; format = NULL;
   }
 }

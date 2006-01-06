@@ -7,7 +7,7 @@
  *
  *  Please READ /License.txt FIRST!
  *
- *  Copyright (C)2005 Sijawusz Pur Rahnama
+ *  Copyright (C)2005-2006 Sijawusz Pur Rahnama
  *
  *  $Id$
  */
@@ -29,7 +29,12 @@
 #include <stdstring.h>
 
 #pragma comment(lib, "comctl32.lib")
-#pragma comment(lib, "stamina.lib")
+
+#ifdef _DEBUG
+  #pragma comment(lib, "stamina_d.lib")
+#else
+  #pragma comment(lib, "stamina.lib")
+#endif
 
 #define yes (true)
 #define no (false)
