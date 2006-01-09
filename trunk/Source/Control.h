@@ -14,11 +14,11 @@ namespace kAway2 {
   struct sCnt {
     bool ignored;
     int historySess;
-    int lastMsgRcvTime;
+    __int64 lastMsgTime;
 
     // konstruktor
-    sCnt(bool _ignored = false, int _historySess = 0, int _lastMsgRcvTime = 0) : 
-      ignored(_ignored), historySess(_historySess), lastMsgRcvTime(_lastMsgRcvTime) { }
+    sCnt(bool _ignored = false, int _historySess = 0, int _lastMsgTime = 0) : 
+      ignored(_ignored), historySess(_historySess), lastMsgTime(_lastMsgTime) { }
   };
 
   typedef std::map<int, sCnt> tCnts;
@@ -28,8 +28,8 @@ namespace kAway2 {
       Control();
       ~Control();
 
-      void enable(std::string msg = "", int status = -1, bool silent = false);
-      void disable(std::string msg = "", bool silent = false);
+      bool enable(std::string msg = "", int status = 0, bool silent = false);
+      bool disable(std::string msg = "", bool silent = false);
 
       void sendMsgTpl(int cnt, int tplId, std::string msgVar = "");
       void showKNotify(const char * text, int ico = ico::logoSmall);

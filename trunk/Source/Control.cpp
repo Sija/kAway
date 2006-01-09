@@ -37,8 +37,8 @@ namespace kAway2 {
     this->cntProps.clear();
   }
 
-  void Control::enable(std::string msg, int status, bool silent) {
-    if (this->isOn) return;
+  bool Control::enable(std::string msg, int status, bool silent) {
+    if (this->isOn) return(false);
 
     this->awayMsg = msg;
     this->awayTime->now();
@@ -56,7 +56,7 @@ namespace kAway2 {
 
       if (chgStatus || chgInfo) {
         this->sCtrl->rememberInfo();
-        this->sCtrl->changeStatus(chgInfo ? GETSTRA(cfg::tpl::status) : "", chgStatus ? status : -1);
+        this->sCtrl->changeStatus(chgInfo ? GETSTRA(cfg::tpl::status) : "", (!chgStatus || !status) ? -1 : status);
       }
     }
 
@@ -79,10 +79,11 @@ namespace kAway2 {
     this->showKNotify("Tryb away zosta³ <b>w³¹czony<b>", ico::enable);
     log("[Control::enable()]: msg = %s, silent = %s", 
       nullChk(msg), btoa(silent));
+    return(true);
   }
 
-  void Control::disable(std::string msg, bool silent) {
-    if (!this->isOn) return;
+  bool Control::disable(std::string msg, bool silent) {
+    if (!this->isOn) return(false);
 
     if (this->sCtrl) {
       this->sCtrl->fCtrl->clearVars();
@@ -104,16 +105,17 @@ namespace kAway2 {
       }
     }
 
-    this->showKNotify("Tryb away zosta³ <b>wy³¹czony<b>", ico::disable);
-    log("[Control::disable()]: msg = %s, silent = %s", 
-      nullChk(msg), btoa(silent));
-
     this->awayMsg = "";
     this->awayTime->clear();
     this->cntProps.clear();
 
     this->isOn = false;
     this->muteStateSwitched = false;
+
+    this->showKNotify("Tryb away zosta³ <b>wy³¹czony<b>", ico::disable);
+    log("[Control::disable()]: msg = %s, silent = %s", 
+      nullChk(msg), btoa(silent));
+    return(true);
   }
 
   void Control::showKNotify(const char * text, int ico) {

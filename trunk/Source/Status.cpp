@@ -61,8 +61,8 @@ void Status::changeStatus(int net, std::string info, int st) {
   if (!this->isNetUseful(net)) return;
 
   if (info.length()) {
-    bool dynSt = (this->stInfoVar.length() && !this->fCtrl->varExists(this->stInfoVar)) ? true : false;
-    if (dynSt) this->fCtrl->addVar(this->stInfoVar, this->getInfo(net));
+    bool dynSt = (this->stInfoVar.length() && 
+      this->fCtrl->addVar(this->stInfoVar, this->getInfo(net), false));
 
     info = this->fCtrl->parse(info);
     info = Helpers::trim(info);
