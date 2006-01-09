@@ -1,6 +1,6 @@
 // Microsoft Visual C++ generated resource script.
 //
-#include "resource.h"
+#include "../Source/resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -27,8 +27,8 @@ LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,8,30
- PRODUCTVERSION 1,0,8,30
+ FILEVERSION 1,0,8,31
+ PRODUCTVERSION 1,0,8,31
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -45,12 +45,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Sijawusz Pur Rahnama"
             VALUE "FileDescription", "Implementacja IRCowej komendy /away"
-            VALUE "FileVersion", "1, 0, 8, 30"
+            VALUE "FileVersion", "1, 0, 8, 31"
             VALUE "InternalName", "kAway2"
             VALUE "LegalCopyright", "Copyright (C) 2005 Sijawusz Pur Rahnama"
             VALUE "OriginalFilename", "kAway2.dll"
             VALUE "ProductName", "kAway2"
-            VALUE "ProductVersion", "1, 0, 8, 30"
+            VALUE "ProductVersion", "1, 0, 8, 31"
             VALUE "URL", "http://www.kplugins.net/"
         END
     END
@@ -68,17 +68,18 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ENABLE              ICON                    "enable.ico"
-IDI_DISABLE             ICON                    "disable.ico"
-IDI_LOGO                ICON                    "logo.ico"
-IDI_IGNORE              ICON                    "ignore.ico"
-IDI_UNIGNORE            ICON                    "unignore.ico"
-IDI_REPLY               ICON                    "reply.ico"
-IDI_STATUS              ICON                    "status.ico"
-IDI_ACCEPT              ICON                    "accept.ico"
-IDI_CANCEL              ICON                    "cancel.ico"
-IDI_HELP                ICON                    "help.ico"
-IDI_TRASH               ICON                    "trashbin.ico"
+IDI_ENABLE              ICON                    "../Res/enable.ico"
+IDI_DISABLE             ICON                    "../Res/disable.ico"
+IDI_LOGO                ICON                    "../Res/logo.ico"
+IDI_IGNORE              ICON                    "../Res/ignore.ico"
+IDI_UNIGNORE            ICON                    "../Res/unignore.ico"
+IDI_REPLY               ICON                    "../Res/reply.ico"
+IDI_STATUS              ICON                    "../Res/status.ico"
+IDI_ACCEPT              ICON                    "../Res/accept.ico"
+IDI_CANCEL              ICON                    "../Res/cancel.ico"
+IDI_HELP                ICON                    "../Res/help.ico"
+IDI_TRASH               ICON                    "../Res/trashbin.ico"
+IDI_MSG                 ICON                    "../Res/msg.ico"
 #endif    // Polish resources
 /////////////////////////////////////////////////////////////////////////////
 
@@ -100,7 +101,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 1 TEXTINCLUDE 
 BEGIN
-    "resource.h\0"
+    "../Source/resource.h\0"
 END
 
 2 TEXTINCLUDE 

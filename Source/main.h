@@ -11,9 +11,26 @@
 #pragma once
 
 namespace kAway2 {
+  /*
+   *  Values for {cfg::reply::minIntervalType} col
+   */
+  enum enMinIntType {
+    rcvTime, sendTime, both
+  };
+
   const unsigned int net = 667;
-  const bool debug = true;
   const char poweredBy[] = "Jan Jelinek";
+
+  namespace api {
+    const unsigned int api = net * 1000 + IM_USER;
+
+    const unsigned int isEnabled = api + 1;
+    const unsigned int enable = api + 2;
+    const unsigned int disable = api + 3;
+
+    const unsigned int isIgnored = api + 4;
+    const unsigned int ignore = api + 5;
+  }
 
   namespace ui {
     const unsigned int ui = net * 1000;
@@ -55,6 +72,7 @@ namespace kAway2 {
 
     const unsigned int help = ico + 11;
     const unsigned int trash = ico + 12;
+    const unsigned int msg = ico + 13;
   }
 
   namespace act {
@@ -137,6 +155,7 @@ namespace kAway2 {
 
       const unsigned int netChange = reply + 9;
       const unsigned int showInWnd = reply + 10;
+      const unsigned int minIntervalType = reply + 11;
     }
 
     namespace sms {

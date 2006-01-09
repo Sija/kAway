@@ -73,10 +73,10 @@ class Format {
     std::string getVar(std::string name);
     bool getVar(std::string name, std::string &val);
 
-    void addVar(std::string name, tFunc function, bool overwrite = true);
-    void addVar(std::string name, std::string value, bool overwrite = true);
+    bool addVar(std::string name, tFunc function, bool overwrite = true);
+    bool addVar(std::string name, std::string value, bool overwrite = true);
 
-    void removeVar(std::string name);
+    bool removeVar(std::string name);
     bool varExists(std::string name);
 
     bool format;

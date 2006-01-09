@@ -80,7 +80,7 @@ namespace kAway2 {
     // Ctrl->SetColumn(DTCFG, cfg::tpl::forward, DT_CT_STR, "", "kAway2/tpl/forward");
     // Ctrl->SetColumn(DTCFG, cfg::tpl::sms, DT_CT_STR, "", "kAway2/tpl/sms");
     // Ctrl->SetColumn(DTCFG, cfg::tpl::email, DT_CT_STR, "", "kAway2/tpl/email");
-    Ctrl->SetColumn(DTCFG, cfg::tpl::status, DT_CT_STR, "{status |} away {[msg]}", "kAway2/tpl/status");
+    Ctrl->SetColumn(DTCFG, cfg::tpl::status, DT_CT_STR, "{status |} away {[msg|time]}", "kAway2/tpl/status");
     Ctrl->SetColumn(DTCFG, cfg::tpl::autoAway, DT_CT_STR, "autoAway is on, so... i'm off :>", "kAway2/tpl/autoAway");
 
     Ctrl->SetColumn(DTCFG, cfg::reply::onEnable, DT_CT_INT, 0, "kAway2/reply/onEnable");
@@ -89,6 +89,7 @@ namespace kAway2 {
     Ctrl->SetColumn(DTCFG, cfg::reply::whenInvisible, DT_CT_INT, 1, "kAway2/reply/whenInvisible");
     Ctrl->SetColumn(DTCFG, cfg::reply::showInWnd, DT_CT_INT, 1, "kAway2/reply/showInWnd");
     Ctrl->SetColumn(DTCFG, cfg::reply::minInterval, DT_CT_INT, 900, "kAway2/reply/minInterval");
+    Ctrl->SetColumn(DTCFG, cfg::reply::minIntervalType, DT_CT_INT, rcvTime, "kAway2/reply/minIntervalType");
     Ctrl->SetColumn(DTCFG, cfg::reply::useHtml, DT_CT_INT, 1, "kAway2/reply/useHtml");
     Ctrl->SetColumn(DTCFG, cfg::reply::netChange, DT_CT_STR, "", "kAway2/reply/netChange");
 
@@ -117,6 +118,7 @@ namespace kAway2 {
     Ctrl->SetColumn(DTCNT, cfg::reply::whenInvisible, DT_CT_INT, 0, "kAway2/reply/whenInvisible");
     Ctrl->SetColumn(DTCNT, cfg::reply::showInWnd, DT_CT_INT, 0, "kAway2/reply/showInWnd");
     Ctrl->SetColumn(DTCNT, cfg::reply::minInterval, DT_CT_INT, -1, "kAway2/reply/minInterval");
+    Ctrl->SetColumn(DTCNT, cfg::reply::minIntervalType, DT_CT_INT, -1, "kAway2/reply/minIntervalType");
     Ctrl->SetColumn(DTCNT, cfg::reply::useHtml, DT_CT_INT, 0, "kAway2/reply/useHtml");
 
     return(1);
@@ -186,6 +188,7 @@ namespace kAway2 {
 
     // IconRegister(IML_16, ico::help, Ctrl->hDll(), IDI_HELP);
     IconRegister(IML_16, ico::trash, Ctrl->hDll(), IDI_TRASH);
+    IconRegister(IML_16, ico::msg, Ctrl->hDll(), IDI_MSG);
 
     /* Adding configuration tabs */
     UIGroupAdd(IMIG_NFO, ui::cntCfgGroup, ACTR_SAVE | ACTR_INIT, "kAway2", ico::logoSmall);
@@ -238,7 +241,7 @@ namespace kAway2 {
       AP_TIP_WIDTH "285";
 
     UIActionCfgAddPluginInfoBox2(ui::cfgGroup, desc, header, Helpers::icon32(ico::logoBig).c_str(), -4);
-    UIActionCfgAddPluginInfoBox2(ui::cntCfgGroup, desc, header, Helpers::icon32(ico::logoBig).c_str(), -5);
+    UIActionCfgAddPluginInfoBox2(ui::cntCfgGroup, desc, header, Helpers::icon32(ico::logoBig).c_str(), -4);
 
     /* Main tab */
     /* |-> General settings group */
@@ -333,10 +336,17 @@ namespace kAway2 {
 
     /* Autoresponder tab */
     /* |-> Minimal reply interval group */
-    UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_GROUP, "Minimalny interwa³ pomiêdzy wysy³anymi odpowiedziami [s]:");
+    UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_GROUP, "Minimalny interwa³ pomiêdzy wysy³anymi odpowiedziami");
+    UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_SEPARATOR, "Czas interwa³u:");
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_SLIDER, "Ma³y\nDu¿y" AP_STEP "60" AP_MINIMUM "0" AP_MAXIMUM "3600" AP_TIPRICH 
       "<b>0</b> - odpowiedŸ bêdzie wys³ana tylko jeden raz<br/><b>3600</b> - odpowiedŸ nie zostanie ponownie "
       "wys³ana przez min. <b>1h</b> :>", cfg::reply::minInterval);
+    UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_SEPARATOR, "Interwa³ bêdzie liczony od ostatniej ...");
+    UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(ico::msg).c_str());
+    UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_RADIO | ACTSC_INLINE, "otrzymanej wiadomoœci" AP_VALUE "0", cfg::reply::minIntervalType);
+    UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(ico::reply).c_str());
+    UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_RADIO | ACTSRADIO_LAST, "wys³anej wiadomoœci" AP_VALUE "1"
+      AP_TIP "(w tym powiadomieñ)", cfg::reply::minIntervalType);
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_GROUPEND);
 
     /* |-> Net selection group */
@@ -383,10 +393,19 @@ namespace kAway2 {
 
     /* Main tab in contact window */
     /* |-> Minimal reply interval group */
-    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_GROUP, "Minimalny interwa³ pomiêdzy wysy³anymi odpowiedziami [s]:");
-    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_SLIDER, "Ma³y\nDu¿y" AP_STEP "60" AP_MINIMUM "-1" AP_MAXIMUM "3600" AP_TIPRICH 
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_GROUP, "Minimalny interwa³ pomiêdzy wysy³anymi odpowiedziami");
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_SEPARATOR, "Czas interwa³u:");
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_SLIDER, "Ma³y\nDu¿y" AP_STEP "60" AP_MINIMUM "0" AP_MAXIMUM "3600" AP_TIPRICH 
       "<b>-1</b> - pobierze wartoœæ domyœln¹ z konfiguracji<br/><b>0</b> - odpowiedŸ bêdzie wys³ana tylko jeden raz<br/>"
       "<b>3600</b> - odpowiedŸ nie zostanie ponownie wys³ana przez min. <b>1h</b> :>", cfg::reply::minInterval);
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_SEPARATOR, "Interwa³ bêdzie liczony od ostatniej ...");
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(27).c_str());
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_RADIO | ACTSC_INLINE, "domyœlnie" AP_VALUE "-1", cfg::reply::minIntervalType);
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(ico::msg).c_str());
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_RADIO | ACTSC_INLINE, "otrzymanej wiadomoœci" AP_VALUE "0", cfg::reply::minIntervalType);
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(ico::reply).c_str());
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_RADIO | ACTSRADIO_LAST, "wys³anej wiadomoœci" AP_VALUE "1"
+      AP_TIP "(w tym powiadomieñ)", cfg::reply::minIntervalType);
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_GROUPEND);
 
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_GROUP, "Ustawienia");
@@ -499,8 +518,8 @@ namespace kAway2 {
       }
 
       case ui::cntCfgGroup: {
-        if ((an->code == ACTN_CREATE) && !Ctrl->DTgetPos(DTCNT, cnt)) {
-          UIActionSetStatus(anBase->act, -1, ACTS_HIDDEN);
+        if ((an->code == ACTN_CREATE)) {
+          UIActionSetStatus(anBase->act, !Ctrl->DTgetPos(DTCNT, cnt) ? -1 : 0, ACTS_HIDDEN);
         }
         break;
       }
@@ -533,6 +552,7 @@ namespace kAway2 {
           SETCNTI(i, cfg::reply::onMsg, 0);
           SETCNTI(i, cfg::reply::whenInvisible, 0);
           SETCNTI(i, cfg::reply::minInterval, -1);
+          SETCNTI(i, cfg::reply::minIntervalType, -1);
           SETCNTI(i, cfg::reply::useHtml, 0);
           SETCNTI(i, cfg::reply::showInWnd, 0);
 
@@ -665,15 +685,57 @@ int __stdcall IMessageProc(sIMessage_base *msgBase) {
           pCtrl->cntProp(cnt)->historySess = 1;
         }
 
-        if (strlen(m->fromUid) && Helpers::altCfgVal(cnt, cfg::reply::onMsg)) {
-          int lastMsgRcvTime = pCtrl->cntProp(cnt)->lastMsgRcvTime;
-          int interval = Helpers::altCfgVal(cnt, cfg::reply::minInterval, false);
+        if (Helpers::altCfgVal(cnt, cfg::reply::onMsg)) {
+          int intType = Helpers::altCfgVal(cnt, cfg::reply::minIntervalType, false);
 
-          if ((!interval && !lastMsgRcvTime) || (interval && ((interval + lastMsgRcvTime) < m->time))) {
-            pCtrl->cntProp(cnt)->lastMsgRcvTime = m->time;
-            pCtrl->sendMsgTpl(cnt, cfg::tpl::reply);
+          if (strlen(m->fromUid)) {
+            int lastMsgTime = pCtrl->cntProp(cnt)->lastMsgTime;
+            int interval = Helpers::altCfgVal(cnt, cfg::reply::minInterval, false);
+
+            if ((!interval && !lastMsgTime) || (interval && ((interval + lastMsgTime) < m->time))) {
+              pCtrl->sendMsgTpl(cnt, cfg::tpl::reply);
+            }
+            if ((intType == rcvTime) || (intType == both)) {
+              pCtrl->cntProp(cnt)->lastMsgTime = m->time;
+            }
+          } else {
+            if ((intType == sendTime) || (intType == both)) {
+              pCtrl->cntProp(cnt)->lastMsgTime = m->time;
+            }
           }
         }
+      }
+      break;
+    }
+
+    /*
+      *  API
+      */
+    case api::isEnabled: {
+      return(pCtrl->isEnabled());
+    }
+
+    case api::enable: {
+      logDebug("Remote API Call [enable]: from = %s, msg = %s, status = %i", 
+        Helpers::getPlugName(msg->sender), nullChk((char*)msg->p1), msg->p2);
+      return(pCtrl->enable((char*)msg->p1, msg->p2));
+    }
+
+    case api::disable: {
+      logDebug("Remote API Call [disable]: from = %s, msg = %s",
+        Helpers::getPlugName(msg->sender), nullChk((char*)msg->p1));
+      return(pCtrl->disable((char*)msg->p1));
+    }
+
+    case api::isIgnored: {
+      return(pCtrl->cntProp(msg->p1)->ignored);
+    }
+
+    case api::ignore: {
+      logDebug("Remote API Call [ignore]: from = %i, cnt = %i, ignore = %s", 
+        Helpers::getPlugName(msg->sender), msg->p1, btoa((bool)msg->p2));
+      if (pCtrl->isEnabled()) {
+        pCtrl->cntProp(msg->p1)->ignored = (bool) msg->p2;
       }
       break;
     }

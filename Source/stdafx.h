@@ -24,9 +24,10 @@
 #include <commctrl.h>
 #include <map>
 #include <list>
-#include <string>
 #include <deque>
 #include <stdstring.h>
+#include <string>
+// #include <sstream>
 
 #pragma comment(lib, "comctl32.lib")
 
@@ -61,5 +62,5 @@
 #include <konnekt/ui_message_controls.h>
 #include <konnekt/lib.h>
 
-#include "../res/resource.h"
+#include "resource.h"
 #include "plugsNET.h"

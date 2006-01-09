@@ -105,6 +105,10 @@ namespace Helpers {
     return(Ctrl->ICMessage(IMC_FINDPLUG, net, type));
   }
 
+  const char * getPlugName(int plugID) {
+    return(SAFECHAR((char*) Ctrl->IMessageDirect(IM_PLUG_NAME, plugID)));
+  }
+
   bool isMsgWndOpen(int cntID) {
     return(Tabs::GetWindowState(cntID));
   }

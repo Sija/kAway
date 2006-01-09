@@ -116,25 +116,29 @@ std::string Format::buildVarsList() {
   return(result);
 }
 
-void Format::addVar(std::string name, tFunc function, bool overwrite) {
+bool Format::addVar(std::string name, tFunc function, bool overwrite) {
   logDebug("[Format::addVar()]: name = %s, type = function", name.c_str());
 
   if (overwrite)
     this->removeVar(name);
   else if (this->varExists(name))
-    return;
+    return(false);
+
   this->vars.push_back(sVar(name, FUNCTION, function, ""));
+  return(true);
 }
 
-void Format::addVar(std::string name, std::string value, bool overwrite) {
+bool Format::addVar(std::string name, std::string value, bool overwrite) {
   logDebug("[Format::addVar()]: name = %s, type = string, value = %s", 
     name.c_str(), nullChk(value));
 
   if (overwrite)
     this->removeVar(name);
   else if (this->varExists(name))
-    return;
+    return(false);
+
   this->vars.push_back(sVar(name, STRING, NULL, value));
+  return(true);
 }
 
 std::string Format::getVar(std::string name) {
@@ -163,12 +167,13 @@ bool Format::getVar(std::string name, std::string &val) {
   return(false);
 }
 
-void Format::removeVar(std::string name) {
+bool Format::removeVar(std::string name) {
   for (tVars::iterator it = this->vars.begin(); it != this->vars.end(); it++) {
     if (it->name == name) {
-      it = this->vars.erase(it); break;
+      it = this->vars.erase(it); return(true);
     }
   }
+  return(false);
 }
 
 bool Format::varExists(std::string name) {

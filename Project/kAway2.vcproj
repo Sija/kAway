@@ -32,7 +32,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)/$(ProjectName).dll"
+				OutputFile="$(OutDir)/$(ProjectName).debug.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="$(ProjectDir)lib"
 				GenerateDebugInformation="TRUE"
@@ -271,7 +271,7 @@
 				RelativePath="..\Source\plugsNET.h">
 			</File>
 			<File
-				RelativePath="..\Res\resource.h">
+				RelativePath="..\Source\resource.h">
 			</File>
 			<File
 				RelativePath="..\Source\Status.h">
@@ -309,10 +309,13 @@
 				RelativePath="..\Res\logo.ico">
 			</File>
 			<File
+				RelativePath="..\Res\msg.ico">
+			</File>
+			<File
 				RelativePath="..\Res\reply.ico">
 			</File>
 			<File
-				RelativePath="..\Res\resource.rc">
+				RelativePath="..\Project\resource.rc">
 			</File>
 			<File
 				RelativePath="..\Res\status.ico">
