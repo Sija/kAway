@@ -62,5 +62,5 @@
 #include <konnekt/ui_message_controls.h>
 #include <konnekt/lib.h>
 
-#include "resource.h"
+#include "../Project/resource.h"
 #include "plugsNET.h"

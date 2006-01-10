@@ -168,12 +168,11 @@ namespace kAway2 {
           case 1:
           case STATUS_OK: {
             sWndData *data = (sWndData*) GetWindowLong(hWnd, GWL_USERDATA);
-            int len = SendMessage(GetDlgItem(hWnd, STATUS_EDIT_INFO), WM_GETTEXTLENGTH, 0, 0) + 1;
+            int st, len = SendMessage(GetDlgItem(hWnd, STATUS_EDIT_INFO), WM_GETTEXTLENGTH, 0, 0) + 1;
             char * msg = new char[len];
             
             GetWindowText(GetDlgItem(hWnd, STATUS_EDIT_INFO), msg, len);
             std::string name = wCtrl->getMruName();
-            int status = -1;
 
             sMRU list;
             list.name = name.c_str();
@@ -182,20 +181,22 @@ namespace kAway2 {
             list.count = wCtrl->getMruSize();
             IMessage(&sIMessage_MRU(IMC_MRU_SET, &list));
 
-            if (IsDlgButtonChecked(hWnd, ST_ONLINE)) status = ST_ONLINE;
-            if (IsDlgButtonChecked(hWnd, ST_CHAT)) status = ST_CHAT;
-            if (IsDlgButtonChecked(hWnd, ST_AWAY)) status = ST_AWAY;
-            if (IsDlgButtonChecked(hWnd, ST_NA)) status = ST_NA;
-            if (IsDlgButtonChecked(hWnd, ST_DND)) status = ST_DND;
-            if (IsDlgButtonChecked(hWnd, ST_HIDDEN)) status = ST_HIDDEN;
-            if (IsDlgButtonChecked(hWnd, ST_OFFLINE)) status = ST_OFFLINE;
+            if (IsDlgButtonChecked(hWnd, ST_ONLINE)) st = ST_ONLINE;
+            if (IsDlgButtonChecked(hWnd, ST_CHAT)) st = ST_CHAT;
+            if (IsDlgButtonChecked(hWnd, ST_AWAY)) st = ST_AWAY;
+            if (IsDlgButtonChecked(hWnd, ST_NA)) st = ST_NA;
+            if (IsDlgButtonChecked(hWnd, ST_DND)) st = ST_DND;
+            if (IsDlgButtonChecked(hWnd, ST_HIDDEN)) st = ST_HIDDEN;
+            if (IsDlgButtonChecked(hWnd, ST_OFFLINE)) st = ST_OFFLINE;
 
+            if (st) {
+              SETINT(cfg::status::onEnableSt, st);
+            }
             SETINT(cfg::status::changeOnEnable, (IsDlgButtonChecked(hWnd, STATUS_CHANGE) == BST_CHECKED) ? 1 : 0);
             SETINT(cfg::status::changeInfoOnEnable, (IsDlgButtonChecked(hWnd, STATUS_CHANGE_INFO) == BST_CHECKED) ? 1 : 0);
             SETINT(cfg::muteOnEnable, (IsDlgButtonChecked(hWnd, MUTE) == BST_CHECKED) ? 1 : 0);
-            SETINT(cfg::status::onEnableSt, status);
 
-            pCtrl->enable(msg, (IsDlgButtonChecked(hWnd, STATUS_CHANGE) == BST_CHECKED) ? status : -1);
+            pCtrl->enable(msg);
 
             delete [] msg;
             DestroyWindow(hWnd);

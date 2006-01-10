@@ -48,7 +48,7 @@ class Status {
 
   public:
     // Obcina status do maks. d³ugoœci
-    std::string limitChars(std::string status, int net, int s = 0);
+    std::string limitChars(std::string status, int net, const char * dots = "...");
     // Formatuje status
     std::string parse(std::string status, int net);
 
@@ -71,9 +71,9 @@ class Status {
     }
 
     // Zmienia status, txt - opis, st - id statusu
-    void changeStatus(std::string info, int st = -1);
+    void changeStatus(std::string info, int st = -1, const char * dots = "...");
     // Zmienia status na wybranej sieci
-    void changeStatus(int net, std::string info, int st = -1);
+    void changeStatus(int net, std::string info, int st = -1, const char * dots = "...");
 
     // Zapamiêtuje aktualny opis na ka¿dej sieci
     void rememberInfo();

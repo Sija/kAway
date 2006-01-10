@@ -1,6 +1,6 @@
 // Microsoft Visual C++ generated resource script.
 //
-#include "../Source/resource.h"
+#include "resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -27,8 +27,8 @@ LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,8,31
- PRODUCTVERSION 1,0,8,31
+ FILEVERSION 1,0,8,32
+ PRODUCTVERSION 1,0,8,32
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -45,12 +45,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Sijawusz Pur Rahnama"
             VALUE "FileDescription", "Implementacja IRCowej komendy /away"
-            VALUE "FileVersion", "1, 0, 8, 31"
+            VALUE "FileVersion", "1, 0, 8, 32"
             VALUE "InternalName", "kAway2"
             VALUE "LegalCopyright", "Copyright (C) 2005 Sijawusz Pur Rahnama"
             VALUE "OriginalFilename", "kAway2.dll"
             VALUE "ProductName", "kAway2"
-            VALUE "ProductVersion", "1, 0, 8, 31"
+            VALUE "ProductVersion", "1, 0, 8, 32"
             VALUE "URL", "http://www.kplugins.net/"
         END
     END
@@ -101,7 +101,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 1 TEXTINCLUDE 
 BEGIN
-    "../Source/resource.h\0"
+    "resource.h\0"
 END
 
 2 TEXTINCLUDE 
