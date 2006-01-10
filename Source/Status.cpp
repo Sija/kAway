@@ -50,14 +50,14 @@ void Status::removeReplacementSt(int net, int before) {
   }
 }
 
-void Status::changeStatus(std::string info, int st) {
+void Status::changeStatus(std::string info, int st, const char * dots) {
   tItemNets nets = this->lCtrl->getNets();
   for (tItemNets::iterator it = nets.begin(); it != nets.end(); it++) {
-    this->changeStatus(it->net, info, st);
+    this->changeStatus(it->net, info, st, dots);
   }
 }
 
-void Status::changeStatus(int net, std::string info, int st) {
+void Status::changeStatus(int net, std::string info, int st, const char * dots) {
   if (!this->isNetUseful(net)) return;
 
   if (info.length()) {
@@ -66,7 +66,7 @@ void Status::changeStatus(int net, std::string info, int st) {
 
     info = this->fCtrl->parse(info);
     info = Helpers::trim(info);
-    info = this->limitChars(info, net);
+    info = this->limitChars(info, net, dots);
 
     if (dynSt) this->fCtrl->removeVar(this->stInfoVar);
   }
@@ -181,7 +181,7 @@ bool Status::isNetUseful(int net) {
   return(false);
 }
 
-std::string Status::limitChars(std::string status, int net, int s) {
+std::string Status::limitChars(std::string status, int net, const char * dots) {
   enMaxLength limit;
 
   switch (net) {
@@ -195,24 +195,28 @@ std::string Status::limitChars(std::string status, int net, int s) {
     case plugsNET::kjabber7:
     case plugsNET::kjabber8:
     case plugsNET::kjabber9:
-    case plugsNET::kjabber10:
+    case plugsNET::kjabber10: {
       limit = jabber;
       break;
-    case plugsNET::dwutlenek:
+    }
+    case plugsNET::dwutlenek: {
       limit = tlen;
       break;
-    case plugsNET::gg:
+    }
+    case plugsNET::gg: {
       limit = gaduGadu;
       break;
-    default:
+    }
+    default: {
       limit = normal;
       break;
+    }
   }
 
-  UINT iLimit = limit - s;
-  if (status.length() > iLimit) {
-    status.resize(iLimit);
-    status.replace(status.length() - 3, 3, "...");
+  if (status.length() > limit) {
+    status.resize(limit);
+    if (int dotsSize = strlen(dots))
+      status.replace(status.length() - dotsSize, dotsSize, dots);
   }
   return(status);
 }

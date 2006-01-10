@@ -56,7 +56,9 @@ namespace kAway2 {
 
       if (chgStatus || chgInfo) {
         this->sCtrl->rememberInfo();
-        this->sCtrl->changeStatus(chgInfo ? GETSTRA(cfg::tpl::status) : "", (!chgStatus || !status) ? -1 : status);
+        this->sCtrl->changeStatus(chgInfo ? GETSTRA(cfg::tpl::status) : "", 
+          chgStatus ? (status ? status : GETINT(cfg::status::onEnableSt)) : -1, 
+          GETINT(cfg::status::dotsAppend) ? "..." : "");
       }
     }
 
@@ -71,7 +73,7 @@ namespace kAway2 {
     for (int i = 0; i < count; i++) {
       if (Helpers::isMsgWndOpen(i)) {
         if (Helpers::altCfgVal(i, cfg::reply::onEnable) && !silent && !this->cntProp(i)->ignored) {
-          this->sendMsgTpl(i, cfg::tpl::enable);
+          this->sendMsgTpl(i, optEnable);
         }
       }
     }
@@ -100,8 +102,16 @@ namespace kAway2 {
     for (int i = 0; i < count; i++) {
       if (Helpers::isMsgWndOpen(i)) {
         if (Helpers::altCfgVal(i, cfg::reply::onDisable) && !silent && !this->cntProp(i)->ignored) {
-          this->sendMsgTpl(i, cfg::tpl::disable, msg);
+          this->sendMsgTpl(i, optDisable, msg);
         }
+      }
+    }
+
+    for (tCnts::iterator it = this->cntProps.begin(); it != this->cntProps.end(); it++) {
+      logDebug("[Control::disable].saved: cnt = %i, ignored = %s", it->first, btoa(it->second.ignored));
+      for (tMsgQueue::iterator it2 = it->second.msgQueue.begin(); it2 != it->second.msgQueue.end(); it2++) {
+        logDebug("[Control::disable].saved.item: msg = %s", (*it2)->body);
+        messageFree((*it2), true);
       }
     }
 
@@ -143,7 +153,7 @@ namespace kAway2 {
     delete [] name;
   }
 
-  void Control::sendMsgTpl(int cnt, int tplId, std::string msgVar) {
+  void Control::sendMsgTpl(int cnt, enAutoMsgTpl tpl, std::string msgVal) {
     int session, net = GETCNTI(cnt, CNT_NET);
 
     if (((sCtrl->getActualStatus(net) == ST_HIDDEN) && !Helpers::altCfgVal(cnt, cfg::reply::whenInvisible)) || 
@@ -151,7 +161,7 @@ namespace kAway2 {
       return;
 
     std::string ext, uid(GETCNTC(cnt, CNT_UID));
-    ext = SetExtParam(ext, cfg::extParamName, "1");
+    ext = SetExtParam(ext, cfg::extParamName, itos(tpl));
     ext = SetExtParam(ext, MEX_NOSOUND, "1");
 
     Format format;
@@ -162,9 +172,9 @@ namespace kAway2 {
     format.addVar("surname", GETCNTC(cnt, CNT_SURNAME));
     format.addVar("date", fGetAwayDateString);
     format.addVar("time", this->awayTime->strftime(GETSTRA(cfg::timeFormat)));
-    format.addVar("msg", (tplId == cfg::tpl::disable) ? msgVar : this->awayMsg);
+    format.addVar("msg", (tpl == optDisable) ? msgVal : this->awayMsg);
 
-    std::string body = Helpers::trim(format.parse(Helpers::altCfgStrVal(cnt, tplId)));
+    std::string body = Helpers::trim(format.parse(Helpers::altCfgStrVal(cnt, tpl)));
     cMessage msg = Message::prepare(uid, "", net, body, MT_MESSAGE, ext, 
       MF_SEND | (Helpers::altCfgVal(cnt, cfg::reply::useHtml) ? MF_HTML : 0));
 
@@ -180,6 +190,6 @@ namespace kAway2 {
     */
 
     logDebug("[Control::sendMsgTpl()]: tpl.id = %i, msg.net = %i, msg.uid = %s", 
-      tplId, net, uid.c_str());
+      tpl, net, uid.c_str());
   }
 }

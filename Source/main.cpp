@@ -99,6 +99,7 @@ namespace kAway2 {
     Ctrl->SetColumn(DTCFG, cfg::status::changeOnEnable, DT_CT_INT, 1, "kAway2/status/changeOnEnable");
     Ctrl->SetColumn(DTCFG, cfg::status::changeInfoOnEnable, DT_CT_INT, 1, "kAway2/status/changeInfoOnEnable");
     Ctrl->SetColumn(DTCFG, cfg::status::netChange, DT_CT_STR, "", "kAway2/status/netChange");
+    Ctrl->SetColumn(DTCFG, cfg::status::dotsAppend, DT_CT_INT, 1, "kAway2/status/dotsAppend");
 
     Ctrl->SetColumn(DTCFG, cfg::sms::interval, DT_CT_INT, 150, "kAway2/sms/interval");
     Ctrl->SetColumn(DTCFG, cfg::sms::gate, DT_CT_STR, "", "kAway2/sms/gate");
@@ -307,6 +308,7 @@ namespace kAway2 {
       cfg::status::onEnableSt);
     UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_COMMENT, "Domyœlnie ustawiony status");
     */
+    UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_CHECK, "Dodawaj '...' przy skracaniu d³ugich opisów", cfg::status::dotsAppend);
     UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_CHECK, "Zmieniaj status przy w³¹czonym statusie 'ukryty'", cfg::status::whenInvisible);
     UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_SEPARATOR);
     UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_CHECK, "Zmieniaj status przy w³¹czeniu trybu away", cfg::status::changeOnEnable);
@@ -639,8 +641,8 @@ int __stdcall IMessageProc(sIMessage_base *msgBase) {
         std::string cmd = params[0];
         std::string msg = (params.size() > 1) ? body.substr(params[0].length() + 1, body.length()) : "";
 
-        int st = GETINT(cfg::status::onEnableSt);
-        bool del = false;
+        // extended syntax ?
+        int st; bool del = false;
 
         Stamina::RegEx reg;
         reg.match("/^(away|brb)\\[(.+)\\]$/", cmd.c_str());
@@ -684,6 +686,7 @@ int __stdcall IMessageProc(sIMessage_base *msgBase) {
           Helpers::addItemToHistory(m, cnt, cfg::historyFolder, "", pCtrl->cntProp(cnt)->historySess);
           pCtrl->cntProp(cnt)->historySess = 1;
         }
+        // pCtrl->addMsg2CntQueue(cnt, m);
 
         if (Helpers::altCfgVal(cnt, cfg::reply::onMsg)) {
           int intType = Helpers::altCfgVal(cnt, cfg::reply::minIntervalType, false);
@@ -693,7 +696,7 @@ int __stdcall IMessageProc(sIMessage_base *msgBase) {
             int interval = Helpers::altCfgVal(cnt, cfg::reply::minInterval, false);
 
             if ((!interval && !lastMsgTime) || (interval && ((interval + lastMsgTime) < m->time))) {
-              pCtrl->sendMsgTpl(cnt, cfg::tpl::reply);
+              pCtrl->sendMsgTpl(cnt, optReply);
             }
             if ((intType == rcvTime) || (intType == both)) {
               pCtrl->cntProp(cnt)->lastMsgTime = m->time;

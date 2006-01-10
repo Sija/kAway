@@ -203,6 +203,7 @@ namespace kAway2 {
 
       const unsigned int onEnableSt = status + 5;
       const unsigned int onAutoAwaySt = status + 6;
+      const unsigned int dotsAppend = status + 7;
     }
   }
 }

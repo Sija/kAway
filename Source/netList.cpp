@@ -103,7 +103,7 @@ void NetList::saveNets() {
 }
 
 void NetList::actionHandle(int id, int code) {
-  if (!this) return;
+  if (!this || !Ctrl) return;
 
   if ((id == this->cfgGroup) && (code == ACTN_SAVE)) {
     this->configSaved = true;

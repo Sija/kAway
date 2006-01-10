@@ -11,10 +11,19 @@
 #pragma once
 
 namespace kAway2 {
+  typedef std::deque<cMessage*> tMsgQueue;
+
+  enum enAutoMsgTpl {
+    optEnable = cfg::tpl::enable,
+    optDisable = cfg::tpl::disable,
+    optReply = cfg::tpl::reply
+  };
+
   struct sCnt {
     bool ignored;
     int historySess;
     __int64 lastMsgTime;
+    tMsgQueue msgQueue;
 
     // konstruktor
     sCnt(bool _ignored = false, int _historySess = 0, int _lastMsgTime = 0) : 
@@ -31,7 +40,7 @@ namespace kAway2 {
       bool enable(std::string msg = "", int status = 0, bool silent = false);
       bool disable(std::string msg = "", bool silent = false);
 
-      void sendMsgTpl(int cnt, int tplId, std::string msgVar = "");
+      void sendMsgTpl(int cnt, enAutoMsgTpl tpl, std::string msgVal = "");
       void showKNotify(const char * text, int ico = ico::logoSmall);
 
       inline bool isMuteSwitched() {
@@ -70,8 +79,16 @@ namespace kAway2 {
         return(this->awayTime);
       }
 
+      inline tCnts getCnts() {
+        return(this->cntProps);
+      }
+
       inline sCnt *cntProp(int id) {
         return(&this->cntProps[Ctrl->DTgetID(DTCNT, id)]);
+      }
+
+      inline void addMsg2CntQueue(int cnt, cMessage *msg) {
+        this->cntProp(cnt)->msgQueue.push_front(messageDuplicate(msg));
       }
 
     protected:
