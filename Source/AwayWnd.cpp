@@ -10,7 +10,8 @@
  *  $Id$
  */
 
-#include "editFix.h"
+#pragma once
+#include "AwayWnd.h"
 
 // dlg ctrl ID
 #define STATUS_OK           0x2000
@@ -82,7 +83,7 @@ namespace kAway2 {
           wCtrl->prepareButtonImage(it->img, hWnd, net, it->id);
         }
         // int chkSt = IMessage(IM_GET_STATUS, net);
-        CheckDlgButton(hWnd, GETINT(cfg::status::onEnableSt), BST_CHECKED);
+        CheckDlgButton(hWnd, GETINT(cfg::wnd::onEnableSt), BST_CHECKED);
 
         // pole combo - wybór opisu
         HWND hWndCombo = CreateWindow("combobox", "", WS_TABSTOP | WS_CHILD | WS_VISIBLE | CBS_AUTOHSCROLL | WS_EX_CONTROLPARENT | 
@@ -108,7 +109,7 @@ namespace kAway2 {
         ti.hwnd = hWndTmp;
         ti.lpszText = "Zmieñ status";
         SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM) &ti);
-        CheckDlgButton(hWnd, STATUS_CHANGE, GETINT(cfg::status::changeOnEnable) ? BST_CHECKED : 0);
+        CheckDlgButton(hWnd, STATUS_CHANGE, GETINT(cfg::wnd::changeOnEnable) ? BST_CHECKED : 0);
 
         // checkbox - zmieñ opis
         hWndTmp = CreateWindow("button", "opis", WS_TABSTOP | WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX,
@@ -118,7 +119,7 @@ namespace kAway2 {
         ti.hwnd = hWndTmp;
         ti.lpszText = "Zmieñ opis";
         SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM) &ti);
-        CheckDlgButton(hWnd, STATUS_CHANGE_INFO, GETINT(cfg::status::changeInfoOnEnable) ? BST_CHECKED : 0);
+        CheckDlgButton(hWnd, STATUS_CHANGE_INFO, GETINT(cfg::wnd::changeInfoOnEnable) ? BST_CHECKED : 0);
 
         // checkbox - wycisz
         hWndTmp = CreateWindow("button", "wycisz", WS_TABSTOP | WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX,
@@ -190,12 +191,13 @@ namespace kAway2 {
             if (IsDlgButtonChecked(hWnd, ST_OFFLINE)) st = ST_OFFLINE;
 
             if (st) {
-              SETINT(cfg::status::onEnableSt, st);
+              SETINT(cfg::wnd::onEnableSt, st);
             }
-            SETINT(cfg::status::changeOnEnable, (IsDlgButtonChecked(hWnd, STATUS_CHANGE) == BST_CHECKED) ? 1 : 0);
-            SETINT(cfg::status::changeInfoOnEnable, (IsDlgButtonChecked(hWnd, STATUS_CHANGE_INFO) == BST_CHECKED) ? 1 : 0);
-            SETINT(cfg::muteOnEnable, (IsDlgButtonChecked(hWnd, MUTE) == BST_CHECKED) ? 1 : 0);
+            SETINT(cfg::wnd::changeOnEnable, (IsDlgButtonChecked(hWnd, STATUS_CHANGE) == BST_CHECKED) ? 1 : 0);
+            SETINT(cfg::wnd::changeInfoOnEnable, (IsDlgButtonChecked(hWnd, STATUS_CHANGE_INFO) == BST_CHECKED) ? 1 : 0);
+            SETINT(cfg::wnd::muteOnEnable, (IsDlgButtonChecked(hWnd, MUTE) == BST_CHECKED) ? 1 : 0);
 
+            pCtrl->fromWnd(true);
             pCtrl->enable(msg);
 
             delete [] msg;

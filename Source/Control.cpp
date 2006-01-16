@@ -9,6 +9,7 @@
  */
 
 #pragma once
+#include "Control.h"
 
 namespace kAway2 {
   std::string __stdcall fGetAwayDateString(Format *fCtrl) {
@@ -45,8 +46,8 @@ namespace kAway2 {
     this->isOn = true;
 
     if (this->sCtrl) {
-      int chgStatus = GETINT(cfg::status::changeOnEnable);
-      int chgInfo = GETINT(cfg::status::changeInfoOnEnable);
+      int chgStatus = GETINT(this->isFromWnd ? cfg::wnd::changeOnEnable : cfg::status::changeOnEnable);
+      int chgInfo = GETINT(this->isFromWnd ? cfg::wnd::changeInfoOnEnable : cfg::status::changeInfoOnEnable);
 
       if (chgInfo) {
         this->sCtrl->fCtrl->addVar("date", this->awayTime->strftime(GETSTRA(cfg::dateFormat)));
@@ -57,23 +58,24 @@ namespace kAway2 {
       if (chgStatus || chgInfo) {
         this->sCtrl->rememberInfo();
         this->sCtrl->changeStatus(chgInfo ? GETSTRA(cfg::tpl::status) : "", 
-          chgStatus ? (status ? status : GETINT(cfg::status::onEnableSt)) : -1, 
-          GETINT(cfg::status::dotsAppend) ? "..." : "");
+          chgStatus ? (status ? status : GETINT(this->isFromWnd ? cfg::wnd::onEnableSt : cfg::status::onEnableSt)) : -1, 
+          GETINT(cfg::status::dotsAppend) ? "…" : "");
       }
     }
 
-    if (GETINT(cfg::muteOnEnable) && !GETINT(kSound::Cfg::mute)) {
+    if (GETINT(this->isFromWnd ? cfg::wnd::muteOnEnable : cfg::muteOnEnable) && !GETINT(kSound::Cfg::mute)) {
       Helpers::UIActionCall(this->pluginsGroup, kSound::action::mute);
       this->muteStateSwitched = true;
     }
 
     this->switchBtns(true);
+    this->fromWnd(false);
 
     int count = Ctrl->IMessage(IMC_CNT_COUNT);
     for (int i = 0; i < count; i++) {
       if (Helpers::isMsgWndOpen(i)) {
         if (Helpers::altCfgVal(i, cfg::reply::onEnable) && !silent && !this->cntProp(i)->ignored) {
-          this->sendMsgTpl(i, optEnable);
+          this->sendMsgTpl(i, tplEnable);
         }
       }
     }
@@ -102,7 +104,7 @@ namespace kAway2 {
     for (int i = 0; i < count; i++) {
       if (Helpers::isMsgWndOpen(i)) {
         if (Helpers::altCfgVal(i, cfg::reply::onDisable) && !silent && !this->cntProp(i)->ignored) {
-          this->sendMsgTpl(i, optDisable, msg);
+          this->sendMsgTpl(i, tplDisable, msg);
         }
       }
     }
@@ -172,7 +174,7 @@ namespace kAway2 {
     format.addVar("surname", GETCNTC(cnt, CNT_SURNAME));
     format.addVar("date", fGetAwayDateString);
     format.addVar("time", this->awayTime->strftime(GETSTRA(cfg::timeFormat)));
-    format.addVar("msg", (tpl == optDisable) ? msgVal : this->awayMsg);
+    format.addVar("msg", (tpl == tplDisable) ? msgVal : this->awayMsg);
 
     std::string body = Helpers::trim(format.parse(Helpers::altCfgStrVal(cnt, tpl)));
     cMessage msg = Message::prepare(uid, "", net, body, MT_MESSAGE, ext, 

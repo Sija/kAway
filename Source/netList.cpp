@@ -9,6 +9,7 @@
  */
 
 #pragma once
+#include "NetList.h"
 
 NetList::NetList(int cfgCol, int cfgGroup, int dynActGroup, int actCreate, int actDestroy) {
   this->configSaved = false;
@@ -121,10 +122,16 @@ void NetList::actionHandle(int id, int code) {
   }
 }
 
-void NetList::UIDraw(int colCount) {
+void NetList::UIDraw(int colCount, char *groupTitle) {
   int i = 0, col = 0, ico;
   int netsCount = this->nets.size();
 
+  if (!netsCount)
+    return;
+
+  if (groupTitle) {
+    UIActionCfgAdd(this->cfgGroup, 0, ACTT_GROUP, groupTitle);
+  }
   UIActionCfgAdd(this->cfgGroup, this->actDestroy, ACTT_HWND, 0, 0, 0, -20);
 
   for (tItemNets::iterator it = this->nets.begin(); it != this->nets.end(); it++, i++, col++) {
@@ -140,6 +147,9 @@ void NetList::UIDraw(int colCount) {
   }
 
   UIActionCfgAdd(this->cfgGroup, this->actCreate, ACTT_HWND, 0, 0, 0, -20);
+  if (groupTitle) {
+    UIActionCfgAdd(this->cfgGroup, 0, ACTT_GROUPEND);
+  }
 }
 
 void NetList::UIGetState() {

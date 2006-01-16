@@ -11,7 +11,10 @@
 
 #pragma once
 
-typedef std::string (__stdcall*tFunc)(class Format * fCtrl);
+#include "stdafx.h"
+#include "Helpers.h"
+
+typedef std::string (__stdcall *tFunc)(class Format *fCtrl);
 
 enum enType {
   FUNCTION,

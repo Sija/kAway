@@ -10,6 +10,7 @@
  */
 
 #pragma once
+#include "Status.h"
 
 Status::Status(NetList *lCtrl, int onHiddenCfgCol, std::string stInfoVar) {
   this->lCtrl = lCtrl;
