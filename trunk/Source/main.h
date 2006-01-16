@@ -15,11 +15,13 @@ namespace kAway2 {
    *  Values for {cfg::reply::minIntervalType} col
    */
   enum enMinIntType {
-    rcvTime, sendTime, both
+    intervalTypeRcvTime,
+    intervalTypeSendTime,
+    intervalTypeBoth
   };
 
   const unsigned int net = 667;
-  const char poweredBy[] = "Jan Jelinek";
+  const char poweredBy[] = "Frank Zappa";
 
   namespace api {
     const unsigned int api = net * 1000 + IM_USER;
@@ -119,9 +121,18 @@ namespace kAway2 {
     const unsigned int muteOnEnable = cfg + 12;
     const unsigned int disableConfirmation = cfg + 13;
 
+    const char extParamName[] = "kA2AutoMsgTpl";
     const char historyFolder[] = "kAway2";
-    const char extParamName[] = "kA2AutoMsg";
     const char mruName[] = "kA2_awayMsg";
+
+    namespace wnd {
+      const unsigned int wnd = cfg + 50;
+
+      const unsigned int changeOnEnable = wnd + 1;
+      const unsigned int changeInfoOnEnable = wnd + 2;
+      const unsigned int muteOnEnable = wnd + 3;
+      const unsigned int onEnableSt = wnd + 4;
+    }
 
     namespace tpl {
       const unsigned int tpl = cfg + 100;

@@ -10,13 +10,21 @@
 
 #pragma once
 
+#include "stdafx.h"
+#include "main.h"
+
+#include "Helpers.h"
+#include "NetList.h"
+#include "Status.h"
+#include "Message.h"
+
 namespace kAway2 {
   typedef std::deque<cMessage*> tMsgQueue;
 
   enum enAutoMsgTpl {
-    optEnable = cfg::tpl::enable,
-    optDisable = cfg::tpl::disable,
-    optReply = cfg::tpl::reply
+    tplEnable = cfg::tpl::enable,
+    tplDisable = cfg::tpl::disable,
+    tplReply = cfg::tpl::reply
   };
 
   struct sCnt {
@@ -42,6 +50,10 @@ namespace kAway2 {
 
       void sendMsgTpl(int cnt, enAutoMsgTpl tpl, std::string msgVal = "");
       void showKNotify(const char * text, int ico = ico::logoSmall);
+
+      inline void fromWnd(bool state) {
+        this->isFromWnd = state;
+      }
 
       inline bool isMuteSwitched() {
         return(this->muteStateSwitched);
@@ -91,10 +103,15 @@ namespace kAway2 {
         this->cntProp(cnt)->msgQueue.push_front(messageDuplicate(msg));
       }
 
+      inline bool isCntSaved(int cnt) {
+        return(this->cntProps.find(cnt) != this->cntProps.end());
+      }
+
     protected:
       bool isOn;
       bool muteStateSwitched;
       bool autoAway;
+      bool isFromWnd;
       int pluginsGroup;
 
       tCnts cntProps;
@@ -118,5 +135,4 @@ namespace kAway2 {
 
   Control *pCtrl = NULL;
   Status *sCtrl = NULL;
-  AwayWnd *wCtrl = NULL;
 }

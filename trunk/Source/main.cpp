@@ -12,20 +12,10 @@
 #include "main.h"
 
 #include "Helpers.h"
-
 #include "NetList.h"
-#include "Format.h"
 #include "Status.h"
 #include "AwayWnd.h"
-#include "Message.h"
 #include "Control.h"
-
-#include "NetList.cpp"
-#include "Format.cpp"
-#include "Status.cpp"
-#include "AwayWnd.cpp"
-#include "Message.cpp"
-#include "Control.cpp"
 
 int __stdcall DllMain(void * hinstDLL, unsigned long fdwReason, void * lpvReserved) {
   return(true);
@@ -72,6 +62,11 @@ namespace kAway2 {
     Ctrl->SetColumn(DTCFG, cfg::dateFormat, DT_CT_STR, "%d/%m/%Y", "kAway2/dateFormat");
     Ctrl->SetColumn(DTCFG, cfg::timeFormat, DT_CT_STR, "%H:%M", "kAway2/timeFormat");
 
+    Ctrl->SetColumn(DTCFG, cfg::wnd::changeInfoOnEnable, DT_CT_INT, 1, "kAway2/wnd/changeInfoOnEnable");
+    Ctrl->SetColumn(DTCFG, cfg::wnd::changeOnEnable, DT_CT_INT, 1, "kAway2/wnd/changeOnEnable");
+    Ctrl->SetColumn(DTCFG, cfg::wnd::muteOnEnable, DT_CT_INT, 0, "kAway2/wnd/muteOnEnable");
+    Ctrl->SetColumn(DTCFG, cfg::wnd::onEnableSt, DT_CT_INT, ST_NA, "kAway2/wnd/onEnableSt");
+
     Ctrl->SetColumn(DTCFG, cfg::tpl::enable, DT_CT_STR, "brb/afk {[msg]}", "kAway2/tpl/enable");
     Ctrl->SetColumn(DTCFG, cfg::tpl::disable, DT_CT_STR, "i'm back {[msg] }:>", "kAway2/tpl/disable");
     Ctrl->SetColumn(DTCFG, cfg::tpl::reply, DT_CT_STR, 
@@ -89,7 +84,7 @@ namespace kAway2 {
     Ctrl->SetColumn(DTCFG, cfg::reply::whenInvisible, DT_CT_INT, 1, "kAway2/reply/whenInvisible");
     Ctrl->SetColumn(DTCFG, cfg::reply::showInWnd, DT_CT_INT, 1, "kAway2/reply/showInWnd");
     Ctrl->SetColumn(DTCFG, cfg::reply::minInterval, DT_CT_INT, 900, "kAway2/reply/minInterval");
-    Ctrl->SetColumn(DTCFG, cfg::reply::minIntervalType, DT_CT_INT, rcvTime, "kAway2/reply/minIntervalType");
+    Ctrl->SetColumn(DTCFG, cfg::reply::minIntervalType, DT_CT_INT, intervalTypeBoth, "kAway2/reply/minIntervalType");
     Ctrl->SetColumn(DTCFG, cfg::reply::useHtml, DT_CT_INT, 1, "kAway2/reply/useHtml");
     Ctrl->SetColumn(DTCFG, cfg::reply::netChange, DT_CT_STR, "", "kAway2/reply/netChange");
 
@@ -332,9 +327,7 @@ namespace kAway2 {
     UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_GROUPEND);
 
     /* |-> Net selection group */
-    UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_GROUP, "Wybierz sieci, na których chcesz zmieniaæ status:");
-    lCtrl::status->UIDraw();
-    UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_GROUPEND);
+    lCtrl::status->UIDraw(3, "Wybierz sieci, na których chcesz zmieniaæ status:");
 
     /* Autoresponder tab */
     /* |-> Minimal reply interval group */
@@ -347,14 +340,15 @@ namespace kAway2 {
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(ico::msg).c_str());
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_RADIO | ACTSC_INLINE, "otrzymanej wiadomoœci" AP_VALUE "0", cfg::reply::minIntervalType);
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(ico::reply).c_str());
-    UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_RADIO | ACTSRADIO_LAST, "wys³anej wiadomoœci" AP_VALUE "1"
+    UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_RADIO, "wys³anej wiadomoœci" AP_VALUE "1"
       AP_TIP "(w tym powiadomieñ)", cfg::reply::minIntervalType);
+    UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(ico::msg).c_str());
+    UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_RADIO | ACTSRADIO_LAST, "wys³anej i otrzymanej wiadomoœci" 
+      AP_VALUE "2", cfg::reply::minIntervalType);
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_GROUPEND);
 
     /* |-> Net selection group */
-    UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_GROUP, "Wybierz sieci, na których maj¹ dzia³aæ powiadomienia:");
-    lCtrl::reply->UIDraw();
-    UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_GROUPEND);
+    lCtrl::reply->UIDraw(3, "Wybierz sieci, na których maj¹ dzia³aæ powiadomienia:");
 
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_GROUP, "Wysy³anie powiadomieñ");
     // UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_CHECK, "Pokazuj wys³ane powiadomienia w okienku rozmowy", cfg::reply::showInWnd);
@@ -401,13 +395,16 @@ namespace kAway2 {
       "<b>-1</b> - pobierze wartoœæ domyœln¹ z konfiguracji<br/><b>0</b> - odpowiedŸ bêdzie wys³ana tylko jeden raz<br/>"
       "<b>3600</b> - odpowiedŸ nie zostanie ponownie wys³ana przez min. <b>1h</b> :>", cfg::reply::minInterval);
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_SEPARATOR, "Interwa³ bêdzie liczony od ostatniej ...");
-    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(27).c_str());
-    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_RADIO | ACTSC_INLINE, "domyœlnie" AP_VALUE "-1", cfg::reply::minIntervalType);
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(ico::msg).c_str());
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_RADIO | ACTSC_INLINE, "otrzymanej wiadomoœci" AP_VALUE "0", cfg::reply::minIntervalType);
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(ico::reply).c_str());
-    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_RADIO | ACTSRADIO_LAST, "wys³anej wiadomoœci" AP_VALUE "1"
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_RADIO, "wys³anej wiadomoœci" AP_VALUE "1"
       AP_TIP "(w tym powiadomieñ)", cfg::reply::minIntervalType);
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(ico::msg).c_str());
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_RADIO | ACTSC_INLINE, "wys³anej i otrzymanej wiadomoœci" 
+      AP_VALUE "2", cfg::reply::minIntervalType);
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(27).c_str());
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_RADIO | ACTSRADIO_LAST, "domyœlnie" AP_VALUE "-1", cfg::reply::minIntervalType);
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_GROUPEND);
 
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_GROUP, "Ustawienia");
@@ -696,13 +693,13 @@ int __stdcall IMessageProc(sIMessage_base *msgBase) {
             int interval = Helpers::altCfgVal(cnt, cfg::reply::minInterval, false);
 
             if ((!interval && !lastMsgTime) || (interval && ((interval + lastMsgTime) < m->time))) {
-              pCtrl->sendMsgTpl(cnt, optReply);
+              pCtrl->sendMsgTpl(cnt, tplReply);
             }
-            if ((intType == rcvTime) || (intType == both)) {
+            if ((intType == intervalTypeRcvTime) || (intType == intervalTypeBoth)) {
               pCtrl->cntProp(cnt)->lastMsgTime = m->time;
             }
           } else {
-            if ((intType == sendTime) || (intType == both)) {
+            if ((intType == intervalTypeSendTime) || (intType == intervalTypeBoth)) {
               pCtrl->cntProp(cnt)->lastMsgTime = m->time;
             }
           }
@@ -743,9 +740,10 @@ int __stdcall IMessageProc(sIMessage_base *msgBase) {
       break;
     }
 
-    default:
+    default: {
       if (Ctrl) Ctrl->setError(IMERROR_NORESULT);
       break;
+    }
   }
   return(0);
 }

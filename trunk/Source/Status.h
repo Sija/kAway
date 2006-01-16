@@ -11,6 +11,11 @@
 
 #pragma once
 
+#include "stdafx.h"
+#include "Helpers.h"
+#include "NetList.h"
+#include "Format.h"
+
 struct sItemInfo {
   unsigned int net;
   unsigned int st;

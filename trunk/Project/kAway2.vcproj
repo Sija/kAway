@@ -32,6 +32,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalOptions="/FORCE"
 				OutputFile="$(OutDir)/$(ProjectName).debug.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="$(ProjectDir)lib"
@@ -79,6 +80,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalOptions="/FORCE"
 				OutputFile="$(OutDir)/$(ProjectName).dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="$(ProjectDir)lib"
@@ -122,127 +124,31 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
-				RelativePath="..\Source\main.cpp">
-			</File>
-			<File
-				RelativePath="..\Source\Helpers.h">
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\Source\editFix.h">
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\Source\netList.cpp">
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\Source\Format.cpp">
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\Source\Status.cpp">
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="..\Source\AwayWnd.cpp">
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\Source\Message.cpp">
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\Source\Control.cpp">
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\Source\editFix.h">
+			</File>
+			<File
+				RelativePath="..\Source\Format.cpp">
+			</File>
+			<File
+				RelativePath="..\Source\Helpers.cpp">
+			</File>
+			<File
+				RelativePath="..\Source\main.cpp">
+			</File>
+			<File
+				RelativePath="..\Source\Message.cpp">
+			</File>
+			<File
+				RelativePath="..\Source\netList.cpp">
+			</File>
+			<File
+				RelativePath="..\Source\Status.cpp">
 			</File>
 		</Filter>
 		<Filter
@@ -250,43 +156,43 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
 			<File
-				RelativePath="resource.h">
+				RelativePath="..\Source\AwayWnd.h">
 			</File>
 			<File
-				RelativePath="..\Source\stdafx.h">
-			</File>
-			<File
-				RelativePath="..\Source\plugsNET.h">
-			</File>
-			<File
-				RelativePath="..\Source\main.h">
-			</File>
-			<File
-				RelativePath="..\Source\netList.h">
+				RelativePath="..\Source\Control.h">
 			</File>
 			<File
 				RelativePath="..\Source\Format.h">
 			</File>
 			<File
-				RelativePath="..\Source\Status.h">
+				RelativePath="..\Source\Helpers.h">
 			</File>
 			<File
-				RelativePath="..\Source\AwayWnd.h">
+				RelativePath="..\Source\main.h">
 			</File>
 			<File
 				RelativePath="..\Source\Message.h">
 			</File>
 			<File
-				RelativePath="..\Source\Control.h">
+				RelativePath="..\Source\netList.h">
+			</File>
+			<File
+				RelativePath="..\Source\plugsNET.h">
+			</File>
+			<File
+				RelativePath="resource.h">
+			</File>
+			<File
+				RelativePath="..\Source\Status.h">
+			</File>
+			<File
+				RelativePath="..\Source\stdafx.h">
 			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
-			<File
-				RelativePath="resource.rc">
-			</File>
 			<File
 				RelativePath="..\Res\accept.ico">
 			</File>
@@ -316,6 +222,9 @@
 			</File>
 			<File
 				RelativePath="..\Res\reply.ico">
+			</File>
+			<File
+				RelativePath="resource.rc">
 			</File>
 			<File
 				RelativePath="..\Res\status.ico">

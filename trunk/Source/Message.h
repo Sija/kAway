@@ -10,6 +10,9 @@
 
 #pragma once
 
+#include "stdafx.h"
+#include "Helpers.h"
+
 class Message {
   public:
     static cMessage prepare(const std::string& to, const std::string& from, int net, 

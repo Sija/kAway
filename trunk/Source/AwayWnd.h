@@ -12,6 +12,13 @@
 
 #pragma once
 
+#include "stdafx.h"
+#include "main.h"
+
+#include "Helpers.h"
+#include "Control.h"
+#include "editFix.h"
+
 namespace kAway2 {
   struct sWndData {
     unsigned int net;
@@ -53,7 +60,7 @@ namespace kAway2 {
       void prepareButtonImage(HIMAGELIST &hIml, HWND hWnd, int net, int status);
 
       inline bool haveInstance(int key) {
-        return((this->instances.find(key) != this->instances.end()) ? true : false);
+        return(this->instances.find(key) != this->instances.end());
       }
 
       inline HWND getInstance(int key) {
@@ -92,4 +99,5 @@ namespace kAway2 {
       int mruSizeCfgCol;
       std::map<int, HWND> instances;
   };
+  AwayWnd *wCtrl = NULL;
 }

@@ -10,6 +10,9 @@
 
 #pragma once
 
+#include "stdafx.h"
+#include "Helpers.h"
+
 struct sItemNet {
   unsigned int id;
   unsigned int net;
@@ -33,7 +36,7 @@ class NetList {
 
     void actionHandle(int id, int code);
 
-    void UIDraw(int colCount = 3);
+    void UIDraw(int colCount = 3, char *groupTitle = NULL);
     void UIGetState();
     void UISetState();
 

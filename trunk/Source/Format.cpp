@@ -10,6 +10,7 @@
  */
 
 #pragma once
+#include "Format.h"
 
 std::string __stdcall fCallback(Stamina::RegEx *reg, void * param) {
   Format * fCtrl = static_cast<Format*>(param);

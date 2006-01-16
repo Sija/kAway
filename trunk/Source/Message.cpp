@@ -8,6 +8,9 @@
  *  $Id$
  */
 
+#pragma once
+#include "Message.h"
+
 void Message::reply(cMessage *msg, std::string body, std::string ext, bool useHtml) {
   Message::send(msg->fromUid, "", msg->net, body, msg->type, ext, useHtml);
 }

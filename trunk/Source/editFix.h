@@ -10,6 +10,8 @@
  */
 
 #pragma once
+#include <windows.h>
+#include <string>
 
 /* usage:
    include it & put it after CreateWindow("edit", ...)

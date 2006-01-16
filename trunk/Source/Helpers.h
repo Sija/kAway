@@ -9,161 +9,61 @@
  */
 
 #pragma once
+#include "stdafx.h"
 
 /*
  *  Integer -> String conversion
  */
 
-std::string itos(int i, int radix = 10) {
-  char buff[64]; _itoa(i, buff, radix);
-  return(buff);
-}
+std::string itos(int i, int radix = 10);
 
 /*
  *  Bool -> Human readable string
  */
 
-char * btoa(bool value) {
-  return(value ? "yes" : "no");
-}
-
-std::string btos(bool value) {
-  return(btoa(value));
-}
+char * btoa(bool value);
+std::string btos(bool value);
 
 /*
  *  NULL -> Human readable string
  */
 
-char * nullChk(const std::string& value) {
-  return(value.length() ? value.c_str() : "(none)");
-}
-
-char * nullChk(char * value) {
-  return(strlen(value) ? value : "(none)");
-}
+char * nullChk(const std::string& value);
+char * nullChk(char * value);
 
 /*
  *  Logging helpers, just a little short cut ;>
  */
 
-void log(enDebugLevel level, const char * format, va_list ap) {
-  if (Ctrl && Ctrl->DebugLevel(level))
-    Ctrl->IMLOG_(level, format, ap);
-}
-
-void log(const char * format, ...) {
-  va_list ap;
-  va_start(ap, format);
-	log(DBG_LOG, format, ap);
-  va_end(ap);
-}
-
-void logDebug(const char * format, ...) {
-  va_list ap;
-  va_start(ap, format);
-	log(DBG_DEBUG, format, ap);
-  va_end(ap);
-}
+void log(enDebugLevel level, const char * format, va_list ap);
+void log(const char * format, ...);
+void logDebug(const char * format, ...);
 
 /*
  *  Various helpers
  */
 
 namespace Helpers {
-  std::string icon32(int ico) {
-    return("reg://IML32/" + itos(ico) + ".ico");
-  }
+  std::string icon16(int ico);
+  std::string icon32(int ico);
 
-  std::string icon16(int ico) {
-    return("reg://IML16/" + itos(ico) + ".ico");
-  }
+  std::string trim(std::string txt);
 
-  std::string trim(std::string txt) {
-    CStdString buff(txt); txt = buff.Trim();
-    return(txt);
-  }
+  int altCfgVal(int cntId, int colId, bool isBool = true);
+  const char * altCfgStrVal(int cntId, int colId);
 
-  int altCfgVal(int cntId, int colId, bool isBool = true) {
-    if (isBool)
-      return((GETINT(colId) && (GETCNTI(cntId, colId) < 2) || 
-        (!GETINT(colId) && (GETCNTI(cntId, colId) == 1))) ? true : false);
-    else
-      return((GETCNTI(cntId, colId) >= 0) ? GETCNTI(cntId, colId) : GETINT(colId));
-  }
+  int getPluginsGroup();
+  int pluginExists(int net, int type = IMT_ALL);
+  const char * getPlugName(int plugID);
 
-  const char * altCfgStrVal(int cntId, int colId) {
-    return(strlen(GETCNTC(cntId, colId)) ? GETCNTC(cntId, colId) : GETSTRA(colId));
-  }
+  void UIActionCall(int group, int act, int cntID = 0);
+  bool isMsgWndOpen(int cntID);
+  void showKNotify(char * text, int ico);
+  int findParentAction(int group, int id);
+  void clearMru(const char * name);
 
-  void UIActionCall(int group, int act, int cntID = 0) {
-    Ctrl->ICMessage(IMI_ACTION_CALL, 
-      (int) &sUIActionNotify_2params(sUIAction(group, act, cntID), ACTN_ACTION, 0, 0), 0);
-  }
+  void addItemToHistory(cMessage* msg, int cnt, const char * dir, std::string name, int session = 0);
 
-  int pluginExists(int net, int type = IMT_ALL) {
-    return(Ctrl->ICMessage(IMC_FINDPLUG, net, type));
-  }
-
-  const char * getPlugName(int plugID) {
-    return(SAFECHAR((char*) Ctrl->IMessageDirect(IM_PLUG_NAME, plugID)));
-  }
-
-  bool isMsgWndOpen(int cntID) {
-    return(Tabs::GetWindowState(cntID));
-  }
-
-  void showKNotify(char * text, int ico) {
-    Ctrl->IMessage(&KNotify::sIMessage_notify(text, ico));
-  }
-
-  void addItemToHistory(cMessage* msg, int cnt, const char * dir, std::string name, int session = 0) {
-    sHISTORYADD item;
-
-    item.cnt = cnt;
-    item.m = msg;
-    item.dir = dir;
-    item.name = name.c_str();
-    item.session = session;
-
-    Ctrl->ICMessage(IMI_HISTORY_ADD, (int) &item);
-  }
-
-  int getPluginsGroup() {
-    return(Ctrl->ICMessage(IMI_GETPLUGINSGROUP));
-  }
-
-  int findParentAction(int group, int id) {
-    return(Ctrl->ICMessage(IMI_ACTION_FINDPARENT, (int) &sUIAction(group, id)));
-  }
-
-  void chgBtn(int group, int id, int cnt, const char * name = 0, int ico = 0, int flags = -1) {
-    sUIActionInfo ai;
-
-    if (name) ai.txt = (char*) name;
-    if (ico) ai.p1 = ico;
-    if (flags >= 0) {
-      ai.status = flags;
-      ai.statusMask = -1;
-    }
-
-    ai.act = sUIAction(group, id, cnt);
-    ai.mask = (name ? UIAIM_TXT : 0) | (ico ? UIAIM_P1 : 0) | (flags >= 0 ? UIAIM_STATUS : 0);
-
-    UIActionSet(ai);
-  }
-
-  void chgBtn(int group, int id, const char * name, int ico = 0, int flags = 0) {
-    UIActionSet(sUIActionInfo(group, id, 0, flags, (char*) name, ico));
-  }
-
-  void clearMru(const char * name) {
-    sMRU mru;
-
-    mru.name = name;
-    mru.count = 0;
-    mru.flags = MRU_GET_USETEMP;
-
-    Ctrl->IMessage(&sIMessage_MRU(IMC_MRU_SET, &mru));
-  }
+  void chgBtn(int group, int id, int cnt, const char * name = 0, int ico = 0, int flags = -1);
+  void chgBtn(int group, int id, const char * name, int ico = 0, int flags = 0);
 }
