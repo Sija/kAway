@@ -48,12 +48,12 @@ typedef std::list<sStReplacement> tStReplacements;
 
 class Status {
   public:
-    Status(NetList *lCtrl, int onHiddenCfgCol = 0, std::string stInfoVar = "");
+    Status(NetList *lCtrl, int onHiddenCfgCol = 0, int dotsCfgCol = 0, std::string stInfoVar = "");
     ~Status();
 
   public:
     // Obcina status do maks. d³ugoœci
-    std::string limitChars(std::string status, int net, const char * dots = "...");
+    std::string limitChars(std::string status, int net);
     // Formatuje status
     std::string parse(std::string status, int net);
 
@@ -63,6 +63,16 @@ class Status {
     bool chgOnHidden();
     // obs³uga akcji
     void actionHandle(sIMessage_base *msgBase);
+
+    // "..." przy obcinanym opisie
+    inline std::string getDots() {
+      if (!this->dotsCfgCol) return("");
+
+      if (Ctrl->DTgetType(DTCFG, this->dotsCfgCol) == DT_CT_STR) {
+        return(GETSTRA(this->dotsCfgCol));
+      }
+      return(GETINT(this->dotsCfgCol) ? "…" : "");
+    }
 
     inline bool isRemembered(int net = 0) {
       if (!net) {
@@ -76,9 +86,9 @@ class Status {
     }
 
     // Zmienia status, txt - opis, st - id statusu
-    void changeStatus(std::string info, int st = -1, const char * dots = "...");
+    void changeStatus(std::string info, int st = -1);
     // Zmienia status na wybranej sieci
-    void changeStatus(int net, std::string info, int st = -1, const char * dots = "...");
+    void changeStatus(int net, std::string info, int st = -1);
 
     // Zapamiêtuje aktualny opis na ka¿dej sieci
     void rememberInfo();
@@ -114,6 +124,7 @@ class Status {
     std::string stInfoVar;
     // kolumna konfiguracji ktora odpowiada za opcje 'zmieniaj status przy statusie ukryty'
     unsigned int onHiddenCfgCol;
+    unsigned int dotsCfgCol;
     bool remember;
     tLastInfos lastSt;
     // zapamietane statusy i ich opisy

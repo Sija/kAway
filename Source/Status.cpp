@@ -12,12 +12,13 @@
 #pragma once
 #include "Status.h"
 
-Status::Status(NetList *lCtrl, int onHiddenCfgCol, std::string stInfoVar) {
+Status::Status(NetList *lCtrl, int onHiddenCfgCol, int dotsCfgCol, std::string stInfoVar) {
   this->lCtrl = lCtrl;
   this->fCtrl = new Format;
 
   this->stInfoVar = stInfoVar;
   this->onHiddenCfgCol = onHiddenCfgCol;
+  this->dotsCfgCol = dotsCfgCol;
   this->remember = false;
 }
 
@@ -51,14 +52,14 @@ void Status::removeReplacementSt(int net, int before) {
   }
 }
 
-void Status::changeStatus(std::string info, int st, const char * dots) {
+void Status::changeStatus(std::string info, int st) {
   tItemNets nets = this->lCtrl->getNets();
   for (tItemNets::iterator it = nets.begin(); it != nets.end(); it++) {
-    this->changeStatus(it->net, info, st, dots);
+    this->changeStatus(it->net, info, st);
   }
 }
 
-void Status::changeStatus(int net, std::string info, int st, const char * dots) {
+void Status::changeStatus(int net, std::string info, int st) {
   if (!this->isNetUseful(net)) return;
 
   if (info.length()) {
@@ -67,7 +68,7 @@ void Status::changeStatus(int net, std::string info, int st, const char * dots) 
 
     info = this->fCtrl->parse(info);
     info = Helpers::trim(info);
-    info = this->limitChars(info, net, dots);
+    info = this->limitChars(info, net);
 
     if (dynSt) this->fCtrl->removeVar(this->stInfoVar);
   }
@@ -182,7 +183,7 @@ bool Status::isNetUseful(int net) {
   return(false);
 }
 
-std::string Status::limitChars(std::string status, int net, const char * dots) {
+std::string Status::limitChars(std::string status, int net) {
   enMaxLength limit;
 
   switch (net) {
@@ -215,9 +216,14 @@ std::string Status::limitChars(std::string status, int net, const char * dots) {
   }
 
   if (status.length() > limit) {
+    // truncating string
     status.resize(limit);
-    if (int dotsSize = strlen(dots))
+
+    // dots magic ;)
+    std::string dots = this->getDots();
+    if (int dotsSize = dots.length()) {
       status.replace(status.length() - dotsSize, dotsSize, dots);
+    }
   }
   return(status);
 }
