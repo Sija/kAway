@@ -139,7 +139,7 @@ namespace kAway2 {
     lCtrl::reply->addIgnored(plugsNET::actio);
     lCtrl::reply->loadNets();
 
-    sCtrl = new Status(lCtrl::status, cfg::status::whenInvisible, "status");
+    sCtrl = new Status(lCtrl::status, cfg::status::whenInvisible, cfg::status::dotsAppend, "status");
     sCtrl->addReplacementSt(plugsNET::gg, ST_CHAT, ST_ONLINE);
     sCtrl->addReplacementSt(plugsNET::gg, ST_DND, ST_AWAY);
     sCtrl->addReplacementSt(plugsNET::gg, ST_NA, ST_AWAY);
@@ -286,7 +286,7 @@ namespace kAway2 {
 
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUP, "Historia powodów nieobecnoœci");
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_COMMENT, "Iloœæ pozycji w historii:");
-    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_SLIDER, "Ma³o\nDu¿o" AP_MINIMUM "1" AP_MAXIMUM "25", cfg::mruSize);
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_SLIDER, "Ma³o\nDu¿o" AP_MINIMUM "1" AP_MAXIMUM "30", cfg::mruSize);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_SEPARATOR);
     UIActionCfgAdd(ui::cfgGroup, act::clearMru, ACTT_BUTTON, "wyczyœæ" AP_ICO "667112", 0, 0, 0, 80, 30);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
@@ -391,7 +391,7 @@ namespace kAway2 {
     /* |-> Minimal reply interval group */
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_GROUP, "Minimalny interwa³ pomiêdzy wysy³anymi odpowiedziami");
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_SEPARATOR, "Czas interwa³u:");
-    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_SLIDER, "Ma³y\nDu¿y" AP_STEP "60" AP_MINIMUM "0" AP_MAXIMUM "3600" AP_TIPRICH 
+    UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_SLIDER, "Ma³y\nDu¿y" AP_STEP "60" AP_MINIMUM "-1" AP_MAXIMUM "3600" AP_TIPRICH 
       "<b>-1</b> - pobierze wartoœæ domyœln¹ z konfiguracji<br/><b>0</b> - odpowiedŸ bêdzie wys³ana tylko jeden raz<br/>"
       "<b>3600</b> - odpowiedŸ nie zostanie ponownie wys³ana przez min. <b>1h</b> :>", cfg::reply::minInterval);
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_SEPARATOR, "Interwa³ bêdzie liczony od ostatniej ...");
@@ -612,8 +612,8 @@ int __stdcall IMessageProc(sIMessage_base *msgBase) {
 
     case IM_BACK: {
       if (pCtrl->isEnabled() && pCtrl->isAutoAway()) {
-        pCtrl->setAutoAway(false);
         pCtrl->disable("", true);
+        pCtrl->setAutoAway(false);
       }
       break;
     }

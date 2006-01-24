@@ -58,8 +58,7 @@ namespace kAway2 {
       if (chgStatus || chgInfo) {
         this->sCtrl->rememberInfo();
         this->sCtrl->changeStatus(chgInfo ? GETSTRA(cfg::tpl::status) : "", 
-          chgStatus ? (status ? status : GETINT(this->isFromWnd ? cfg::wnd::onEnableSt : cfg::status::onEnableSt)) : -1, 
-          GETINT(cfg::status::dotsAppend) ? "…" : "");
+          chgStatus ? (status ? status : GETINT(this->isFromWnd ? cfg::wnd::onEnableSt : cfg::status::onEnableSt)) : -1);
       }
     }
 
@@ -81,8 +80,8 @@ namespace kAway2 {
     }
 
     this->showKNotify("Tryb away zosta³ <b>w³¹czony<b>", ico::enable);
-    log("[Control::enable()]: msg = %s, silent = %s", 
-      nullChk(msg), btoa(silent));
+    log("[Control::enable()]: msg = %s, silent = %s", nullChk(msg), btoa(silent));
+
     return(true);
   }
 
@@ -125,8 +124,8 @@ namespace kAway2 {
     this->muteStateSwitched = false;
 
     this->showKNotify("Tryb away zosta³ <b>wy³¹czony<b>", ico::disable);
-    log("[Control::disable()]: msg = %s, silent = %s", 
-      nullChk(msg), btoa(silent));
+    log("[Control::disable()]: msg = %s, silent = %s", nullChk(msg), btoa(silent));
+
     return(true);
   }
 
