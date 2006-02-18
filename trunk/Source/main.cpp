@@ -236,8 +236,8 @@ namespace kAway2 {
       "%<b>%</b> - Percent sign"
       AP_TIP_WIDTH "285";
 
-    UIActionCfgAddPluginInfoBox2(ui::cfgGroup, desc, header, Helpers::icon32(ico::logoBig).c_str(), -4);
-    UIActionCfgAddPluginInfoBox2(ui::cntCfgGroup, desc, header, Helpers::icon32(ico::logoBig).c_str(), -4);
+    UIActionCfgAddPluginInfoBox2(ui::cfgGroup, desc, header, Helpers::icon16(ico::logoSmall).c_str(), -4);
+    UIActionCfgAddPluginInfoBox2(ui::cntCfgGroup, desc, header, Helpers::icon16(ico::logoSmall).c_str(), -4);
 
     /* Main tab */
     /* |-> General settings group */
@@ -599,6 +599,12 @@ int __stdcall IMessageProc(sIMessage_base *msgBase) {
           sIMessage_plugOut::erNo, sIMessage_plugOut::euNowAndOnNextStart));
         return(-1);
       }
+      if (int ggCrypt = Helpers::pluginExists(plugsNET::ggcrypt)) {
+        Ctrl->IMessage(&sIMessage_plugOut(ggCrypt, "Wtyczka GG Crypt jest przestarza³a, przy czym\n"
+          "nie pozwala na poprawne dzia³anie wtyczki kAway2.",
+          sIMessage_plugOut::erNo, sIMessage_plugOut::euNowAndOnNextStart));
+        return(-1);
+      }
       return(1);
     }
 
@@ -622,7 +628,7 @@ int __stdcall IMessageProc(sIMessage_base *msgBase) {
       cMessage *m = (cMessage*) msg->p1;
 
       // hmmm, i have to remove it some sunny day...
-      if (m->type != MT_MESSAGE)
+      if ((m->type != MT_MESSAGE) || (m->flag & MF_AUTOMATED))
         break;
 
       // we're searchin' for contact id
@@ -638,8 +644,8 @@ int __stdcall IMessageProc(sIMessage_base *msgBase) {
         std::string cmd = params[0];
         std::string msg = (params.size() > 1) ? body.substr(params[0].length() + 1, body.length()) : "";
 
-        // extended syntax ?
-        int st; bool del = false;
+        bool del = false; // is ours
+        int st = 0; // default status
 
         Stamina::RegEx reg;
         reg.match("/^(away|brb)\\[(.+)\\]$/", cmd.c_str());
@@ -665,7 +671,7 @@ int __stdcall IMessageProc(sIMessage_base *msgBase) {
         }
 
         if (del) {
-          logDebug("{IM_MSG_RCV}: cmd = %s, msg = %s, params = %i",
+          logDebug("{IM_MSG_RCV}: cmd = %s, reason = %s, params = %i",
             cmd.c_str(), nullChk(msg), params.size());
 
           m->flag |= MF_DONTADDTOHISTORY;
@@ -709,8 +715,8 @@ int __stdcall IMessageProc(sIMessage_base *msgBase) {
     }
 
     /*
-      *  API
-      */
+     *  API
+     */
     case api::isEnabled: {
       return(pCtrl->isEnabled());
     }
@@ -732,11 +738,23 @@ int __stdcall IMessageProc(sIMessage_base *msgBase) {
     }
 
     case api::ignore: {
-      logDebug("Remote API Call [ignore]: from = %i, cnt = %i, ignore = %s", 
+      logDebug("Remote API Call [ignore]: from = %s, cnt = %i, ignore = %s", 
         Helpers::getPlugName(msg->sender), msg->p1, btoa((bool)msg->p2));
       if (pCtrl->isEnabled()) {
         pCtrl->cntProp(msg->p1)->ignored = (bool) msg->p2;
       }
+      break;
+    }
+
+    case api::showAwayWnd: {
+      std::string title((char*)msg->p1);
+      std::string desc((char*)msg->p2);
+
+      logDebug("Remote API Call [showAwayWnd]: from = %s, title = %s, desc = %s",
+        Helpers::getPlugName(msg->sender), nullChk(title), nullChk(desc));
+      wCtrl->show(
+        (title.length()) ? title : "Podaj powód nieobecnoœci",
+        (desc.length()) ? desc : "Podaj przyczynê swojej nieobecnoœci");
       break;
     }
 

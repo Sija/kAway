@@ -32,6 +32,8 @@ namespace kAway2 {
 
     const unsigned int isIgnored = api + 4;
     const unsigned int ignore = api + 5;
+
+    const unsigned int showAwayWnd = api + 6;
   }
 
   namespace ui {

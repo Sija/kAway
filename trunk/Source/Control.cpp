@@ -109,9 +109,9 @@ namespace kAway2 {
     }
 
     for (tCnts::iterator it = this->cntProps.begin(); it != this->cntProps.end(); it++) {
-      logDebug("[Control::disable].saved: cnt = %i, ignored = %s", it->first, btoa(it->second.ignored));
+      logDebug("[Control::disable().saved]: cnt = %i, ignored = %s", it->first, btoa(it->second.ignored));
       for (tMsgQueue::iterator it2 = it->second.msgQueue.begin(); it2 != it->second.msgQueue.end(); it2++) {
-        logDebug("[Control::disable].saved.item: msg = %s", (*it2)->body);
+        logDebug("[Control::disable().saved.item]: msg = %s", (*it2)->body);
         messageFree((*it2), true);
       }
     }
@@ -175,6 +175,7 @@ namespace kAway2 {
     format.addVar("time", this->awayTime->strftime(GETSTRA(cfg::timeFormat)));
     format.addVar("msg", (tpl == tplDisable) ? msgVal : this->awayMsg);
 
+    /*
     std::string body = Helpers::trim(format.parse(Helpers::altCfgStrVal(cnt, tpl)));
     cMessage msg = Message::prepare(uid, "", net, body, MT_MESSAGE, ext, 
       MF_SEND | (Helpers::altCfgVal(cnt, cfg::reply::useHtml) ? MF_HTML : 0));
@@ -185,12 +186,13 @@ namespace kAway2 {
 
     Helpers::addItemToHistory(&msg, cnt, "messages", "", session);
     Message::send(&msg);
-    /*
+
     if (Helpers::altCfgVal(cnt, cfg::reply::showInWnd))
        Message::insInMsgWnd(&msg, cnt);
     */
+    Message::send(cnt, Helpers::trim(format.parse(Helpers::altCfgStrVal(cnt, tpl))), 
+      MT_MESSAGE, ext, Helpers::altCfgVal(cnt, cfg::reply::useHtml));
 
-    logDebug("[Control::sendMsgTpl()]: tpl.id = %i, msg.net = %i, msg.uid = %s", 
-      tpl, net, uid.c_str());
+    logDebug("[Control::sendMsgTpl()]: msg.tpl = %i", tpl);
   }
 }
