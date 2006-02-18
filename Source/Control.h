@@ -15,6 +15,7 @@
 
 #include "Helpers.h"
 #include "NetList.h"
+#include "Format.h"
 #include "Status.h"
 #include "Message.h"
 
