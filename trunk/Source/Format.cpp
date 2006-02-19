@@ -1,12 +1,16 @@
-/*
+/**
  *  Format class
  *
- *  Please READ /License.txt FIRST!
+ *  Licensed under The GNU Lesser General Public License
+ *  Redistributions of files must retain the above copyright notice.
  *
- *  Copyright (C)2005-2006 Sijawusz Pur Rahnama
- *  Copyright (C)2005 Winthux
- *
- *  $Id$
+ *  @filesource
+ *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
+ *  @link         svn://kplugins.net/kaway2/ kAway2 plugin SVN Repo
+ *  @version      $Revision$
+ *  @modifiedby   $LastChangedBy$
+ *  @lastmodified $Date$
+ *  @license      http://creativecommons.org/licenses/LGPL/2.1/
  */
 
 #pragma once
@@ -15,34 +19,27 @@
 std::string __stdcall fCallback(Stamina::RegEx *reg, void * param) {
   Format * fCtrl = static_cast<Format*>(param);
 
-  // Stamina::String value, prefix, suffix;
   std::string value, prefix, suffix;
   std::string result, buff;
 
-  if (fCtrl->getVar(reg->getSub(2), buff)) {
-    if (!buff.length() && reg->getSub(3).length()) {
-      buff = reg->getSub(3);
+  if (fCtrl->getVar(reg->getSub(fCtrl->partsPos["var"]), buff)) {
+    if (!buff.length() && reg->getSub(fCtrl->partsPos["altVar"]).length()) {
+      buff = reg->getSub(fCtrl->partsPos["altVar"]);
       buff = (buff.substr(0, 1) == "(") ? buff.substr(2, buff.length() - 4) : fCtrl->getVar(buff);
     }
 
     if (buff.length()) {
-      prefix = reg->getSub(1);
-      suffix = reg->getSub(4);
-      value = buff;
+      prefix = reg->getSub(fCtrl->partsPos["prefixString"]);
+      prefix = (prefix.length()) ? prefix.substr(2, prefix.length() - 4) : reg->getSub(fCtrl->partsPos["prefix"]);
 
-      /*
-      if (fCtrl->format && prefix.length()) {
-        if (prefix.substr(0, 1) == "+") {
-          value.makeUpper();
-          prefix.erase(0, 1);
-        } else if (prefix.substr(0, 1) == "-") {
-          value.makeLower();
-          prefix.erase(0, 1);
-        }
-      }
-      */
-      logDebug("[fCallback()]: prefix = %s, value = %s, suffix = %s",
-        nullChk(prefix), value.c_str(), nullChk(suffix));
+      suffix = reg->getSub(fCtrl->partsPos["suffixString"]);
+      suffix = (suffix.length()) ? suffix.substr(2, suffix.length() - 4) : reg->getSub(fCtrl->partsPos["suffix"]);
+
+      value = buff;
+      int modsApplied = fCtrl->applyModifiers(value, prefix, suffix);
+
+      logDebug("[Format<%i>::fCallback()]: prefix = %s, value = %s, suffix = %s, modifiers applied = %i",
+        fCtrl, nullChk(prefix), nullChk(value), nullChk(suffix), modsApplied);
 
       result = prefix + value + suffix;
     }
@@ -52,9 +49,18 @@ std::string __stdcall fCallback(Stamina::RegEx *reg, void * param) {
   return(result);
 }
 
-Format::Format(bool format, std::string pattern) {
-  this->format = format;
-  this->pattern = pattern;
+Format::Format(std::string ldelim, std::string rdelim) {
+  this->pattern = 
+    "/\\" + ldelim + "([^a-z0-9]*|(\\((?:\"[^\"]+\"|'[^']+')\\)))"
+    "([a-z0-9]+)(?:\\|([a-z0-9]+|(?:\\((?:\"[^\"]+\"|'[^']+')\\))))?"
+    "([^a-z0-9]*|(\\((?:\"[^\"]+\"|'[^']+')\\)))\\" + rdelim + "/i";
+
+  this->partsPos["var"] = 3;
+  this->partsPos["altVar"] = 4;
+  this->partsPos["prefix"] = 1;
+  this->partsPos["prefixString"] = 2;
+  this->partsPos["suffix"] = 5;
+  this->partsPos["suffixString"] = 6;
 }
 
 Format::~Format() {
@@ -66,14 +72,13 @@ std::string Format::parse(std::string txt) {
 
   Stamina::RegEx reg;
 
-  reg.setLocale("pl_PL");
   reg.setPattern(this->pattern);
   reg.setSubject(txt);
 
   std::string result = reg.replace(fCallback, NULL, this);
 
-  logDebug("[Format::parse()]: before = %s, after = %s",
-    txt.c_str(), nullChk(result));
+  logDebug("[Format<%i>::parse()]: before = %s, after = %s",
+    this, txt.c_str(), nullChk(result));
 
   return(result);
 }
@@ -117,28 +122,70 @@ std::string Format::buildVarsList() {
   return(result);
 }
 
-bool Format::addVar(std::string name, tFunc function, bool overwrite) {
-  logDebug("[Format::addVar()]: name = %s, type = function", name.c_str());
+int Format::applyModifiers(std::string &value, std::string &prefix, std::string &suffix) {
+  int howMany = 0;
 
+  for (tModifiers::iterator it = this->modifiers.begin(); it != this->modifiers.end(); it++) {
+    Stamina::RegEx pReg, sReg;
+
+    if (it->prefix.length())
+      pReg.match(it->prefix.c_str(), prefix.c_str());
+    if (it->suffix.length())
+      sReg.match(it->suffix.c_str(), suffix.c_str());
+
+    if (((it->op == opAnd) && (pReg.isMatched() && sReg.isMatched())) ||
+        ((it->op == opOr) && (pReg.isMatched() || sReg.isMatched()))) {
+
+      (*it->function)(value, prefix, suffix, pReg, sReg);
+      howMany++;
+    }
+  }
+  return(howMany);
+}
+
+bool Format::addModifier(tModifierFunc function, std::string prefix, std::string suffix, enOperator op) {
+  if (!prefix.length() && !suffix.length())
+    return(false);
+
+  logDebug("[Format<%i>::addModifier()]: prefix = %s, suffix = %s, operator = %s",
+    this, nullChk(prefix), nullChk(suffix), (op == opAnd) ? "AND" : "OR");
+
+  this->modifiers.push_back(sModifier(function, prefix, suffix, op));
+  return(true);
+}
+
+bool Format::removeModifier(tModifierFunc function) {
+  for (tModifiers::iterator it = this->modifiers.begin(); it != this->modifiers.end(); it++) {
+    if (it->function == function) {
+      it = this->modifiers.erase(it); return(true);
+    }
+  }
+  return(false);
+}
+
+bool Format::addVar(std::string name, tFunc function, bool overwrite) {
   if (overwrite)
     this->removeVar(name);
   else if (this->varExists(name))
     return(false);
 
-  this->vars.push_back(sVar(name, FUNCTION, function, ""));
+  logDebug("[Format<%i>::addVar()]: name = %s, type = function", 
+    this, name.c_str());
+
+  this->vars.push_back(sVar(name, typeFunction, function, ""));
   return(true);
 }
 
 bool Format::addVar(std::string name, std::string value, bool overwrite) {
-  logDebug("[Format::addVar()]: name = %s, type = string, value = %s", 
-    name.c_str(), nullChk(value));
-
   if (overwrite)
     this->removeVar(name);
   else if (this->varExists(name))
     return(false);
 
-  this->vars.push_back(sVar(name, STRING, NULL, value));
+  logDebug("[Format<%i>::addVar()]: name = %s, type = string, value = %s", 
+    this, name.c_str(), nullChk(value));
+
+  this->vars.push_back(sVar(name, typeString, NULL, value));
   return(true);
 }
 
@@ -153,15 +200,15 @@ bool Format::getVar(std::string name, std::string &val) {
   for (tVars::iterator it = this->vars.begin(); it != this->vars.end(); it++) {
     if (it->name == name) {
       switch (it->type) {
-        case FUNCTION:
+        case typeFunction:
           val = (*it->function)(this);
           break;
-        case STRING:
+        case typeString:
           val = it->value;
           break;
       }
-      logDebug("[Format::getVar()]: name = %s, value = %s",
-        name.c_str(), nullChk(val));
+      logDebug("[Format<%i>::getVar()]: name = %s, value = %s",
+        this, name.c_str(), nullChk(val));
       return(true);
     }
   }

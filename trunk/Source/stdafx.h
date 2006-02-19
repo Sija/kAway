@@ -1,15 +1,16 @@
-/*
+/**
  *  kAway2 stdafx
  *
- *  include file for standard system include files,
- *  or project specific include files that are used frequently, but
- *  are changed infrequently
+ *  Licensed under The GNU Lesser General Public License
+ *  Redistributions of files must retain the above copyright notice.
  *
- *  Please READ /License.txt FIRST!
- *
- *  Copyright (C)2005-2006 Sijawusz Pur Rahnama
- *
- *  $Id$
+ *  @filesource
+ *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
+ *  @link         svn://kplugins.net/kaway2/ kAway2 plugin SVN Repo
+ *  @version      $Revision$
+ *  @modifiedby   $LastChangedBy$
+ *  @lastmodified $Date$
+ *  @license      http://creativecommons.org/licenses/LGPL/2.1/
  */
 
 #pragma once

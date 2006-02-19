@@ -146,7 +146,7 @@
 				RelativePath="..\Source\Message.cpp">
 			</File>
 			<File
-				RelativePath="..\Source\netList.cpp">
+				RelativePath="..\Source\NetList.cpp">
 			</File>
 			<File
 				RelativePath="..\Source\Status.cpp">
@@ -175,7 +175,7 @@
 				RelativePath="..\Source\Message.h">
 			</File>
 			<File
-				RelativePath="..\Source\netList.h">
+				RelativePath="..\Source\NetList.h">
 			</File>
 			<File
 				RelativePath="..\Source\plugsNET.h">

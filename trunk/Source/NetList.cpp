@@ -1,11 +1,16 @@
-/*
+/**
  *  NetList class
  *
- *  Please READ /License.txt FIRST!
+ *  Licensed under The GNU Lesser General Public License
+ *  Redistributions of files must retain the above copyright notice.
  *
- *  Copyright (C)2005-2006 Sijawusz Pur Rahnama
- *
- *  $Id$
+ *  @filesource
+ *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
+ *  @link         svn://kplugins.net/kaway2/ kAway2 plugin SVN Repo
+ *  @version      $Revision$
+ *  @modifiedby   $LastChangedBy$
+ *  @lastmodified $Date$
+ *  @license      http://creativecommons.org/licenses/LGPL/2.1/
  */
 
 #pragma once
@@ -45,8 +50,8 @@ void NetList::loadNets() {
       off = pos + 1;
       pos = (int) buff.find("|", off);
 
-      logDebug("[NetList::loadNets().retroItem]: net = %i, use = %s",
-        item.net, btoa(item.use));
+      logDebug("[NetList<%i>::loadNets().retroItem]: net = %i, use = %s",
+        this, item.net, btoa(item.use));
 
       nets.push_back(item);
     }
@@ -79,8 +84,8 @@ void NetList::loadNets() {
         }
         this->nets.push_back(item);
 
-        logDebug("[NetList::loadNets().item]: id = %i, net = %i, name = %s, use = %s",
-          item.id, item.net, item.name.c_str(), btoa(item.use));
+        logDebug("[NetList<%i>::loadNets().item]: id = %i, net = %i, name = %s, use = %s",
+          this, item.id, item.net, item.name.c_str(), btoa(item.use));
       }
     }
   }
@@ -96,15 +101,15 @@ void NetList::saveNets() {
     buff += it->use ? "1" : "0";
     buff += "|";
 
-    logDebug("[NetList::saveNets().item]: name = %s, use = %s",
-      it->name.c_str(), btoa(it->use));
+    logDebug("[NetList<%i>::saveNets().item]: name = %s, use = %s",
+      this, it->name.c_str(), btoa(it->use));
   }
 
   SETSTR(this->cfgCol, buff.c_str());
 }
 
 void NetList::actionHandle(int id, int code) {
-  if (!this || !Ctrl) return;
+  if (!this || !Ctrl || !Ctrl->isRunning()) return;
 
   if ((id == this->cfgGroup) && (code == ACTN_SAVE)) {
     this->configSaved = true;
@@ -113,7 +118,7 @@ void NetList::actionHandle(int id, int code) {
     this->UISetState();
   } else if ((id == this->actDestroy) && (code == ACTN_DESTROYWINDOW)) {
     if (this->configSaved && this->netsDrawn) {
-      logDebug("[NetList::actionHandle()]: id = %i, code = %i", id, code);
+      logDebug("[NetList<%i>::actionHandle()]: id = %i, code = %i", this, id, code);
       this->UIGetState();
       this->saveNets();
     }
@@ -138,8 +143,8 @@ void NetList::UIDraw(int colCount, char *groupTitle) {
     ico = UIIcon(IT_LOGO, (int) it->net, 0, 0);
     col %= colCount;
 
-    logDebug("[NetList::UIDraw().item]: name = %s, use = %s",
-      it->name.c_str(), btoa(it->use));
+    logDebug("[NetList<%i>::UIDraw().item]: name = %s, use = %s",
+      this, it->name.c_str(), btoa(it->use));
 
     UIActionCfgAdd(this->cfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(ico).c_str(), 0, (col > 0) ? 10 : 0);
     UIActionCfgAdd(this->cfgGroup, this->dynActGroup + it->id, ACTT_CHECK | 
@@ -160,8 +165,8 @@ void NetList::UIGetState() {
     UIActionCfgGetValue(sUIAction(this->cfgGroup, this->dynActGroup + it->id), buff, 16, true);
     v = (bool) atoi(buff);
 
-    logDebug("[NetList::UIGetState().item]: name = %s, use = %s [now: %s]",
-      it->name.c_str(), btoa(it->use), btos(v).c_str());
+    logDebug("[NetList<%i>::UIGetState().item]: name = %s, use = %s [now: %s]",
+      this, it->name.c_str(), btoa(it->use), btos(v).c_str());
 
     if (it->use != v) it->use = v;
   }
@@ -171,8 +176,8 @@ void NetList::UISetState() {
   for (tItemNets::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
     UIActionCfgSetValue(sUIAction(this->cfgGroup, this->dynActGroup + it->id), (it->use ? "1" : "0"), true);
 
-    logDebug("[NetList::UISetState().item]: name = %s, use = %s",
-      it->name.c_str(), btoa(it->use));
+    logDebug("[NetList<%i>::UISetState().item]: name = %s, use = %s",
+      this, it->name.c_str(), btoa(it->use));
   }
 }
 
