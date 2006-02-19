@@ -1,12 +1,16 @@
-/*
+/**
  *  Status class
  *
- *  Please READ /License.txt FIRST!
+ *  Licensed under The GNU Lesser General Public License
+ *  Redistributions of files must retain the above copyright notice.
  *
- *  Copyright (C)2005-2006 Sijawusz Pur Rahnama
- *  Copyright (C)2005 Winthux
- *
- *  $Id$
+ *  @filesource
+ *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
+ *  @link         svn://kplugins.net/kaway2/ kAway2 plugin SVN Repo
+ *  @version      $Revision$
+ *  @modifiedby   $LastChangedBy$
+ *  @lastmodified $Date$
+ *  @license      http://creativecommons.org/licenses/LGPL/2.1/
  */
 
 #pragma once
@@ -81,8 +85,8 @@ void Status::changeStatus(int net, std::string info, int st) {
 
   Ctrl->IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, info.length() ? (int) info.c_str() : 0);
 
-  logDebug("[Status::changeStatus().item]: net = %i, status = %i, info = %s",
-    net, st, nullChk(info));
+  logDebug("[Status<%i>::changeStatus().item]: net = %i, status = %i, info = %s",
+    this, net, st, nullChk(info));
 }
 
 tStatus Status::getActualStatus(int net) {
@@ -127,8 +131,8 @@ void Status::rememberInfo(int net) {
   std::string info = this->getActualInfo(net);
   this->rememberedSt.push_back(sItemInfo(net, st, info));
 
-  logDebug("[Status::rememberInfo().item]: net = %i, status = %i, info = %s",
-    net, st, nullChk(info));
+  logDebug("[Status<%i>::rememberInfo().item]: net = %i, status = %i, info = %s",
+    this, net, st, nullChk(info));
 }
 
 void Status::restoreInfo() {
@@ -145,8 +149,8 @@ void Status::restoreInfo(int net) {
   std::string info = this->getInfo(net);
   Ctrl->IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, (int) info.c_str());
 
-  logDebug("[Status::restoreInfo().item]: net = %i, status = %i, info = %s",
-    net, st, nullChk(info));
+  logDebug("[Status<%i>::restoreInfo().item]: net = %i, status = %i, info = %s",
+    this, net, st, nullChk(info));
 }
 
 void Status::actionHandle(sIMessage_base *msgBase) {
@@ -163,8 +167,8 @@ void Status::actionHandle(sIMessage_base *msgBase) {
         break;
       }
     }
-    logDebug("[Status::actionHandle()]: net = %i, status = %i, info = %s", 
-      net, st->status, nullChk(st->info));
+    logDebug("[Status<%i>::actionHandle()]: net = %i, status = %i, info = %s", 
+      this, net, st->status, nullChk(st->info));
   }
 }
 

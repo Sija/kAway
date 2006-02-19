@@ -1,11 +1,16 @@
-/*
+/**
  *  Helpers
  *
- *  Please READ /License.txt FIRST!
+ *  Licensed under The GNU Lesser General Public License
+ *  Redistributions of files must retain the above copyright notice.
  *
- *  Copyright (C)2005-2006 Sijawusz Pur Rahnama
- *
- *  $Id$
+ *  @filesource
+ *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
+ *  @link         svn://kplugins.net/kaway2/ kAway2 plugin SVN Repo
+ *  @version      $Revision$
+ *  @modifiedby   $LastChangedBy$
+ *  @lastmodified $Date$
+ *  @license      http://creativecommons.org/licenses/LGPL/2.1/
  */
 
 #pragma once
@@ -124,6 +129,26 @@ namespace Helpers {
 
   int findParentAction(int group, int id) {
     return(Ctrl->ICMessage(IMI_ACTION_FINDPARENT, (int) &sUIAction(group, id)));
+  }
+
+  int subclassAction(int group, int id, int mask) {
+    sUIActionInfo nfo(group, id);
+    int prevOwner;
+
+    nfo.mask = mask;
+    nfo.txt = new char[100];
+    nfo.txtSize = 99;
+
+    UIActionGet(nfo);
+    if (!(prevOwner = Ctrl->ICMessage(IMI_ACTION_GETOWNER, (int)&nfo.act))) {
+      prevOwner = Ctrl->ICMessage(IMC_PLUG_ID, 0);
+    }
+
+    Ctrl->ICMessage(IMI_ACTION_REMOVE, (int)&nfo.act);
+    Ctrl->ICMessage(IMI_ACTION, (int)&nfo);
+    delete [] nfo.txt;
+
+    return(prevOwner);
   }
 
   void clearMru(const char * name) {

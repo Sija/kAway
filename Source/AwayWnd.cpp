@@ -1,13 +1,18 @@
-/*
- *  kAway2 Status Window class
+/**
+ *  kAway2 Away Window class
  *
- *  Please READ /License.txt FIRST!
+ *  Licensed under The GNU Lesser General Public License
+ *  Redistributions of files must retain the above copyright notice.
  *
- *  Copyright (C)2005-2006 Sijawusz Pur Rahnama
- *  Copyright (C)2004 Kuba Niegowski
- *  Copyright (C)2003-2004 Olórin
- *
- *  $Id$
+ *  @filesource
+ *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
+ *  @copyright    Copyright (c) 2004 Kuba Niegowski
+ *  @copyright    Copyright (c) 2003-2004 Olórin
+ *  @link         svn://kplugins.net/kaway2/ kAway2 plugin SVN Repo
+ *  @version      $Revision$
+ *  @modifiedby   $LastChangedBy$
+ *  @lastmodified $Date$
+ *  @license      http://creativecommons.org/licenses/LGPL/2.1/
  */
 
 #pragma once

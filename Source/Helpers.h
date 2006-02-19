@@ -1,11 +1,16 @@
-/*
+/**
  *  Helpers
  *
- *  Please READ /License.txt FIRST!
+ *  Licensed under The GNU Lesser General Public License
+ *  Redistributions of files must retain the above copyright notice.
  *
- *  Copyright (C)2005-2006 Sijawusz Pur Rahnama
- *
- *  $Id$
+ *  @filesource
+ *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
+ *  @link         svn://kplugins.net/kaway2/ kAway2 plugin SVN Repo
+ *  @version      $Revision$
+ *  @modifiedby   $LastChangedBy$
+ *  @lastmodified $Date$
+ *  @license      http://creativecommons.org/licenses/LGPL/2.1/
  */
 
 #pragma once
@@ -60,6 +65,7 @@ namespace Helpers {
   bool isMsgWndOpen(int cntID);
   void showKNotify(char * text, int ico);
   int findParentAction(int group, int id);
+  int subclassAction(int group, int id, int mask = UIAIM_ALL);
   void clearMru(const char * name);
 
   void addItemToHistory(cMessage* msg, int cnt, const char * dir, std::string name, int session = 0);
