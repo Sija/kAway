@@ -17,14 +17,13 @@
 #include "NetList.h"
 
 NetList::NetList(int cfgCol, int cfgGroup, int dynActGroup, int actCreate, int actDestroy) {
-  this->configSaved = false;
-  this->netsDrawn = false;
-
   this->cfgCol = cfgCol;
   this->cfgGroup = cfgGroup;
   this->dynActGroup = dynActGroup;
   this->actCreate = actCreate;
   this->actDestroy = actDestroy;
+
+  this->netsDrawn = false;
 }
 
 NetList::~NetList() {
@@ -111,19 +110,15 @@ void NetList::saveNets() {
 void NetList::actionHandle(int id, int code) {
   if (!this || !Ctrl || !Ctrl->isRunning()) return;
 
-  if ((id == this->cfgGroup) && (code == ACTN_SAVE)) {
-    this->configSaved = true;
+  if ((id == this->cfgGroup) && (code == ACTN_SAVE) && this->netsDrawn) {
+    logDebug("[NetList<%i>::actionHandle()]: id = %i, code = %i", this, id, code);
+    this->UIGetState();
+    this->saveNets();
   } else if ((id == this->actCreate) && (code == ACTN_CREATEWINDOW)) {
     this->netsDrawn = true;
     this->UISetState();
   } else if ((id == this->actDestroy) && (code == ACTN_DESTROYWINDOW)) {
-    if (this->configSaved && this->netsDrawn) {
-      logDebug("[NetList<%i>::actionHandle()]: id = %i, code = %i", this, id, code);
-      this->UIGetState();
-      this->saveNets();
-    }
     this->netsDrawn = false;
-    this->configSaved = false;
   }
 }
 

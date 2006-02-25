@@ -62,8 +62,11 @@ namespace kAway2 {
 
       if (chgStatus || chgInfo) {
         this->sCtrl->rememberInfo();
-        this->sCtrl->changeStatus(chgInfo ? GETSTRA(cfg::tpl::status) : "", 
-          chgStatus ? (status ? status : GETINT(this->isFromWnd ? cfg::wnd::onEnableSt : cfg::status::onEnableSt)) : -1);
+        if (chgInfo)
+          this->sCtrl->changeStatus(GETSTRA(cfg::tpl::status), 
+            chgStatus ? (status ? status : GETINT(this->isFromWnd ? cfg::wnd::onEnableSt : cfg::status::onEnableSt)) : -1);
+        else if (chgStatus)
+          this->sCtrl->changeStatus(status ? status : GETINT(this->isFromWnd ? cfg::wnd::onEnableSt : cfg::status::onEnableSt));
       }
     }
 

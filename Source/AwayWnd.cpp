@@ -6,8 +6,8 @@
  *
  *  @filesource
  *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @copyright    Copyright (c) 2004 Kuba Niegowski
- *  @copyright    Copyright (c) 2003-2004 Olórin
+ *  @copyright    Copyright (c) 2004 Kuba 'nix' Niegowski
+ *  @copyright    Copyright (c) 2003-2004 Kamil 'Olórin' Figiela
  *  @link         svn://kplugins.net/kaway2/ kAway2 plugin SVN Repo
  *  @version      $Revision$
  *  @modifiedby   $LastChangedBy$
@@ -31,8 +31,8 @@ namespace kAway2 {
   LRESULT CALLBACK awayWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
     switch(iMsg) {
       case WM_CREATE: {
-        SendMessage(hWnd, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) ICMessage(IMI_ICONGET, 0x1f7, IML_16));
-        SendMessage(hWnd, WM_SETICON, (WPARAM) ICON_SMALL, (LPARAM) ICMessage(IMI_ICONGET, 0x1f7, IML_16));
+        SendMessage(hWnd, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) ICMessage(IMI_ICONGET, ico::logoSmall, IML_16));
+        SendMessage(hWnd, WM_SETICON, (WPARAM) ICON_SMALL, (LPARAM) ICMessage(IMI_ICONGET, ico::logoSmall, IML_16));
 
         LPCREATESTRUCT pCreate = (LPCREATESTRUCT) lParam;
         int net = (int) pCreate->lpCreateParams;
@@ -137,21 +137,14 @@ namespace kAway2 {
         CheckDlgButton(hWnd, MUTE, GETINT(cfg::muteOnEnable) ? BST_CHECKED : 0);
 
         // odczytujemy liste mru
-        sMRU list;
-        std::string name = wCtrl->getMruName();
-
-        list.name = name.c_str();
-        list.count = wCtrl->getMruSize();
-        list.flags = MRU_GET_USETEMP | MRU_SET_LOADFIRST;
-        sIMessage_MRU mru(IMC_MRU_GET, &list);
-        IMessage(&mru);
+        tMRUlist list = MRUlist->get();
 
         // wype³niamy combobox
-        for (int i = 0; i < mru.MRU->count; i++) {
-          SendMessage(hWndCombo, CB_ADDSTRING, 0, (LPARAM) (char*) mru.MRU->values[i]);
+        for (tMRUlist::iterator it = list.begin(); it != list.end(); it++) {
+          SendMessage(hWndCombo, CB_ADDSTRING, 0, (LPARAM) (*it).c_str());
         }
 
-        HWND edit = CreateWindowEx(WS_EX_CLIENTEDGE, "edit", mru.MRU->values[0], WS_TABSTOP | WS_VISIBLE | WS_CHILD | WS_VSCROLL | 
+        HWND edit = CreateWindowEx(WS_EX_CLIENTEDGE, "edit", list[0].c_str(), WS_TABSTOP | WS_VISIBLE | WS_CHILD | WS_VSCROLL | 
           ES_MULTILINE | ES_WANTRETURN, 13, 88, 274, 100, hWnd, (HMENU) STATUS_EDIT_INFO, Ctrl->hInst(), NULL);
         SendMessage(edit, WM_SETFONT, (WPARAM) font, true);
         SetProp(edit, "oldWndProc", (HANDLE) SetWindowLongPtr(edit, GWLP_WNDPROC, (LONG_PTR) editFix));
@@ -178,14 +171,7 @@ namespace kAway2 {
             char * msg = new char[len];
             
             GetWindowText(GetDlgItem(hWnd, STATUS_EDIT_INFO), msg, len);
-            std::string name = wCtrl->getMruName();
-
-            sMRU list;
-            list.name = name.c_str();
-            list.flags = MRU_SET_LOADFIRST | MRU_GET_USETEMP;
-            list.current = msg;
-            list.count = wCtrl->getMruSize();
-            IMessage(&sIMessage_MRU(IMC_MRU_SET, &list));
+            MRUlist->append(msg);
 
             if (IsDlgButtonChecked(hWnd, ST_ONLINE)) st = ST_ONLINE;
             if (IsDlgButtonChecked(hWnd, ST_CHAT)) st = ST_CHAT;
@@ -236,11 +222,8 @@ namespace kAway2 {
     return(DefWindowProc(hWnd, iMsg, wParam, lParam));
   }
 
-  AwayWnd::AwayWnd(std::string className, std::string mruName, int mruSizeCfgCol) {
+  AwayWnd::AwayWnd(std::string className) {
     this->className = className;
-    this->mruName = mruName;
-    this->mruSizeCfgCol = mruSizeCfgCol;
-
     this->classRegister();
   }
 

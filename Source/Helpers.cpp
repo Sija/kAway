@@ -119,9 +119,11 @@ namespace Helpers {
       (int) &sUIActionNotify_2params(sUIAction(group, act, cntID), ACTN_ACTION, 0, 0), 0);
   }
 
+#ifdef SHARED_TABLETKA_H
   bool isMsgWndOpen(int cntID) {
     return(Tabs::GetWindowState(cntID));
   }
+#endif
 
   void showKNotify(char * text, int ico) {
     Ctrl->IMessage(&KNotify::sIMessage_notify(text, ico));
@@ -149,16 +151,6 @@ namespace Helpers {
     delete [] nfo.txt;
 
     return(prevOwner);
-  }
-
-  void clearMru(const char * name) {
-    sMRU mru;
-
-    mru.name = name;
-    mru.count = 0;
-    mru.flags = MRU_GET_USETEMP;
-
-    Ctrl->IMessage(&sIMessage_MRU(IMC_MRU_SET, &mru));
   }
 
   void addItemToHistory(cMessage* msg, int cnt, const char * dir, std::string name, int session) {
