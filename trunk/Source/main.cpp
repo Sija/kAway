@@ -17,6 +17,7 @@
 #include "main.h"
 
 #include "Helpers.h"
+#include "MRU.h"
 #include "NetList.h"
 #include "Status.h"
 #include "AwayWnd.h"
@@ -41,8 +42,8 @@ namespace kAway2 {
       pCtrl->disable("", true);
     }
 
-    delete pCtrl, sCtrl, wCtrl;
-    pCtrl, sCtrl, wCtrl = NULL;
+    delete pCtrl, sCtrl, wCtrl, MRUlist;
+    pCtrl, sCtrl, wCtrl, MRUlist = NULL;
 
     delete lCtrl::status, lCtrl::reply;
     lCtrl::status, lCtrl::reply = NULL;
@@ -126,8 +127,10 @@ namespace kAway2 {
   }
 
   int IPrepare() {
+    MRUlist = new MRU(cfg::mruName, cfg::mruSize, true);
+
     pCtrl = new Control();
-    wCtrl = new AwayWnd("kAway2AwayWnd", cfg::mruName, cfg::mruSize);
+    wCtrl = new AwayWnd("kAway2AwayWnd");
 
     lCtrl::status = new NetList(cfg::status::netChange, ui::statusCfgGroup, dynAct::status, 
       act::cfgGroupCheckCreate, act::cfgGroupCheckDestroy);
@@ -537,7 +540,7 @@ namespace kAway2 {
 
       case act::clearMru: {
         if (an->code == ACTN_ACTION) {
-          Helpers::clearMru(cfg::mruName);
+          MRU::clear(cfg::mruName);
         }
         break;
       }

@@ -62,7 +62,7 @@ class Status {
     std::string parse(std::string status, int net);
 
     // Sprawdza czy sieæ 'nadaje siê do u¿ytku'
-    bool isNetUseful(int net);
+    bool isNetValid(int net);
     // Czy zmieniaæ przy statusie 'ukryty' ?
     bool chgOnHidden();
     // obs³uga akcji
@@ -91,8 +91,10 @@ class Status {
 
     // Zmienia status, txt - opis, st - id statusu
     void changeStatus(std::string info, int st = -1);
+    void changeStatus(int st);
     // Zmienia status na wybranej sieci
     void changeStatus(int net, std::string info, int st = -1);
+    void changeStatus(int net, int st);
 
     // Zapamiêtuje aktualny opis na ka¿dej sieci
     void rememberInfo();
@@ -123,7 +125,7 @@ class Status {
     // formatowanie statusu
     Format *fCtrl;
 
-  private:
+  protected:
     // nazwa zmiennej do której wrzucany bêdzie aktualny opis statusu
     std::string stInfoVar;
     // kolumna konfiguracji ktora odpowiada za opcje 'zmieniaj status przy statusie ukryty'

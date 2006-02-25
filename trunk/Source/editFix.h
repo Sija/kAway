@@ -6,7 +6,7 @@
  *
  *  @filesource
  *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @copyright    Copyright (c) 2004-2005 Olórin
+ *  @copyright    Copyright (c) 2003-2005 Kamil 'Olórin' Figiela
  *  @link         svn://kplugins.net/kaway2/ kAway2 plugin SVN Repo
  *  @version      $Revision$
  *  @modifiedby   $LastChangedBy$

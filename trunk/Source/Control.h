@@ -19,6 +19,7 @@
 #include "main.h"
 
 #include "Helpers.h"
+#include "MRU.h"
 #include "NetList.h"
 #include "Format.h"
 #include "Status.h"
@@ -123,11 +124,9 @@ namespace kAway2 {
       tCnts cntProps;
       std::string awayMsg;
       Stamina::Date64 *awayTime;
+      Status *sCtrl;
 
       void switchBtns(bool state);
-
-    private:
-      Status *sCtrl;
   };
 
   namespace lCtrl {
@@ -141,4 +140,5 @@ namespace kAway2 {
 
   Control *pCtrl = NULL;
   Status *sCtrl = NULL;
+  MRU *MRUlist = NULL;
 }

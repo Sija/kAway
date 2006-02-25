@@ -66,7 +66,6 @@ namespace Helpers {
   void showKNotify(char * text, int ico);
   int findParentAction(int group, int id);
   int subclassAction(int group, int id, int mask = UIAIM_ALL);
-  void clearMru(const char * name);
 
   void addItemToHistory(cMessage* msg, int cnt, const char * dir, std::string name, int session = 0);
 

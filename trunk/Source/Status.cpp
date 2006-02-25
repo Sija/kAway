@@ -56,15 +56,36 @@ void Status::removeReplacementSt(int net, int before) {
   }
 }
 
-void Status::changeStatus(std::string info, int st) {
+void Status::changeStatus(int st) {
   tItemNets nets = this->lCtrl->getNets();
   for (tItemNets::iterator it = nets.begin(); it != nets.end(); it++) {
-    this->changeStatus(it->net, info, st);
+    if (this->isNetValid(it->net)) this->changeStatus(it->net, st);
   }
 }
 
+void Status::changeStatus(std::string info, int st) {
+  tItemNets nets = this->lCtrl->getNets();
+  for (tItemNets::iterator it = nets.begin(); it != nets.end(); it++) {
+    if (this->isNetValid(it->net)) this->changeStatus(it->net, info, st);
+  }
+}
+
+void Status::changeStatus(int net, int st) {
+  if (st == -1 || st == this->getActualStatus(net)) return;
+
+  st = this->applyReplacementSt(net, st);
+  if (this->isRemembered())
+    this->lastSt[net] = sItemInfo(net, st);
+
+  Ctrl->IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, 0);
+
+  logDebug("[Status<%i>::changeStatus().item]: net = %i, status = %i",
+    this, net, st);
+}
+
 void Status::changeStatus(int net, std::string info, int st) {
-  if (!this->isNetUseful(net)) return;
+  if (info == this->getActualInfo(net))
+    return(this->changeStatus(net, st));
 
   if (info.length()) {
     bool dynSt = (this->stInfoVar.length() && 
@@ -83,7 +104,7 @@ void Status::changeStatus(int net, std::string info, int st) {
   if (this->isRemembered())
     this->lastSt[net] = sItemInfo(net, st, info);
 
-  Ctrl->IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, info.length() ? (int) info.c_str() : 0);
+  Ctrl->IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, (int) info.c_str());
 
   logDebug("[Status<%i>::changeStatus().item]: net = %i, status = %i, info = %s",
     this, net, st, nullChk(info));
@@ -125,7 +146,7 @@ void Status::rememberInfo() {
 }
 
 void Status::rememberInfo(int net) {
-  if (!this->isNetUseful(net)) return;
+  if (!this->isNetValid(net)) return;
 
   int st = this->getActualStatus(net);
   std::string info = this->getActualInfo(net);
@@ -176,7 +197,7 @@ bool Status::chgOnHidden() {
   return(this->onHiddenCfgCol ? (bool) GETINT(this->onHiddenCfgCol) : true);
 }
 
-bool Status::isNetUseful(int net) {
+bool Status::isNetValid(int net) {
   if (this->lCtrl->getNetState(net) && this->lCtrl->isConnected(net)) {
     if (!this->chgOnHidden() && (ST_HIDDEN == this->getActualStatus(net))) {
       return(false);

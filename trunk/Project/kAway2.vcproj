@@ -146,6 +146,9 @@
 				RelativePath="..\Source\Message.cpp">
 			</File>
 			<File
+				RelativePath="..\Source\MRU.cpp">
+			</File>
+			<File
 				RelativePath="..\Source\NetList.cpp">
 			</File>
 			<File
@@ -173,6 +176,9 @@
 			</File>
 			<File
 				RelativePath="..\Source\Message.h">
+			</File>
+			<File
+				RelativePath="..\Source\MRU.h">
 			</File>
 			<File
 				RelativePath="..\Source\NetList.h">

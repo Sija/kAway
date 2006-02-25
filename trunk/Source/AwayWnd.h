@@ -6,8 +6,8 @@
  *
  *  @filesource
  *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @copyright    Copyright (c) 2004 Kuba Niegowski
- *  @copyright    Copyright (c) 2003-2004 Olórin
+ *  @copyright    Copyright (c) 2004 Kuba 'nix' Niegowski
+ *  @copyright    Copyright (c) 2003-2004 Kamil 'Olórin' Figiela
  *  @link         svn://kplugins.net/kaway2/ kAway2 plugin SVN Repo
  *  @version      $Revision$
  *  @modifiedby   $LastChangedBy$
@@ -21,6 +21,7 @@
 #include "main.h"
 
 #include "Helpers.h"
+#include "MRU.h"
 #include "Control.h"
 #include "editFix.h"
 
@@ -59,7 +60,7 @@ namespace kAway2 {
 
   class AwayWnd {
     public:
-      AwayWnd(std::string className, std::string mruName, int mruSizeCfgCol);
+      AwayWnd(std::string className);
       ~AwayWnd();
 
       void prepareButtonImage(HIMAGELIST &hIml, HWND hWnd, int net, int status);
@@ -80,17 +81,8 @@ namespace kAway2 {
         this->instances.erase(key);
       }
 
-      inline std::string getMruName() {
-        return(this->mruName);
-      }
-
       inline std::string getWndDesc() {
         return(this->wndDesc);
-      }
-
-      inline int getMruSize() {
-        int size = GETINT(this->mruSizeCfgCol);
-        return(size ? size : 1);
       }
 
       void classRegister();
@@ -100,8 +92,6 @@ namespace kAway2 {
     protected:
       std::string wndDesc;
       std::string className;
-      std::string mruName;
-      int mruSizeCfgCol;
       std::map<int, HWND> instances;
   };
   AwayWnd *wCtrl = NULL;
