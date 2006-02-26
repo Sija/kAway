@@ -29,6 +29,14 @@ struct sItemInfo {
     net(_net), st(_st), info(_info) { }
 };
 
+struct sStInfoMaxChars {
+  unsigned int net;
+  unsigned int length;
+
+  sStInfoMaxChars(int _net = 0, int _length = 0) : 
+    net(_net), length(_length) { }
+};
+
 struct sStReplacement {
   unsigned int net;
   unsigned int before;
@@ -38,17 +46,10 @@ struct sStReplacement {
     net(_net), before(_before), after(_after) { }
 };
 
-// definicje max d³ugoœci statusów dla poszcz. sieci
-enum enMaxLength {
-  normal = 255,
-  jabber = 255,
-  tlen = 255,
-  gaduGadu = 70
-};
-
 typedef std::list<sItemInfo> tItemInfos;
 typedef std::map<int, sItemInfo> tLastInfos;
 typedef std::list<sStReplacement> tStReplacements;
+typedef std::list<sStInfoMaxChars> tStInfoMaxChars;
 
 class Status {
   public:
@@ -87,6 +88,13 @@ class Status {
         }
         return(false);
       }
+    }
+
+    inline int getStInfoMaxLength(int net = 0) {
+      for (tStInfoMaxChars::iterator it = this->stInfoMaxChars.begin(); it != this->stInfoMaxChars.end(); it++) {
+        if (it->net == net) return(it->length);
+      }
+      return(0);
     }
 
     // Zmienia status, txt - opis, st - id statusu
@@ -132,9 +140,12 @@ class Status {
     unsigned int onHiddenCfgCol;
     unsigned int dotsCfgCol;
     bool remember;
+
     tLastInfos lastSt;
     // zapamietane statusy i ich opisy
     tItemInfos rememberedSt;
     // zamienniki nieobs³ugiwanych statusów
     tStReplacements stReplacements;
+    // maksymalne d³ugoœci statusów opisowych
+    tStInfoMaxChars stInfoMaxChars;
 };

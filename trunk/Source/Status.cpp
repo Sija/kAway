@@ -24,6 +24,9 @@ Status::Status(NetList *lCtrl, int onHiddenCfgCol, int dotsCfgCol, std::string s
   this->onHiddenCfgCol = onHiddenCfgCol;
   this->dotsCfgCol = dotsCfgCol;
   this->remember = false;
+
+  this->stInfoMaxChars.push_back(sStInfoMaxChars(plugsNET::dwutlenek, 255));
+  this->stInfoMaxChars.push_back(sStInfoMaxChars(plugsNET::gg, 70));
 }
 
 Status::~Status() {
@@ -32,6 +35,7 @@ Status::~Status() {
 
   this->stReplacements.clear();
   this->rememberedSt.clear();
+  this->stInfoMaxChars.clear();
   this->lastSt.clear();
 }
 
@@ -209,38 +213,8 @@ bool Status::isNetValid(int net) {
 }
 
 std::string Status::limitChars(std::string status, int net) {
-  enMaxLength limit;
-
-  switch (net) {
-    case plugsNET::kjabber:
-    case plugsNET::kjabber1:
-    case plugsNET::kjabber2:
-    case plugsNET::kjabber3:
-    case plugsNET::kjabber4:
-    case plugsNET::kjabber5:
-    case plugsNET::kjabber6:
-    case plugsNET::kjabber7:
-    case plugsNET::kjabber8:
-    case plugsNET::kjabber9:
-    case plugsNET::kjabber10: {
-      limit = jabber;
-      break;
-    }
-    case plugsNET::dwutlenek: {
-      limit = tlen;
-      break;
-    }
-    case plugsNET::gg: {
-      limit = gaduGadu;
-      break;
-    }
-    default: {
-      limit = normal;
-      break;
-    }
-  }
-
-  if (status.length() > limit) {
+  int limit = this->getStInfoMaxLength(net);
+  if (limit && (status.length() > limit)) {
     // truncating string
     status.resize(limit);
 

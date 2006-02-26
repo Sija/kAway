@@ -42,11 +42,23 @@ namespace kAway2 {
       pCtrl->disable("", true);
     }
 
-    delete pCtrl, sCtrl, wCtrl, MRUlist;
-    pCtrl, sCtrl, wCtrl, MRUlist = NULL;
+    delete pCtrl;
+    pCtrl = NULL;
 
-    delete lCtrl::status, lCtrl::reply;
-    lCtrl::status, lCtrl::reply = NULL;
+    delete sCtrl;
+    sCtrl = NULL;
+
+    delete wCtrl;
+    wCtrl = NULL;
+
+    delete MRUlist;
+    MRUlist = NULL;
+
+    delete lCtrl::status;
+    lCtrl::status = NULL;
+
+    delete lCtrl::reply;
+    lCtrl::reply = NULL;
 
     return(1);
   }
