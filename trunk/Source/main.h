@@ -26,7 +26,7 @@ namespace kAway2 {
   };
 
   const unsigned int net = 667;
-  const char poweredBy[] = "Frank Zappa";
+  const char poweredBy[] = "Susumu Yokota";
 
   namespace api {
     const unsigned int api = net * 1000 + IM_USER;
@@ -39,6 +39,9 @@ namespace kAway2 {
     const unsigned int ignore = api + 5;
 
     const unsigned int showAwayWnd = api + 6;
+
+    const unsigned int isAway = api + 7;
+    const unsigned int isBack = api + 8;
   }
 
   namespace ui {

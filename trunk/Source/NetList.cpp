@@ -161,7 +161,7 @@ void NetList::UIGetState() {
     v = (bool) atoi(buff);
 
     logDebug("[NetList<%i>::UIGetState().item]: name = %s, use = %s [now: %s]",
-      this, it->name.c_str(), btoa(it->use), btos(v).c_str());
+      this, it->name.c_str(), btoa(it->use), btoa(v));
 
     if (it->use != v) it->use = v;
   }
