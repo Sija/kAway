@@ -89,6 +89,7 @@ namespace kAway2 {
 
     this->showKNotify("Tryb away zosta³ <b>w³¹czony<b>", ico::enable);
     log("[Control::enable()]: msg = %s, silent = %s", nullChk(msg), btoa(silent));
+    Ctrl->IMessage(api::isAway, NET_BROADCAST, -1, (int) msg.c_str(), status);
 
     return(true);
   }
@@ -133,6 +134,7 @@ namespace kAway2 {
 
     this->showKNotify("Tryb away zosta³ <b>wy³¹czony<b>", ico::disable);
     log("[Control::disable()]: msg = %s, silent = %s", nullChk(msg), btoa(silent));
+    Ctrl->IMessage(api::isBack, NET_BROADCAST, -1, (int) msg.c_str());
 
     return(true);
   }
