@@ -46,6 +46,7 @@ namespace plugsNET {
   const int checky = 82;
   const int linkerold = 109; ///< stara wersja
   const int sprzataczk = 115;
+  const int metak = 116;
   const int temacik = 123;
   const int ktransfer = 130;
   const int emnotifier = 135;

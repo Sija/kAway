@@ -173,6 +173,7 @@ namespace kAway2 {
 
     std::string ext, uid(GETCNTC(cnt, CNT_UID));
     ext = SetExtParam(ext, cfg::extParamName, itos(tpl));
+    ext = SetExtParam(ext, MEX_ADDINFO, "kAway2");
     ext = SetExtParam(ext, MEX_NOSOUND, "1");
 
     Format format;

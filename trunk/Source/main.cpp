@@ -150,6 +150,7 @@ namespace kAway2 {
     lCtrl::status->addIgnored(plugsNET::klan);
     lCtrl::status->addIgnored(plugsNET::checky);
     lCtrl::status->addIgnored(plugsNET::actio);
+    lCtrl::status->addIgnored(plugsNET::metak);
     lCtrl::status->loadNets();
 
     lCtrl::reply = new NetList(cfg::reply::netChange, ui::replyCfgGroup, dynAct::reply, 
@@ -157,6 +158,7 @@ namespace kAway2 {
     lCtrl::reply->addIgnored(plugsNET::klan);
     lCtrl::reply->addIgnored(plugsNET::checky);
     lCtrl::reply->addIgnored(plugsNET::actio);
+    lCtrl::reply->addIgnored(plugsNET::metak);
     lCtrl::reply->loadNets();
 
     sCtrl = new Status(lCtrl::status, cfg::status::whenInvisible, cfg::status::dotsAppend, "status");
@@ -694,8 +696,25 @@ int __stdcall IMessageProc(sIMessage_base *msgBase) {
           logDebug("{IM_MSG_RCV}: cmd = %s, reason = %s, params = %i",
             cmd.c_str(), nullChk(msg), params.size());
 
+          std::string body, ext(m->ext);
+          body += "<u>";
+          body += (cmd == "away" || cmd == "brb") ? "W³¹czono" : "Wy³¹czono";
+          body += "</u> tryb away";
+          body += (msg.length()) ? " (<b>" + msg + "</b>)" : "";
+
+          ext = SetExtParam(ext, MEX_ADDINFO, "kAway2");
+          ext = SetExtParam(ext, MEX_NOSOUND, "1");
+
+          char * newBody = (char*) Ctrl->GetTempBuffer(body.length() + 1 + ext.length() + 1);
+          strcpy(newBody, body.c_str());
+          char * newExt = newBody + body.length() + 2;
+          strcpy(newExt, ext.c_str());
+
+          m->body = newBody;
+          m->ext = newExt;
+          m->flag |= (m->flag & MF_HTML) ? 0 : MF_HTML;
           m->flag |= MF_DONTADDTOHISTORY;
-          m->flag |= MF_HIDE;
+
           return(IM_MSG_update | IM_MSG_delete);
         }
       }
