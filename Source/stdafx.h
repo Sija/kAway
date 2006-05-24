@@ -36,8 +36,8 @@
   #pragma comment(lib, "stamina.lib")
 #endif
 
-#define yes (true)
-#define no (false)
+#define yes (1)
+#define no (0)
 #define ever (;;)
 
 /*

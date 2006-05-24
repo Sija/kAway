@@ -28,12 +28,19 @@ struct sItemNet {
     id(_id), net(_net), name(_name), use(_use) { }
 };
 
+enum enCfgDraw {
+  checkboxes,
+  radiosEmpty,
+  radios
+};
+
 typedef std::list<sItemNet> tItemNets;
 typedef std::deque<int> tIgnoredNets;
 
 class NetList {
   public:
-    NetList(int cfgCol, int cfgGroup, int dynActGroup, int actCreate, int actDestroy);
+    NetList(int cfgCol, int cfgGroup, int dynActGroup, 
+      int actCreate, int actDestroy, enCfgDraw uiDraw = checkboxes);
     ~NetList();
 
     void loadNets();
@@ -68,5 +75,6 @@ class NetList {
     tIgnoredNets ignoredNets;
     tItemNets nets;
 
+    enCfgDraw uiDraw;
     bool netsDrawn;
 };

@@ -16,7 +16,7 @@
 #pragma once
 #include "NetList.h"
 
-NetList::NetList(int cfgCol, int cfgGroup, int dynActGroup, int actCreate, int actDestroy) {
+NetList::NetList(int cfgCol, int cfgGroup, int dynActGroup, int actCreate, int actDestroy, enCfgDraw uiDraw) {
   this->cfgCol = cfgCol;
   this->cfgGroup = cfgGroup;
   this->dynActGroup = dynActGroup;
@@ -24,6 +24,7 @@ NetList::NetList(int cfgCol, int cfgGroup, int dynActGroup, int actCreate, int a
   this->actDestroy = actDestroy;
 
   this->netsDrawn = false;
+  this->uiDraw = uiDraw;
 }
 
 NetList::~NetList() {
@@ -129,6 +130,11 @@ void NetList::UIDraw(int colCount, char *groupTitle) {
   if (!netsCount)
     return;
 
+  if (this->uiDraw == radiosEmpty) {
+    this->nets.push_back(sItemNet(0, 0, "Brak", 0));
+    netsCount++;
+  }
+
   if (groupTitle) {
     UIActionCfgAdd(this->cfgGroup, 0, ACTT_GROUP, groupTitle);
   }
@@ -142,13 +148,24 @@ void NetList::UIDraw(int colCount, char *groupTitle) {
       this, it->name.c_str(), btoa(it->use));
 
     UIActionCfgAdd(this->cfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(ico).c_str(), 0, (col > 0) ? 10 : 0);
-    UIActionCfgAdd(this->cfgGroup, this->dynActGroup + it->id, ACTT_CHECK | 
-      ((col != (colCount - 1) && i != (netsCount - 1)) ? ACTSC_INLINE : 0), it->name.c_str());
+    if (this->uiDraw != checkboxes) {
+      std::string name = it->name + AP_VALUE + itos(it->net);
+      UIActionCfgAdd(this->cfgGroup, this->dynActGroup + it->id, ACTT_RADIO | 
+        ((col != (colCount - 1) && i != (netsCount - 1)) ? ACTSC_INLINE : 0) |
+        (i != (netsCount - 1) ? 0 : ACTSRADIO_LAST), name.c_str());
+    } else {
+      UIActionCfgAdd(this->cfgGroup, this->dynActGroup + it->id, ACTT_CHECK | 
+        ((col != (colCount - 1) && i != (netsCount - 1)) ? ACTSC_INLINE : 0), it->name.c_str());
+    }
   }
 
   UIActionCfgAdd(this->cfgGroup, this->actCreate, ACTT_HWND, 0, 0, 0, -20);
   if (groupTitle) {
     UIActionCfgAdd(this->cfgGroup, 0, ACTT_GROUPEND);
+  }
+
+  if (this->uiDraw == radiosEmpty) {
+    this->nets.pop_back();
   }
 }
 
@@ -156,9 +173,16 @@ void NetList::UIGetState() {
   char buff[16];
   bool v;
 
+  if (this->uiDraw != checkboxes) {
+    UIActionCfgGetValue(sUIAction(this->cfgGroup, this->dynActGroup + this->nets.size()), buff, 16, true);
+  }
+
   for (tItemNets::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
-    UIActionCfgGetValue(sUIAction(this->cfgGroup, this->dynActGroup + it->id), buff, 16, true);
-    v = (bool) atoi(buff);
+    if (this->uiDraw != checkboxes) {
+      v = (it->net == atoi(buff)) ? true : false;
+    } else {
+      v = *UIActionCfgGetValue(sUIAction(this->cfgGroup, this->dynActGroup + it->id), 0, 0, true) == '1';
+    }
 
     logDebug("[NetList<%i>::UIGetState().item]: name = %s, use = %s [now: %s]",
       this, it->name.c_str(), btoa(it->use), btoa(v));
@@ -168,11 +192,24 @@ void NetList::UIGetState() {
 }
 
 void NetList::UISetState() {
+  bool isCheckedAny = false;
+
   for (tItemNets::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
-    UIActionCfgSetValue(sUIAction(this->cfgGroup, this->dynActGroup + it->id), (it->use ? "1" : "0"), true);
+    if (this->uiDraw != checkboxes) {
+      if (it->use) {
+        UIActionCfgSetValue(sUIAction(this->cfgGroup, this->dynActGroup + it->id), itos(it->net).c_str(), true);
+        isCheckedAny = true;
+      }
+    } else {
+      UIActionCfgSetValue(sUIAction(this->cfgGroup, this->dynActGroup + it->id), (it->use ? "1" : "0"), true);
+    }
 
     logDebug("[NetList<%i>::UISetState().item]: name = %s, use = %s",
       this, it->name.c_str(), btoa(it->use));
+  }
+
+  if (this->uiDraw == radiosEmpty && !isCheckedAny) {
+    UIActionCfgSetValue(sUIAction(this->cfgGroup, this->dynActGroup), "0", true);
   }
 }
 
