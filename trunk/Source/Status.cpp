@@ -88,7 +88,7 @@ void Status::changeStatus(int net, int st) {
 }
 
 void Status::changeStatus(int net, std::string info, int st) {
-  if (info == this->getActualInfo(net))
+  if (info == this->getActualInfo(net) && st != ST_OFFLINE)
     return(this->changeStatus(net, st));
 
   if (info.length()) {

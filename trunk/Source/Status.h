@@ -69,6 +69,22 @@ class Status {
     // obs³uga akcji
     void actionHandle(sIMessage_base *msgBase);
 
+    // tekstowa nazwa statusu
+    inline std::string stName(int st) {
+      std::string name = "?";
+
+      switch (st) {
+        case ST_ONLINE: name = "Dostêpny"; break;
+        case ST_CHAT: name = "Pogadam"; break;
+        case ST_AWAY: name = "Zaraz wracam"; break;
+        case ST_NA: name = "Nieosi¹galny"; break;
+        case ST_DND: name = "Nie przeszkadzaæ"; break;
+        case ST_HIDDEN: name = "Ukryty"; break;
+        case ST_OFFLINE: name = "Niedostêpny"; break;
+      }
+      return(name);
+    }
+
     // "..." przy obcinanym opisie
     inline std::string getDots() {
       if (!this->dotsCfgCol) return("");
