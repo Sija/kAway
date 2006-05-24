@@ -58,6 +58,16 @@ void Message::send(std::string to, std::string from, int net, std::string body, 
   Message::send(&msg);
 }
 
+void Message::sms(std::string to, std::string body, std::string gate, std::string from, std::string ext) {
+  ext = SetExtParam(ext, Sms::extFrom, from); // nie zawsze wymagany
+  ext = SetExtParam(ext, Sms::extGate, gate);  // wymagany!
+  // Je¿eli NIE chcemy, ¿eby wtyczka SMS dzieli³a wiadomoœæ, ustawiamy parametr extPart...
+  // ext = SetExtParam(ext, Sms::extPart, "0");
+
+  cMessage msg = Message::prepare(to, "", Sms::net, body, MT_SMS, ext, MF_SEND);
+  Message::send(&msg);
+}
+
 void Message::insInMsgWnd(cMessage *msg, int cntID, const char * display, bool scroll) {
   Konnekt::UI::Notify::_insertMsg ni(msg, display, scroll);
   ni.act = sUIAction(IMIG_MSGWND, Konnekt::UI::ACT::msg_ctrlview, cntID);

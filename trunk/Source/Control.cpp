@@ -91,6 +91,7 @@ namespace kAway2 {
     log("[Control::enable()]: msg = %s, silent = %s", nullChk(msg), btoa(silent));
     Ctrl->IMessage(api::isAway, NET_BROADCAST, -1, (int) msg.c_str(), status);
 
+    fCtrl->onEnable();
     return(true);
   }
 
@@ -136,6 +137,7 @@ namespace kAway2 {
     log("[Control::disable()]: msg = %s, silent = %s", nullChk(msg), btoa(silent));
     Ctrl->IMessage(api::isBack, NET_BROADCAST, -1, (int) msg.c_str());
 
+    fCtrl->onDisable();
     return(true);
   }
 

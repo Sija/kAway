@@ -16,6 +16,7 @@
 #pragma once
 
 #include "stdafx.h"
+#include <konnekt/sms.h>
 #include "Helpers.h"
 
 class Message {
@@ -41,6 +42,7 @@ class Message {
     static void send(std::string to, std::string from, int net, std::string body, 
       int type = MT_MESSAGE, std::string ext = "", bool useHtml = false);
 
+    static void sms(std::string to, std::string body, std::string gate, std::string from = "", std::string ext = "");
     static void insInMsgWnd(cMessage *msg, int cntID, const char * display = 0, 
       bool scroll = true);
 };
