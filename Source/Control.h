@@ -24,6 +24,7 @@
 #include "Format.h"
 #include "Status.h"
 #include "Message.h"
+#include "FwdControl.h"
 
 namespace kAway2 {
   typedef std::deque<cMessage*> tMsgQueue;
@@ -90,7 +91,7 @@ namespace kAway2 {
         return(this->pluginsGroup);
       }
 
-      inline std::string getAwayMsg() {
+      const std::string& getAwayMsg() const {
         return(this->awayMsg);
       }
 
@@ -139,6 +140,7 @@ namespace kAway2 {
   }
 
   Control *pCtrl = NULL;
+  FwdControl *fCtrl = NULL;
   Status *sCtrl = NULL;
   MRU *MRUlist = NULL;
 }

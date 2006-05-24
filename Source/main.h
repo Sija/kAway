@@ -26,7 +26,7 @@ namespace kAway2 {
   };
 
   const unsigned int net = 667;
-  const char poweredBy[] = "Susumu Yokota";
+  const char poweredBy[] = "Wagon Christ";
 
   namespace api {
     const unsigned int api = net * 1000 + IM_USER;
@@ -53,15 +53,13 @@ namespace kAway2 {
     const unsigned int statusCfgGroup = ui + 3;
     const unsigned int replyCfgGroup = ui + 4;
     const unsigned int forwardCfgGroup = ui + 5;
-    const unsigned int smsCfgGroup = ui + 6;
-    const unsigned int emailCfgGroup = ui + 7;
 
-    const unsigned int powerInMainWnd = ui + 8;
-    const unsigned int powerInCntWnd = ui + 9;
-    const unsigned int powerInTrayMenu = ui + 10;
+    const unsigned int powerInMainWnd = ui + 6;
+    const unsigned int powerInCntWnd = ui + 7;
+    const unsigned int powerInTrayMenu = ui + 8;
 
-    const unsigned int ignoreBtn = ui + 11;
-    const unsigned int msgTbGrp = ui + 12;
+    const unsigned int ignoreBtn = ui + 9;
+    const unsigned int msgTbGrp = ui + 10;
   }
 
   namespace ico {
@@ -105,10 +103,7 @@ namespace kAway2 {
     const unsigned int dynAct = net * 1000 + 300;
 
     const unsigned int reply = dynAct + 10;
-    const unsigned int sms = dynAct + 20;
-    const unsigned int email = dynAct + 30;
-    const unsigned int forward = dynAct + 40;
-    const unsigned int status = dynAct + 50;
+    const unsigned int status = dynAct + 20;
   }
 
   namespace cfg {
@@ -153,7 +148,6 @@ namespace kAway2 {
       const unsigned int reply = tpl + 3;
       const unsigned int forward = tpl + 4;
 
-      const unsigned int sms = tpl + 5;
       const unsigned int email = tpl + 6;
 
       const unsigned int status = tpl + 7;
@@ -177,14 +171,6 @@ namespace kAway2 {
       const unsigned int netChange = reply + 9;
       const unsigned int showInWnd = reply + 10;
       const unsigned int minIntervalType = reply + 11;
-    }
-
-    namespace sms {
-      const unsigned int sms = cfg + 300;
-
-      const unsigned int interval = sms + 1;
-      const unsigned int gate = sms + 2;
-      const unsigned int number = sms + 3;
     }
 
     namespace email {
