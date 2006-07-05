@@ -20,38 +20,39 @@
 #include "NetList.h"
 #include "Format.h"
 
-struct sItemInfo {
-  unsigned int net;
-  unsigned int st;
-  std::string info;
-
-  sItemInfo(int _net = 0, int _st = 0, std::string _info = "") : 
-    net(_net), st(_st), info(_info) { }
-};
-
-struct sStInfoMaxChars {
-  unsigned int net;
-  unsigned int length;
-
-  sStInfoMaxChars(int _net = 0, int _length = 0) : 
-    net(_net), length(_length) { }
-};
-
-struct sStReplacement {
-  unsigned int net;
-  unsigned int before;
-  unsigned int after;
-
-  sStReplacement(int _net, int _before, int _after) : 
-    net(_net), before(_before), after(_after) { }
-};
-
-typedef std::list<sItemInfo> tItemInfos;
-typedef std::map<int, sItemInfo> tLastInfos;
-typedef std::list<sStReplacement> tStReplacements;
-typedef std::list<sStInfoMaxChars> tStInfoMaxChars;
-
 class Status {
+  public:
+    struct sItemInfo {
+      unsigned int net;
+      unsigned int st;
+      std::string info;
+
+      sItemInfo(int _net = 0, int _st = 0, std::string _info = "") : 
+        net(_net), st(_st), info(_info) { }
+    };
+
+    struct sStInfoMaxChars {
+      unsigned int net;
+      unsigned int length;
+
+      sStInfoMaxChars(int _net = 0, int _length = 0) : 
+        net(_net), length(_length) { }
+    };
+
+    struct sStReplacement {
+      unsigned int net;
+      unsigned int before;
+      unsigned int after;
+
+      sStReplacement(int _net, int _before, int _after) : 
+        net(_net), before(_before), after(_after) { }
+    };
+
+    typedef std::list<sItemInfo> tItemInfos;
+    typedef std::map<int, sItemInfo> tLastInfos;
+    typedef std::list<sStReplacement> tStReplacements;
+    typedef std::list<sStInfoMaxChars> tStInfoMaxChars;
+
   public:
     Status(NetList *lCtrl, int onHiddenCfgCol = 0, int dotsCfgCol = 0, std::string stInfoVar = "");
     ~Status();

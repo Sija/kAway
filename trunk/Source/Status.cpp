@@ -61,15 +61,15 @@ void Status::removeReplacementSt(int net, int before) {
 }
 
 void Status::changeStatus(int st) {
-  tItemNets nets = this->lCtrl->getNets();
-  for (tItemNets::iterator it = nets.begin(); it != nets.end(); it++) {
+  NetList::tItemNets nets = this->lCtrl->getNets();
+  for (NetList::tItemNets::iterator it = nets.begin(); it != nets.end(); it++) {
     if (this->isNetValid(it->net)) this->changeStatus(it->net, st);
   }
 }
 
 void Status::changeStatus(std::string info, int st) {
-  tItemNets nets = this->lCtrl->getNets();
-  for (tItemNets::iterator it = nets.begin(); it != nets.end(); it++) {
+  NetList::tItemNets nets = this->lCtrl->getNets();
+  for (NetList::tItemNets::iterator it = nets.begin(); it != nets.end(); it++) {
     if (this->isNetValid(it->net)) this->changeStatus(it->net, info, st);
   }
 }
@@ -143,8 +143,8 @@ void Status::rememberInfo() {
   this->lastSt.clear();
   this->rememberedSt.clear();
 
-  tItemNets nets = this->lCtrl->getNets();
-  for (tItemNets::iterator it = nets.begin(); it != nets.end(); it++) {
+  NetList::tItemNets nets = this->lCtrl->getNets();
+  for (NetList::tItemNets::iterator it = nets.begin(); it != nets.end(); it++) {
     this->rememberInfo(it->net);
   }
 }

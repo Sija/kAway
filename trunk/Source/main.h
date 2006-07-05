@@ -26,7 +26,7 @@ namespace kAway2 {
   };
 
   const unsigned int net = 667;
-  const char poweredBy[] = "Wagon Christ";
+  const char poweredBy[] = "Matthew Herbert";
 
   namespace api {
     const unsigned int api = net * 1000 + IM_USER;
@@ -42,6 +42,7 @@ namespace kAway2 {
 
     const unsigned int isAway = api + 7;
     const unsigned int isBack = api + 8;
+    const unsigned int isAutoAway = api + 9;
   }
 
   namespace ui {
@@ -52,14 +53,13 @@ namespace kAway2 {
 
     const unsigned int statusCfgGroup = ui + 3;
     const unsigned int replyCfgGroup = ui + 4;
-    const unsigned int forwardCfgGroup = ui + 5;
 
-    const unsigned int powerInMainWnd = ui + 6;
-    const unsigned int powerInCntWnd = ui + 7;
-    const unsigned int powerInTrayMenu = ui + 8;
+    const unsigned int powerInMainWnd = ui + 5;
+    const unsigned int powerInCntWnd = ui + 6;
+    const unsigned int powerInTrayMenu = ui + 7;
 
-    const unsigned int ignoreBtn = ui + 9;
-    const unsigned int msgTbGrp = ui + 10;
+    const unsigned int ignoreBtn = ui + 8;
+    const unsigned int msgTbGrp = ui + 9;
   }
 
   namespace ico {
@@ -82,6 +82,7 @@ namespace kAway2 {
 
     const unsigned int help = ico + 11;
     const unsigned int trash = ico + 12;
+
     const unsigned int msg = ico + 13;
   }
 
@@ -139,6 +140,14 @@ namespace kAway2 {
       const unsigned int onEnableSt = wnd + 4;
     }
 
+    namespace summary {
+      const unsigned int summary = cfg + 75;
+
+      const unsigned int interval = summary + 1;
+      const unsigned int inAutoAway = summary + 2;
+      const unsigned int minMsgCount = summary + 3;
+    }
+
     namespace tpl {
       const unsigned int tpl = cfg + 100;
 
@@ -146,8 +155,6 @@ namespace kAway2 {
       const unsigned int disable = tpl + 2;
 
       const unsigned int reply = tpl + 3;
-      const unsigned int forward = tpl + 4;
-
       const unsigned int email = tpl + 6;
 
       const unsigned int status = tpl + 7;
@@ -189,14 +196,6 @@ namespace kAway2 {
         const unsigned int login = smtp + 3;
         const unsigned int password = smtp + 4;
       }
-    }
-
-    namespace forward {
-      const unsigned int forward = cfg + 500;
-
-      const unsigned int interval = forward + 1;
-      const unsigned int net = forward + 2;
-      const unsigned int to = forward + 3;
     }
 
     namespace status {

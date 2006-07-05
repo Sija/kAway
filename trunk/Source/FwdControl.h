@@ -16,158 +16,155 @@
 #pragma once
 
 #include "stdafx.h"
+
 #include "Helpers.h"
+#include "Forwarder.h"
 
 #include <boost/signal.hpp>
-#include <boost/bind.hpp>
 #include <boost/function.hpp>
 
 namespace kAway2 {
-  /**
-    * Forwarder Base Class
-    */
-  class Forwarder {
-    //
-  };
-
-  typedef std::deque<Forwarder*> tForwarders;
-
-  /**
-    * Forwarder Control Class
-    */
-  typedef boost::function<void (unsigned)> fUnsigned;
-  typedef boost::function<void ()> fVoid;
-  typedef boost::function<void (int, int)> fAction;
-  typedef boost::function<void (int, cMessage *)> fNewMsg;
-
-  typedef boost::signal<void ()> sOnIStart;
-  typedef boost::signal<void ()> sOnIEnd;
-  typedef boost::signal<void ()> sOnISetCols;
-  typedef boost::signal<void ()> sOnIPrepare;
-  typedef boost::signal<void (int, int)> sOnAction;
-
-  typedef boost::signal<void ()> sOnEnable;
-  typedef boost::signal<void ()> sOnDisable;
-  typedef boost::signal<void (int, cMessage *)> sOnNewMsg;
-
   class FwdControl {
-    public:
-      FwdControl();
-      ~FwdControl();
+  public:
+    typedef std::deque<Forwarder *> tForwarders;
 
-      inline void fwdRegister(Forwarder *f) {
-        this->forwarders.push_back(f);
+    typedef boost::function<void (unsigned)> fUnsigned;
+    typedef boost::function<void ()> fVoid;
+    typedef boost::function<void (int, int)> fAction;
+    typedef boost::function<void (int, cMessage *)> fNewMsg;
+
+    typedef boost::signal<void ()> sOnIStart;
+    typedef boost::signal<void ()> sOnIEnd;
+    typedef boost::signal<void ()> sOnISetCols;
+    typedef boost::signal<void ()> sOnIPrepare;
+    typedef boost::signal<void (int, int)> sOnAction;
+
+    typedef boost::signal<void ()> sOnEnable;
+    typedef boost::signal<void ()> sOnDisable;
+    typedef boost::signal<void (int, cMessage *)> sOnNewMsg;
+
+  protected:
+    int summarizableCount;
+    int forwardableCount;
+
+  public:
+    FwdControl();
+    ~FwdControl();
+
+    void UIDraw(int colCount = 3);
+    void registerCfgGroups();
+    Forwarder* getById(std::string id);
+    void fwdRegister(Forwarder *f);
+
+  public:
+		sOnIStart onIStart;
+		sOnIEnd onIEnd;
+		sOnISetCols onISetCols;
+		sOnIPrepare onIPrepare;
+		sOnAction onAction;
+
+		sOnEnable onEnable;
+		sOnDisable onDisable;
+		sOnNewMsg onNewMsg;
+
+  public:
+    tForwarders forwarders;
+
+  public:
+		const sOnIStart& getEvtOnIStart() const {
+			return(this->onIStart);
+		}
+
+    inline bool setEvtOnIStart(fVoid f) {
+      if (!f.empty()) {
+		    this->onIStart.connect(f);
+		    return(true);
       }
+			return(false);
+    }
 
-    public:
-		  sOnIStart onIStart;
-		  sOnIEnd onIEnd;
-		  sOnISetCols onISetCols;
-		  sOnIPrepare onIPrepare;
-		  sOnAction onAction;
+		const sOnIEnd& getEvtOnIEnd() const {
+			return(this->onIEnd);
+		}
 
-		  sOnEnable onEnable;
-		  sOnDisable onDisable;
-		  sOnNewMsg onNewMsg;
-
-    protected:
-      tForwarders forwarders;
-
-    public:
-		  const sOnIStart& getEvtOnIStart() const {
-			  return(this->onIStart);
-		  }
-
-      inline bool setEvtOnIStart(fVoid f) {
-        if (!f.empty()) {
-		      this->onIStart.connect(f);
-		      return(true);
-        }
-			  return(false);
+    inline bool setEvtOnIEnd(fVoid f) {
+      if (!f.empty()) {
+		    this->onIEnd.connect(f);
+		    return(true);
       }
+			return(false);
+    }
 
-		  const sOnIEnd& getEvtOnIEnd() const {
-			  return(this->onIEnd);
-		  }
+		const sOnISetCols& getEvtOnISetCols() const {
+			return(this->onISetCols);
+		}
 
-      inline bool setEvtOnIEnd(fVoid f) {
-        if (!f.empty()) {
-		      this->onIEnd.connect(f);
-		      return(true);
-        }
-			  return(false);
+    inline bool setEvtOnISetCols(fVoid f) {
+      if (!f.empty()) {
+		    this->onISetCols.connect(f);
+		    return(true);
       }
+			return(false);
+    }
 
-		  const sOnISetCols& getEvtOnISetCols() const {
-			  return(this->onISetCols);
-		  }
+		const sOnIPrepare& getEvtOnIPrepare() const {
+			return(this->onIPrepare);
+		}
 
-      inline bool setEvtOnISetCols(fVoid f) {
-        if (!f.empty()) {
-		      this->onISetCols.connect(f);
-		      return(true);
-        }
-			  return(false);
+    inline bool setEvtOnIPrepare(fVoid f) {
+      if (!f.empty()) {
+		    this->onIPrepare.connect(f);
+		    return(true);
       }
+			return(false);
+    }
 
-		  const sOnIPrepare& getEvtOnIPrepare() const {
-			  return(this->onIPrepare);
-		  }
+		const sOnAction& getEvtOnAction() const {
+			return(this->onAction);
+		}
 
-      inline bool setEvtOnIPrepare(fVoid f) {
-        if (!f.empty()) {
-		      this->onIPrepare.connect(f);
-		      return(true);
-        }
-			  return(false);
+    inline bool setEvtOnAction(fAction f) {
+      if (!f.empty()) {
+		    this->onAction.connect(f);
+		    return(true);
       }
+			return(false);
+    }
 
-		  const sOnAction& getEvtOnAction() const {
-			  return(this->onAction);
-		  }
+		const sOnEnable& getEvtOnEnable() const {
+			return(this->onEnable);
+		}
 
-      inline bool setEvtOnAction(fAction f) {
-        if (!f.empty()) {
-		      this->onAction.connect(f);
-		      return(true);
-        }
-			  return(false);
+    inline bool setEvtOnEnable(fVoid f) {
+      if (!f.empty()) {
+		    this->onEnable.connect(f);
+		    return(true);
       }
+			return(false);
+    }
 
-		  const sOnEnable& getEvtOnEnable() const {
-			  return(this->onEnable);
-		  }
+		const sOnDisable& getEvtOnDisable() const {
+			return(this->onDisable);
+		}
 
-      inline bool setEvtOnEnable(fVoid f) {
-        if (!f.empty()) {
-		      this->onEnable.connect(f);
-		      return(true);
-        }
-			  return(false);
+    inline bool setEvtOnDisable(fVoid f) {
+      if (!f.empty()) {
+		    this->onDisable.connect(f);
+		    return(true);
       }
+			return(false);
+    }
 
-		  const sOnDisable& getEvtOnDisable() const {
-			  return(this->onDisable);
-		  }
+		const sOnNewMsg& getEvtOnNewMsg() const {
+			return(this->onNewMsg);
+		}
 
-      inline bool setEvtOnDisable(fVoid f) {
-        if (!f.empty()) {
-		      this->onDisable.connect(f);
-		      return(true);
-        }
-			  return(false);
+    inline bool setEvtOnNewMsg(fNewMsg f) {
+      if (!f.empty()) {
+		    this->onNewMsg.connect(f);
+		    return(true);
       }
-
-		  const sOnNewMsg& getEvtOnNewMsg() const {
-			  return(this->onNewMsg);
-		  }
-
-      inline bool setEvtOnNewMsg(fNewMsg f) {
-        if (!f.empty()) {
-		      this->onNewMsg.connect(f);
-		      return(true);
-        }
-			  return(false);
-      }
+			return(false);
+    }
   };
 }

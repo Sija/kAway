@@ -26,39 +26,40 @@
 #include "editFix.h"
 
 namespace kAway2 {
-  struct sWndData {
-    unsigned int net;
-    HIMAGELIST hImlOnline;
-    HIMAGELIST hImlChat;
-    HIMAGELIST hImlAway;
-    HIMAGELIST hImlNa;
-    HIMAGELIST hImlDnd;
-    HIMAGELIST hImlInv;
-    HIMAGELIST hImlOffline;
-
-    sWndData(int _net = 0): net(_net), hImlOnline(0), hImlChat(0), hImlAway(0), hImlNa(0), hImlDnd(0), hImlInv(0), hImlOffline(0) { }
-    ~sWndData() {
-      if (hImlOnline)  ImageList_Destroy(hImlOnline);
-      if (hImlChat)    ImageList_Destroy(hImlChat);
-      if (hImlAway)    ImageList_Destroy(hImlAway);
-      if (hImlNa)      ImageList_Destroy(hImlNa);
-      if (hImlDnd)     ImageList_Destroy(hImlDnd);
-      if (hImlInv)     ImageList_Destroy(hImlInv);
-      if (hImlOffline) ImageList_Destroy(hImlOffline);
-    }
-  };
-
-  struct sStatus {
-    unsigned int id;
-    const char * name;
-    HIMAGELIST img;
-
-    sStatus(int _id, const char * _name, HIMAGELIST _img) : id(_id), name(_name), img(_img) { }
-  };
-
-  typedef std::list<sStatus> tStats;
-
   class AwayWnd {
+    public:
+      struct sWndData {
+        unsigned int net;
+        HIMAGELIST hImlOnline;
+        HIMAGELIST hImlChat;
+        HIMAGELIST hImlAway;
+        HIMAGELIST hImlNa;
+        HIMAGELIST hImlDnd;
+        HIMAGELIST hImlInv;
+        HIMAGELIST hImlOffline;
+
+        sWndData(int _net = 0): net(_net), hImlOnline(0), hImlChat(0), hImlAway(0), hImlNa(0), hImlDnd(0), hImlInv(0), hImlOffline(0) { }
+        ~sWndData() {
+          if (hImlOnline)  ImageList_Destroy(hImlOnline);
+          if (hImlChat)    ImageList_Destroy(hImlChat);
+          if (hImlAway)    ImageList_Destroy(hImlAway);
+          if (hImlNa)      ImageList_Destroy(hImlNa);
+          if (hImlDnd)     ImageList_Destroy(hImlDnd);
+          if (hImlInv)     ImageList_Destroy(hImlInv);
+          if (hImlOffline) ImageList_Destroy(hImlOffline);
+        }
+      };
+
+      struct sStatus {
+        unsigned int id;
+        const char * name;
+        HIMAGELIST img;
+
+        sStatus(int _id, const char * _name, HIMAGELIST _img) : id(_id), name(_name), img(_img) { }
+      };
+
+      typedef std::list<sStatus> tStats;
+
     public:
       AwayWnd(std::string className);
       ~AwayWnd();

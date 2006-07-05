@@ -17,16 +17,6 @@
 #include "Control.h"
 
 namespace kAway2 {
-  std::string __stdcall fGetAwayDateString(Format *fCtrl) {
-    Stamina::Date64 *awayTime = pCtrl->getAwayTime();
-    Stamina::Date64 today(true);
-
-    if ((awayTime->day != today.day) || (awayTime->month != today.month) || (awayTime->year != today.year))
-      return(awayTime->strftime(GETSTRA(cfg::dateFormat)));
-    else
-      return("");
-  }
-
   Control::Control() {
     this->awayTime = new Stamina::Date64(false);
     this->pluginsGroup = Helpers::getPluginsGroup();
@@ -79,7 +69,7 @@ namespace kAway2 {
     this->fromWnd(false);
 
     int count = Ctrl->IMessage(IMC_CNT_COUNT);
-    for (int i = 0; i < count; i++) {
+    for (int i = 1; i < count; i++) {
       if (Helpers::isMsgWndOpen(i)) {
         if (Helpers::altCfgVal(i, cfg::reply::onEnable) && !silent && !this->cntProp(i)->ignored) {
           this->sendMsgTpl(i, tplEnable);
@@ -110,7 +100,7 @@ namespace kAway2 {
     this->switchBtns(false);
 
     int count = Ctrl->IMessage(IMC_CNT_COUNT);
-    for (int i = 0; i < count; i++) {
+    for (int i = 1; i < count; i++) {
       if (Helpers::isMsgWndOpen(i)) {
         if (Helpers::altCfgVal(i, cfg::reply::onDisable) && !silent && !this->cntProp(i)->ignored) {
           this->sendMsgTpl(i, tplDisable, msg);
@@ -157,7 +147,7 @@ namespace kAway2 {
       ACTR_INIT | ACTS_GROUP | (state ? ACTS_CHECKED : 0));
 
     int count = Ctrl->IMessage(IMC_CNT_COUNT);
-    for (int i = 0; i < count; i++) {
+    for (int i = 1; i < count; i++) {
       if (Helpers::isMsgWndOpen(i)) {
         Helpers::chgBtn(IMIG_MSGTB, ui::msgTbGrp, i, "kAway2", ico::logoSmall, 
           ACTR_INIT | ACTS_GROUP | (state ? ACTS_CHECKED : 0));
@@ -184,7 +174,7 @@ namespace kAway2 {
     format.addVar("name", GETCNTC(cnt, CNT_NAME));
     format.addVar("nick", GETCNTC(cnt, CNT_NICK));
     format.addVar("surname", GETCNTC(cnt, CNT_SURNAME));
-    format.addVar("date", fGetAwayDateString);
+    format.addVar("date", Helpers::isToday(this->awayTime) ? "" : this->awayTime->strftime(GETSTRA(cfg::dateFormat)));
     format.addVar("time", this->awayTime->strftime(GETSTRA(cfg::timeFormat)));
     format.addVar("msg", (tpl == tplDisable) ? msgVal : this->awayMsg);
 

@@ -24,6 +24,7 @@
 #include "Control.h"
 
 #include "Forwarders/SMSForwarder.h"
+#include "Forwarders/CntForwarder.h"
 
 int __stdcall DllMain(void * hinstDLL, unsigned long fdwReason, void * lpvReserved) {
   return(true);
@@ -64,7 +65,8 @@ namespace kAway2 {
 
   int ISetCols() {
     fCtrl = new FwdControl();
-    fCtrl->fwdRegister(new SMSForward);
+    fCtrl->fwdRegister(new SMSForwarder);
+    fCtrl->fwdRegister(new CntForwarder);
 
     Ctrl->SetColumn(DTCFG, cfg::autoAwaySync, DT_CT_INT, 0, "kAway2/autoAwaySync");
     Ctrl->SetColumn(DTCFG, cfg::useKNotify, DT_CT_INT, 1, "kAway2/useKNotify");
@@ -87,12 +89,15 @@ namespace kAway2 {
     Ctrl->SetColumn(DTCFG, cfg::wnd::muteOnEnable, DT_CT_INT, 0, "kAway2/wnd/muteOnEnable");
     Ctrl->SetColumn(DTCFG, cfg::wnd::onEnableSt, DT_CT_INT, ST_NA, "kAway2/wnd/onEnableSt");
 
+    Ctrl->SetColumn(DTCFG, cfg::summary::interval, DT_CT_INT, 60, "kAway2/summary/interval");
+    Ctrl->SetColumn(DTCFG, cfg::summary::inAutoAway, DT_CT_INT, 0, "kAway2/summary/inAutoAway");
+    Ctrl->SetColumn(DTCFG, cfg::summary::minMsgCount, DT_CT_INT, 0, "kAway2/summary/minMsgCount");
+
     Ctrl->SetColumn(DTCFG, cfg::tpl::enable, DT_CT_STR, "brb/afk {[msg]}", "kAway2/tpl/enable");
     Ctrl->SetColumn(DTCFG, cfg::tpl::disable, DT_CT_STR, "i'm back {[msg] }:>", "kAway2/tpl/disable");
     Ctrl->SetColumn(DTCFG, cfg::tpl::reply, DT_CT_STR, 
       "Hello <b>{display|uid}</b>, i'm away from {date, }<b>{time}</b> {[msg]}.\r\n"
       "Leave a message after the beep. Byeee.", "kAway2/tpl/reply");
-    // Ctrl->SetColumn(DTCFG, cfg::tpl::forward, DT_CT_STR, "", "kAway2/tpl/forward");
     // Ctrl->SetColumn(DTCFG, cfg::tpl::email, DT_CT_STR, "", "kAway2/tpl/email");
     Ctrl->SetColumn(DTCFG, cfg::tpl::status, DT_CT_STR, "{status |} away {[msg|time]}", "kAway2/tpl/status");
     Ctrl->SetColumn(DTCFG, cfg::tpl::autoAway, DT_CT_STR, "autoAway is on, so... i'm off :>", "kAway2/tpl/autoAway");
@@ -169,21 +174,21 @@ namespace kAway2 {
       Ctrl, pCtrl, fCtrl, sCtrl, wCtrl);
 
     /* Defining help variables */
-    tHelpVars stVars, rVars;
+    Format::tHelpVars stVars, rVars;
 
-    stVars.push_back(sHelpVar("status", "Aktualny opis statusu"));
-    stVars.push_back(sHelpVar("msg", "Przyczyna nieobecnoœci"));
-    stVars.push_back(sHelpVar("date", "Data w³¹czenia trybu away"));
-    stVars.push_back(sHelpVar("time", "Czas w³¹czenia trybu away"));
+    stVars.push_back(Format::sHelpVar("status", "Aktualny opis statusu"));
+    stVars.push_back(Format::sHelpVar("msg", "Przyczyna nieobecnoœci"));
+    stVars.push_back(Format::sHelpVar("date", "Data w³¹czenia trybu away"));
+    stVars.push_back(Format::sHelpVar("time", "Czas w³¹czenia trybu away"));
 
-    rVars.push_back(sHelpVar("uid", "Identyfikator kontaktu w sieci"));
-    rVars.push_back(sHelpVar("display", "Nazwa wyœwietlania kontaktu"));
-    rVars.push_back(sHelpVar("name", "Imiê przypisane do kontaktu"));
-    rVars.push_back(sHelpVar("nick", "Ksywka przypisana do kontaktu"));
-    rVars.push_back(sHelpVar("surname", "Nazwisko przypisane do kontaktu"));
-    rVars.push_back(sHelpVar("date", "Data w³¹czenia trybu away"));
-    rVars.push_back(sHelpVar("time", "Czas w³¹czenia trybu away"));
-    rVars.push_back(sHelpVar("msg", "Przyczyna nieobecnoœci/powrotu"));
+    rVars.push_back(Format::sHelpVar("uid", "Identyfikator kontaktu w sieci"));
+    rVars.push_back(Format::sHelpVar("display", "Nazwa wyœwietlania kontaktu"));
+    rVars.push_back(Format::sHelpVar("name", "Imiê przypisane do kontaktu"));
+    rVars.push_back(Format::sHelpVar("nick", "Ksywka przypisana do kontaktu"));
+    rVars.push_back(Format::sHelpVar("surname", "Nazwisko przypisane do kontaktu"));
+    rVars.push_back(Format::sHelpVar("date", "Data w³¹czenia trybu away"));
+    rVars.push_back(Format::sHelpVar("time", "Czas w³¹czenia trybu away"));
+    rVars.push_back(Format::sHelpVar("msg", "Przyczyna nieobecnoœci/powrotu"));
 
     /* Registering icons */
     IconRegister(IML_32, ico::logoBig, Ctrl->hDll(), IDI_LOGO);
@@ -235,7 +240,6 @@ namespace kAway2 {
       "%<b>d</b> - Day of month as decimal number (01 – 31)<br/>"
       "%<b>j</b> - Day of year as decimal number (001 – 366)<br/>"
       "%<b>m</b> - Month as decimal number (01 – 12)<br/>"
-      "%<b>M</b> - Minute as decimal number (00 – 59)<br/>"
       "%<b>U</b> - Week of year as decimal number, with Sunday as first day of week (00 – 53)<br/>"
       "%<b>w</b> - Weekday as decimal number (0 – 6; Sunday is 0)<br/>"
       "%<b>W</b> - Week of year as decimal number, with Monday as first day of week (00 – 53)<br/>"
@@ -250,6 +254,7 @@ namespace kAway2 {
     char timeFormat[] = AP_TIPRICH
       "%<b>H</b> - Hour in 24-hour format (00 – 23)<br/>"
       "%<b>I</b> - Hour in 12-hour format (01 – 12)<br/>"
+      "%<b>M</b> - Minute as decimal number (00 – 59)<br/>"
       "%<b>p</b> - Current locale's A.M./P.M. indicator for 12-hour clock<br/>"
       "%<b>S</b> - Second as decimal number (00 – 59)<br/>"
       "%<b>X</b> - Time representation for current locale<br/>"
@@ -309,6 +314,19 @@ namespace kAway2 {
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_SLIDER, "Ma³o\nDu¿o" AP_MINIMUM "1" AP_MAXIMUM "30", cfg::mruSize);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_SEPARATOR);
     UIActionCfgAdd(ui::cfgGroup, act::clearMru, ACTT_BUTTON, "wyczyœæ" AP_ICO "667112", 0, 0, 0, 80, 30);
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
+
+    fCtrl->UIDraw();
+
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUP, "Ustawienia raportowania");
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_SEPARATOR, "Odstêp czasu pomiêdzy wysy³anymi raportami [min]:");
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_SLIDER, "Nie wysy³aj\n1 dzieñ" AP_MINIMUM "0" AP_MAXIMUM "1440" AP_STEP "60", 
+      cfg::summary::interval);
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_SEPARATOR);
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Wysy³aj w trybie auto-away", cfg::summary::inAutoAway);
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_SPINNER | ACTSC_INLINE, AP_MINIMUM "0" AP_MAXIMUM "1000" 
+      AP_TIP "0 = bez limitu", cfg::summary::minMsgCount, 0, 0, 120);
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_COMMENT, "Minimalna iloœæ wiadomoœci");
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
 
     /* Status tab */
@@ -733,7 +751,7 @@ int __stdcall IMessageProc(sIMessage_base *msgBase) {
           pCtrl->cntProp(cnt)->historySess = 1;
         }
 
-        pCtrl->addMsg2CntQueue(cnt, m);
+        // pCtrl->addMsg2CntQueue(cnt, m);
         fCtrl->onNewMsg(cnt, m);
 
         if (Helpers::altCfgVal(cnt, cfg::reply::onMsg)) {
@@ -744,7 +762,7 @@ int __stdcall IMessageProc(sIMessage_base *msgBase) {
             int interval = Helpers::altCfgVal(cnt, cfg::reply::minInterval, false);
 
             if ((!interval && !lastMsgTime) || (interval && ((interval + lastMsgTime) < m->time))) {
-              pCtrl->sendMsgTpl(cnt, tplReply);
+              pCtrl->sendMsgTpl(cnt, Control::tplReply);
             }
             if ((intType == intervalTypeRcvTime) || (intType == intervalTypeBoth)) {
               pCtrl->cntProp(cnt)->lastMsgTime = m->time;
@@ -780,6 +798,10 @@ int __stdcall IMessageProc(sIMessage_base *msgBase) {
 
     case api::isIgnored: {
       return(pCtrl->cntProp(msg->p1)->ignored);
+    }
+
+    case api::isAutoAway: {
+      return(pCtrl->isAutoAway());
     }
 
     case api::ignore: {

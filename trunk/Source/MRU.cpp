@@ -26,7 +26,7 @@ MRU::~MRU() {
   //
 }
 
-tMRUlist MRU::get(bool rev, const char * buff, int buffSize) {
+MRU::tMRUlist MRU::get(bool rev, const char * buff, int buffSize) {
   tMRUlist list;
   sMRU mruList;
 

@@ -27,107 +27,108 @@
 #include "FwdControl.h"
 
 namespace kAway2 {
-  typedef std::deque<cMessage*> tMsgQueue;
-
-  enum enAutoMsgTpl {
-    tplEnable = cfg::tpl::enable,
-    tplDisable = cfg::tpl::disable,
-    tplReply = cfg::tpl::reply
-  };
-
-  struct sCnt {
-    bool ignored;
-    int historySess;
-    __int64 lastMsgTime;
-    tMsgQueue msgQueue;
-
-    // konstruktor
-    sCnt(bool _ignored = false, int _historySess = 0, int _lastMsgTime = 0) : 
-      ignored(_ignored), historySess(_historySess), lastMsgTime(_lastMsgTime) { }
-  };
-
-  typedef std::map<int, sCnt> tCnts;
-
   class Control {
-    public:
-      Control();
-      ~Control();
+  public:
+    typedef std::deque<cMessage*> tMsgQueue;
 
-      bool enable(std::string msg = "", int status = 0, bool silent = false);
-      bool disable(std::string msg = "", bool silent = false);
+    enum enAutoMsgTpl {
+      tplEnable = cfg::tpl::enable,
+      tplDisable = cfg::tpl::disable,
+      tplReply = cfg::tpl::reply
+    };
 
-      void sendMsgTpl(int cnt, enAutoMsgTpl tpl, std::string msgVal = "");
-      void showKNotify(const char * text, int ico = ico::logoSmall);
+    struct sCnt {
+      bool ignored;
+      int historySess;
+      __int64 lastMsgTime;
+      tMsgQueue msgQueue;
 
-      inline void fromWnd(bool state) {
-        this->isFromWnd = state;
-      }
+      // konstruktor
+      sCnt(bool _ignored = false, int _historySess = 0, int _lastMsgTime = 0) : 
+        ignored(_ignored), historySess(_historySess), lastMsgTime(_lastMsgTime) { }
+    };
 
-      inline bool isMuteSwitched() {
-        return(this->muteStateSwitched);
-      }
+    typedef std::map<int, sCnt> tCnts;
 
-      inline bool isEnabled() {
-        return(this->isOn);
-      }
+  public:
+    Control();
+    ~Control();
 
-      inline bool isAwayMsgSet() {
-        return(this->awayMsg.length() ? true : false);
-      }
+    bool enable(std::string msg = "", int status = 0, bool silent = false);
+    bool disable(std::string msg = "", bool silent = false);
 
-      inline bool isAutoAway() {
-        return(this->autoAway);
-      }
+    void sendMsgTpl(int cnt, enAutoMsgTpl tpl, std::string msgVal = "");
+    void showKNotify(const char * text, int ico = ico::logoSmall);
 
-      inline void setAutoAway(bool state) {
-        this->autoAway = state;
-      }
+    inline void fromWnd(bool state) {
+      this->isFromWnd = state;
+    }
 
-      inline void setStatusCtrl(Status *handle) {
-        this->sCtrl = handle;
-      }
+    inline bool isMuteSwitched() {
+      return(this->muteStateSwitched);
+    }
 
-      inline int getPluginsGroup() {
-        return(this->pluginsGroup);
-      }
+    inline bool isEnabled() {
+      return(this->isOn);
+    }
 
-      const std::string& getAwayMsg() const {
-        return(this->awayMsg);
-      }
+    inline bool isAwayMsgSet() {
+      return(this->awayMsg.length() ? true : false);
+    }
 
-      inline Stamina::Date64 *getAwayTime() {
-        return(this->awayTime);
-      }
+    inline bool isAutoAway() {
+      return(this->autoAway);
+    }
 
-      inline tCnts getCnts() {
-        return(this->cntProps);
-      }
+    inline void setAutoAway(bool state) {
+      this->autoAway = state;
+    }
 
-      inline sCnt *cntProp(int id) {
-        return(&this->cntProps[Ctrl->DTgetID(DTCNT, id)]);
-      }
+    inline void setStatusCtrl(Status *handle) {
+      this->sCtrl = handle;
+    }
 
-      inline void addMsg2CntQueue(int cnt, cMessage *msg) {
-        this->cntProp(cnt)->msgQueue.push_front(messageDuplicate(msg));
-      }
+    inline int getPluginsGroup() {
+      return(this->pluginsGroup);
+    }
 
-      inline bool isCntSaved(int cnt) {
-        return(this->cntProps.find(cnt) != this->cntProps.end());
-      }
+    const std::string& getAwayMsg() const {
+      return(this->awayMsg);
+    }
 
-    protected:
-      bool isOn;
-      bool muteStateSwitched;
-      bool autoAway;
-      bool isFromWnd;
-      int pluginsGroup;
+    inline Stamina::Date64 *getAwayTime() {
+      return(this->awayTime);
+    }
 
-      tCnts cntProps;
-      std::string awayMsg;
-      Stamina::Date64 *awayTime;
-      Status *sCtrl;
+    inline tCnts getCnts() {
+      return(this->cntProps);
+    }
 
-      void switchBtns(bool state);
+    inline sCnt *cntProp(int id) {
+      return(&this->cntProps[Ctrl->DTgetID(DTCNT, id)]);
+    }
+
+    inline void addMsg2CntQueue(int cnt, cMessage *msg) {
+      this->cntProp(cnt)->msgQueue.push_front(messageDuplicate(msg));
+    }
+
+    inline bool isCntSaved(int cnt) {
+      return(this->cntProps.find(cnt) != this->cntProps.end());
+    }
+
+  protected:
+    bool isOn;
+    bool muteStateSwitched;
+    bool autoAway;
+    bool isFromWnd;
+    int pluginsGroup;
+
+    tCnts cntProps;
+    std::string awayMsg;
+    Stamina::Date64 *awayTime;
+    Status *sCtrl;
+
+    void switchBtns(bool state);
   };
 
   namespace lCtrl {

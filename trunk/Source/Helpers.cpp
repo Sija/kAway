@@ -129,6 +129,18 @@ namespace Helpers {
     Ctrl->IMessage(&KNotify::sIMessage_notify(text, ico));
   }
 
+#ifdef __STAMINA_TIME64__
+  bool isToday(Stamina::Date64 date) {
+    Stamina::Date64 today(true);
+
+    if ((date.day != today.day) || (date.month != today.month) || (date.year != today.year)) {
+      return(false);
+    } else {
+      return(true);
+    }
+  }
+#endif
+
   int findParentAction(int group, int id) {
     return(Ctrl->ICMessage(IMI_ACTION_FINDPARENT, (int) &sUIAction(group, id)));
   }
