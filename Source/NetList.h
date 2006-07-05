@@ -18,26 +18,27 @@
 #include "stdafx.h"
 #include "Helpers.h"
 
-struct sItemNet {
-  unsigned int id;
-  unsigned int net;
-  std::string name;
-  bool use;
+class NetList {
+  public:
+    struct sItemNet {
+      unsigned int id;
+      unsigned int net;
+      std::string name;
+      bool use;
 
-  sItemNet(int _id = 0, int _net = 0, std::string _name = "", bool _use = true) :
-    id(_id), net(_net), name(_name), use(_use) { }
-};
+      sItemNet(int _id = 0, int _net = 0, std::string _name = "", bool _use = true) :
+        id(_id), net(_net), name(_name), use(_use) { }
+    };
 
-enum enCfgDraw {
-  checkboxes,
-  radiosEmpty,
-  radios
-};
+    enum enCfgDraw {
+      checkboxes,
+      radiosEmpty,
+      radios
+    };
 
 typedef std::list<sItemNet> tItemNets;
 typedef std::deque<int> tIgnoredNets;
 
-class NetList {
   public:
     NetList(int cfgCol, int cfgGroup, int dynActGroup, 
       int actCreate, int actDestroy, enCfgDraw uiDraw = checkboxes);

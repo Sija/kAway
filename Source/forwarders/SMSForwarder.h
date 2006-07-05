@@ -17,17 +17,13 @@
 
 #include "../stdafx.h"
 #include "../main.h"
-#include "../Helpers.h"
 
+#include "../Helpers.h"
 #include "../Control.h"
-#include "../Format.h"
 
 #include <konnekt/sms.h>
-#include <stamina/timer.h>
 
 namespace kAway2 {
-  typedef std::deque<std::string> tMsgSenders;
-
   namespace ui {
     namespace sms {
       const unsigned int sms = ui + 30;
@@ -42,38 +38,45 @@ namespace kAway2 {
     namespace sms {
       const unsigned int sms = cfg + 300;
 
-      const unsigned int interval = sms + 1;
       const unsigned int gate = sms + 2;
       const unsigned int number = sms + 3;
 
-      const unsigned int minMsgCount = sms + 4;
+      const unsigned int isSummaryActive = sms + 4;
+      const unsigned int isForwardActive = sms + 5;
     }
 
     namespace tpl {
-      const unsigned int sms = tpl + 5;
+      const unsigned int smsForward = tpl + 10;
+      const unsigned int smsSummary = tpl + 5;
     }
   }
 
-  class SMSForward : public Forwarder {
-    protected:
-      boost::shared_ptr<Stamina::TimerDynamic> timer;
-      unsigned int receivedMsgCount;
-      std::string lastMsgFrom;
-      tMsgSenders msgSenders;
+  class SMSForwarder : public Forwarder {
+  public:
+    SMSForwarder();
+    ~SMSForwarder();
 
-    public:
-      SMSForward();
-      ~SMSForward();
+  public:
+    inline bool preSummary() {
+      return(strlen(GETSTRA(cfg::sms::number)) && strlen(GETSTRA(cfg::sms::gate)));
+    }
 
-    public:
-      void onISetCols();
-      void onIPrepare();
-      void onAction(int id, int code);
+    inline bool preForward(int cnt, cMessage *msg) {
+      return(this->preSummary());
+    }
 
-      void onEnable();
-      void onDisable();
-      void onNewMsg(int cnt, cMessage *msg);
+    inline void setCfgCols() {
+      this->cfgCols["tplSummary"] = cfg::tpl::smsSummary;
+      this->cfgCols["tplForward"] = cfg::tpl::smsForward;
+      this->cfgCols["cfgGroup"] = ui::sms::cfgGroup;
 
-      void send();
+      this->cfgCols["isSummaryActive"] = cfg::sms::isSummaryActive;
+      this->cfgCols["isForwardActive"] = cfg::sms::isForwardActive;
+    }
+
+    void send(std::string msg);
+    void onISetCols();
+    void onIPrepare();
+    void onAction(int id, int code);
   };
 }

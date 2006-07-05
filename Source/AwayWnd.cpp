@@ -36,7 +36,7 @@ namespace kAway2 {
 
         LPCREATESTRUCT pCreate = (LPCREATESTRUCT) lParam;
         int net = (int) pCreate->lpCreateParams;
-        sWndData *data = new sWndData(net);
+        AwayWnd::sWndData *data = new AwayWnd::sWndData(net);
         SetWindowLong(hWnd, GWL_USERDATA, (LONG) data);
 
         wCtrl->addInstance(net, hWnd);
@@ -65,20 +65,20 @@ namespace kAway2 {
         ti.rect.right = rect.right;
         ti.rect.bottom = rect.bottom;
 
-        tStats stats;
-        // stats.push_back( sStatus( ST_ONLINE, "Dostêpny", data->hImlOnline ) );
-        // stats.push_back( sStatus( ST_CHAT, "Pogadam", data->hImlChat ) );
-        stats.push_back( sStatus( ST_AWAY, "Zaraz wracam", data->hImlAway ) );
-        stats.push_back( sStatus( ST_NA, "Nieosi¹galny", data->hImlNa ) );
-        stats.push_back( sStatus( ST_DND, "Nie przeszkadzaæ", data->hImlDnd ) );
-        stats.push_back( sStatus( ST_HIDDEN, "Ukryty", data->hImlInv ) );
-        // stats.push_back( sStatus( ST_OFFLINE, "Niedostêpny", data->hImlOffline ) );
+        AwayWnd::tStats stats;
+        // stats.push_back( AwayWnd::sStatus( ST_ONLINE, "Dostêpny", data->hImlOnline ) );
+        // stats.push_back( AwayWnd::sStatus( ST_CHAT, "Pogadam", data->hImlChat ) );
+        stats.push_back( AwayWnd::sStatus( ST_AWAY, "Zaraz wracam", data->hImlAway ) );
+        stats.push_back( AwayWnd::sStatus( ST_NA, "Nieosi¹galny", data->hImlNa ) );
+        stats.push_back( AwayWnd::sStatus( ST_DND, "Nie przeszkadzaæ", data->hImlDnd ) );
+        stats.push_back( AwayWnd::sStatus( ST_HIDDEN, "Ukryty", data->hImlInv ) );
+        // stats.push_back( AwayWnd::sStatus( ST_OFFLINE, "Niedostêpny", data->hImlOffline ) );
 
         int count = stats.size();
         int width = count * 40;
         int x = 5 + int(double(300 - width) / 2);
 
-        for (tStats::iterator it = stats.begin(); it != stats.end(); it++) {
+        for (AwayWnd::tStats::iterator it = stats.begin(); it != stats.end(); it++) {
           HWND hWndTmp = CreateWindow("button", "", WS_TABSTOP | WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON | BS_ICON,
             x, 30, 40, 20, hWnd, (HMENU) it->id, Ctrl->hInst(), NULL);
           x += 40;
@@ -137,10 +137,10 @@ namespace kAway2 {
         CheckDlgButton(hWnd, MUTE, GETINT(cfg::muteOnEnable) ? BST_CHECKED : 0);
 
         // odczytujemy liste mru
-        tMRUlist list = MRUlist->get();
+        MRU::tMRUlist list = MRUlist->get();
 
         // wype³niamy combobox
-        for (tMRUlist::iterator it = list.begin(); it != list.end(); it++) {
+        for (MRU::tMRUlist::iterator it = list.begin(); it != list.end(); it++) {
           SendMessage(hWndCombo, CB_ADDSTRING, 0, (LPARAM) (*it).c_str());
         }
 
@@ -155,7 +155,7 @@ namespace kAway2 {
       }
 
       case WM_DESTROY: {
-        sWndData *data = (sWndData*) GetWindowLong(hWnd, GWL_USERDATA);
+        AwayWnd::sWndData *data = (AwayWnd::sWndData *) GetWindowLong(hWnd, GWL_USERDATA);
         wCtrl->removeInstance(data->net);
 
         delete data;
@@ -166,7 +166,7 @@ namespace kAway2 {
         switch(LOWORD(wParam)) {
           case 1:
           case STATUS_OK: {
-            sWndData *data = (sWndData*) GetWindowLong(hWnd, GWL_USERDATA);
+            AwayWnd::sWndData *data = (AwayWnd::sWndData *) GetWindowLong(hWnd, GWL_USERDATA);
             int st, len = SendMessage(GetDlgItem(hWnd, STATUS_EDIT_INFO), WM_GETTEXTLENGTH, 0, 0) + 1;
             char * msg = new char[len];
             

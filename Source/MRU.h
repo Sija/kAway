@@ -18,9 +18,10 @@
 #include "stdafx.h"
 #include "Helpers.h"
 
-typedef std::deque<std::string> tMRUlist;
-
 class MRU {
+  public:
+    typedef std::deque<std::string> tMRUlist;
+
   public:
     MRU(std::string name, int count = 100, bool dtbCount = false);
     ~MRU();

@@ -62,7 +62,15 @@ namespace Helpers {
   const char * getPlugName(int plugID);
 
   void UIActionCall(int group, int act, int cntID = 0);
+
+#ifdef SHARED_TABLETKA_H
   bool isMsgWndOpen(int cntID);
+#endif
+
+#ifdef __STAMINA_TIME64__
+  bool isToday(Stamina::Date64 date);
+#endif
+
   void showKNotify(char * text, int ico);
   int findParentAction(int group, int id);
   int subclassAction(int group, int id, int mask = UIAIM_ALL);
