@@ -120,8 +120,8 @@ namespace Helpers {
   }
 
 #ifdef SHARED_TABLETKA_H
-  bool isMsgWndOpen(int cntID) {
-    return(Tabs::GetWindowState(cntID));
+  bool isMsgWndOpen(int cnt) {
+    return(Tabs::GetWindowState(cnt) != 0);
   }
 #endif
 

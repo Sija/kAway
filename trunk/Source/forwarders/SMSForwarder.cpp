@@ -24,12 +24,10 @@ namespace kAway2 {
     fCtrl->setEvtOnNewMsg(boost::bind(&SMSForwarder::onNewMsg, this, _1, _2));
     fCtrl->setEvtOnEnable(boost::bind(&SMSForwarder::onEnable, this));
     fCtrl->setEvtOnDisable(boost::bind(&SMSForwarder::onDisable, this));
-
-    this->setCfgCols();
   }
 
   void SMSForwarder::send(std::string msg) {
-    Message::sms(itos(GETINT(cfg::sms::number)), msg, GETSTRA(cfg::sms::gate), "kAway2");
+    Message::sms(itos(GETINT(cfg::sms::number)), msg, GETSTRA(cfg::sms::gate), GETSTRA(cfg::sms::sig));
   }
 
   void SMSForwarder::onISetCols() {
@@ -43,6 +41,7 @@ namespace kAway2 {
 
     Ctrl->SetColumn(DTCFG, cfg::sms::gate, DT_CT_STR, "", "kAway2/sms/gate");
     Ctrl->SetColumn(DTCFG, cfg::sms::number, DT_CT_INT, 0, "kAway2/sms/number");
+    Ctrl->SetColumn(DTCFG, cfg::sms::sig, DT_CT_STR, "kAway2", "kAway2/sms/sig");
 
     Forwarder::onISetCols();
   }
@@ -52,6 +51,9 @@ namespace kAway2 {
     UIActionCfgAdd(ui::sms::cfgGroup, ui::sms::number, ACTT_EDIT | ACTSC_INLINE | ACTSC_INT | ACTR_CHECK | ACTR_INIT, 0, 
       cfg::sms::number, 0, 0, 120);
     UIActionCfgAdd(ui::sms::cfgGroup, 0, ACTT_COMMENT, "Numer na który bêd¹ wysy³ane SMSy");
+    UIActionCfgAdd(ui::sms::cfgGroup, 0, ACTT_EDIT | ACTSC_INLINE, AP_TIPRICH 
+      "<b>Uwaga</b>: niektóre bramki SMS wymagaj¹ podpisu do poprawnego wys³ania wiadomoœci!", cfg::sms::sig, 0, 0, 120);
+    UIActionCfgAdd(ui::sms::cfgGroup, 0, ACTT_COMMENT, "Podpis dodawany do SMSa");
     UIActionCfgAdd(ui::sms::cfgGroup, ui::sms::gates, ACTT_COMBO | ACTSC_INLINE | ACTSCOMBO_LIST | ACTSCOMBO_NOICON | ACTSCOMBO_SORT, 0,
       cfg::sms::gate, 0, 0, 120);
     UIActionCfgAdd(ui::sms::cfgGroup, 0, ACTT_COMMENT, "Bramka która zostanie u¿yta do wys³ania wiadomoœci");

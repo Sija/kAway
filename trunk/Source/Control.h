@@ -96,7 +96,7 @@ namespace kAway2 {
       return(this->awayMsg);
     }
 
-    inline Stamina::Date64 *getAwayTime() {
+    inline Stamina::Date64 getAwayTime() {
       return(this->awayTime);
     }
 
@@ -125,7 +125,7 @@ namespace kAway2 {
 
     tCnts cntProps;
     std::string awayMsg;
-    Stamina::Date64 *awayTime;
+    Stamina::Date64 awayTime;
     Status *sCtrl;
 
     void switchBtns(bool state);

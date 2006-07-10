@@ -17,19 +17,11 @@
 #include "Control.h"
 
 namespace kAway2 {
-  Control::Control() {
-    this->awayTime = new Stamina::Date64(false);
+  Control::Control() : isOn(false), muteStateSwitched(false), autoAway(false) {
     this->pluginsGroup = Helpers::getPluginsGroup();
-
-    this->isOn = false;
-    this->muteStateSwitched = false;
-    this->autoAway = false;
   }
 
   Control::~Control() {
-    delete this->awayTime;
-    this->awayTime = NULL;
-
     this->cntProps.clear();
   }
 
@@ -37,16 +29,20 @@ namespace kAway2 {
     if (this->isOn) return(false);
 
     this->awayMsg = msg;
-    this->awayTime->now();
+    this->awayTime.now();
     this->isOn = true;
+
+    if (this->autoAway) {
+      this->awayTime = this->awayTime.getTime64() - GETINT(CFG_AUTOAWAY);
+    }
 
     if (this->sCtrl) {
       int chgStatus = GETINT(this->isFromWnd ? cfg::wnd::changeOnEnable : cfg::status::changeOnEnable);
       int chgInfo = GETINT(this->isFromWnd ? cfg::wnd::changeInfoOnEnable : cfg::status::changeInfoOnEnable);
 
       if (chgInfo) {
-        this->sCtrl->fCtrl->addVar("date", this->awayTime->strftime(GETSTRA(cfg::dateFormat)));
-        this->sCtrl->fCtrl->addVar("time", this->awayTime->strftime(GETSTRA(cfg::timeFormat)));
+        this->sCtrl->fCtrl->addVar("date", this->awayTime.strftime(GETSTRA(cfg::dateFormat)));
+        this->sCtrl->fCtrl->addVar("time", this->awayTime.strftime(GETSTRA(cfg::timeFormat)));
         this->sCtrl->fCtrl->addVar("msg", msg);
       }
 
@@ -117,7 +113,7 @@ namespace kAway2 {
     }
 
     this->awayMsg = "";
-    this->awayTime->clear();
+    this->awayTime.clear();
     this->cntProps.clear();
 
     this->isOn = false;
@@ -174,8 +170,8 @@ namespace kAway2 {
     format.addVar("name", GETCNTC(cnt, CNT_NAME));
     format.addVar("nick", GETCNTC(cnt, CNT_NICK));
     format.addVar("surname", GETCNTC(cnt, CNT_SURNAME));
-    format.addVar("date", Helpers::isToday(this->awayTime) ? "" : this->awayTime->strftime(GETSTRA(cfg::dateFormat)));
-    format.addVar("time", this->awayTime->strftime(GETSTRA(cfg::timeFormat)));
+    format.addVar("date", Helpers::isToday(this->awayTime) ? "" : this->awayTime.strftime(GETSTRA(cfg::dateFormat)));
+    format.addVar("time", this->awayTime.strftime(GETSTRA(cfg::timeFormat)));
     format.addVar("msg", (tpl == tplDisable) ? msgVal : this->awayMsg);
 
     /*

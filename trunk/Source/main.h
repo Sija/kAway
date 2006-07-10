@@ -148,6 +148,12 @@ namespace kAway2 {
       const unsigned int minMsgCount = summary + 3;
     }
 
+    namespace fwd {
+      const unsigned int fwd = cfg + 85;
+
+      const unsigned int inAutoAway = fwd + 1;
+    }
+
     namespace tpl {
       const unsigned int tpl = cfg + 100;
 

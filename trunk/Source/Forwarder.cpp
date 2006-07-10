@@ -17,9 +17,6 @@
 #include "Forwarder.h"
 
 namespace kAway2 {
-  /**
-    * Forwarder
-    */
   Forwarder::Forwarder(std::string id, std::string title, int ico, bool isSummarizable, bool isForwardable) {
     this->isSummarizable = isSummarizable;
     this->isForwardable = isForwardable;
@@ -78,7 +75,7 @@ namespace kAway2 {
     int interval = GETINT(cfg::summary::interval);
 
     if (!this->isActive() || !interval || (!GETINT(cfg::summary::inAutoAway) && 
-      Ctrl->IMessage(api::isAutoAway, net, IMT_ALL))) return;
+      Ctrl->IMessageDirect(api::isAutoAway, Ctrl->ID()))) return;
 
     this->timer->repeat(interval * 60 * 1000);
   }
@@ -181,7 +178,8 @@ namespace kAway2 {
   }
 
   void Forwarder::Forward::onNewMsg(int cnt, cMessage *msg) {
-    if (!this->isActive() || !strlen(msg->fromUid) || !this->parent->preForward(cnt, msg)) {
+    if (!this->isActive() || !strlen(msg->fromUid) || (!GETINT(cfg::fwd::inAutoAway) && 
+      Ctrl->IMessageDirect(api::isAutoAway, Ctrl->ID())) || !this->parent->preForward(cnt, msg)) {
       return;
     }
     this->parent->send(this->getBody(cnt, msg));

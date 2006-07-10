@@ -93,6 +93,8 @@ namespace kAway2 {
     Ctrl->SetColumn(DTCFG, cfg::summary::inAutoAway, DT_CT_INT, 0, "kAway2/summary/inAutoAway");
     Ctrl->SetColumn(DTCFG, cfg::summary::minMsgCount, DT_CT_INT, 0, "kAway2/summary/minMsgCount");
 
+    Ctrl->SetColumn(DTCFG, cfg::fwd::inAutoAway, DT_CT_INT, 0, "kAway2/fwd/inAutoAway");
+
     Ctrl->SetColumn(DTCFG, cfg::tpl::enable, DT_CT_STR, "brb/afk {[msg]}", "kAway2/tpl/enable");
     Ctrl->SetColumn(DTCFG, cfg::tpl::disable, DT_CT_STR, "i'm back {[msg] }:>", "kAway2/tpl/disable");
     Ctrl->SetColumn(DTCFG, cfg::tpl::reply, DT_CT_STR, 
@@ -316,9 +318,11 @@ namespace kAway2 {
     UIActionCfgAdd(ui::cfgGroup, act::clearMru, ACTT_BUTTON, "wyczyœæ" AP_ICO "667112", 0, 0, 0, 80, 30);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
 
-    fCtrl->UIDraw();
-
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUP, "Ustawienia raportowania");
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_SEPARATOR, "Aktywne metody raportu:");
+
+    fCtrl->UIDrawActiveSum();
+
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_SEPARATOR, "Odstêp czasu pomiêdzy wysy³anymi raportami [min]:");
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_SLIDER, "Nie wysy³aj\n1 dzieñ" AP_MINIMUM "0" AP_MAXIMUM "1440" AP_STEP "60", 
       cfg::summary::interval);
@@ -327,6 +331,15 @@ namespace kAway2 {
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_SPINNER | ACTSC_INLINE, AP_MINIMUM "0" AP_MAXIMUM "1000" 
       AP_TIP "0 = bez limitu", cfg::summary::minMsgCount, 0, 0, 120);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_COMMENT, "Minimalna iloœæ wiadomoœci");
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
+
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUP, "Ustawienia przekierowania");
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_SEPARATOR, "Aktywne przekierowania:");
+
+    fCtrl->UIDrawActiveFwd();
+
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_SEPARATOR);
+    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Wysy³aj w trybie auto-away", cfg::fwd::inAutoAway);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
 
     /* Status tab */

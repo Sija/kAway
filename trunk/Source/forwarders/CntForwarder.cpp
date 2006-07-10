@@ -24,8 +24,6 @@ namespace kAway2 {
     fCtrl->setEvtOnNewMsg(boost::bind(&CntForwarder::onNewMsg, this, _1, _2));
     fCtrl->setEvtOnEnable(boost::bind(&CntForwarder::onEnable, this));
     fCtrl->setEvtOnDisable(boost::bind(&CntForwarder::onDisable, this));
-
-    this->setCfgCols();
   }
 
   void CntForwarder::send(std::string msg) {
@@ -34,7 +32,11 @@ namespace kAway2 {
     ext = SetExtParam(ext, MEX_ADDINFO, "kAway2");
     ext = SetExtParam(ext, MEX_NOSOUND, "1");
 
-    Message::send(GETINT(cfg::forward::cnt), msg, MT_MESSAGE, ext, true);
+    if (GETINT(cfg::forward::type) == toCnt) {
+      Message::send(GETINT(cfg::forward::cnt), msg, MT_MESSAGE, ext, true);
+    } else {
+      Message::send(GETSTRA(cfg::forward::uid), GETINT(cfg::forward::net), msg, MT_MESSAGE, ext, true);
+    }
   }
 
   void CntForwarder::onISetCols() {
@@ -47,6 +49,9 @@ namespace kAway2 {
       "Ostatnia otrzymana wiadomoœæ jest od <b>{lastMsgFrom}</b>.", "kAway2/tpl/forwardSummary");
 
     Ctrl->SetColumn(DTCFG, cfg::forward::cnt, DT_CT_INT, 0, "kAway2/forward/cnt");
+    Ctrl->SetColumn(DTCFG, cfg::forward::type, DT_CT_INT, toCnt, "kAway2/forward/type");
+    Ctrl->SetColumn(DTCFG, cfg::forward::uid, DT_CT_STR, "", "kAway2/forward/uid");
+    Ctrl->SetColumn(DTCFG, cfg::forward::net, DT_CT_INT, 0, "kAway2/forward/net");
 
     Forwarder::onISetCols();
   }
@@ -54,10 +59,17 @@ namespace kAway2 {
   void CntForwarder::onIPrepare() {
     IconRegister(IML_16, ico::forward, Ctrl->hDll(), IDI_FORWARD);
 
-    UIActionCfgAdd(ui::forward::cfgGroup, 0, ACTT_GROUP, "Ustawienia");
-    UIActionCfgAdd(ui::forward::cfgGroup, ui::forward::userCombo, ACTT_COMBO | ACTSCOMBO_LIST | ACTR_INIT | ACTSC_INLINE, 0, 
+    UIActionCfgAdd(ui::forward::cfgGroup, 0, ACTT_GROUP, "Wiadomoœci przesy³aj ...");
+    UIActionCfgAdd(ui::forward::cfgGroup, 0, ACTT_RADIO | ACTSRADIO_BYPOS, "... do podanego kontaktu", cfg::forward::type);
+    UIActionCfgAdd(ui::forward::cfgGroup, ui::forward::userCombo, ACTT_COMBO | ACTSCOMBO_LIST | ACTR_INIT, 0, 
       cfg::forward::cnt);
-    UIActionCfgAdd(ui::forward::cfgGroup, 0, ACTT_COMMENT, "Kontakt do którego wysy³ane bêd¹ wiadomoœci");
+
+    UIActionCfgAdd(ui::forward::cfgGroup, 0, ACTT_SEPARATOR);
+    UIActionCfgAdd(ui::forward::cfgGroup, 0, ACTT_RADIO | ACTSRADIO_BYPOS | ACTSRADIO_LAST, "... na podany ni¿ej adres", 
+      cfg::forward::type);
+    UIActionCfgAdd(ui::forward::cfgGroup, ui::forward::netsCombo, ACTT_COMBO | ACTSCOMBO_LIST | ACTR_INIT | ACTSC_INLINE, 0, 
+      cfg::forward::net);
+    UIActionCfgAdd(ui::forward::cfgGroup, 0, ACTT_EDIT | ACTSC_FULLWIDTH, 0, cfg::forward::uid);
     UIActionCfgAdd(ui::forward::cfgGroup, 0, ACTT_GROUPEND);
 
     Forwarder::onIPrepare();
@@ -78,6 +90,31 @@ namespace kAway2 {
         }
       }
       UIActionSetText(ui::forward::cfgGroup, ui::forward::userCombo, Helpers::trim(combo).c_str());
+    } else if (id == ui::forward::netsCombo && code == ACTN_CREATE) {
+      std::string combo, name;
+
+      int count = Ctrl->IMessage(IMC_PLUG_COUNT);
+      int id, type, net;
+
+      for (int i = 0; i < count; i++) {
+        if (i) {
+          id = Ctrl->IMessage(IMC_PLUG_ID, 0, 0, i);
+          type = Ctrl->IMessageDirect(IM_PLUG_TYPE, id);
+
+          if ((type & IMT_NET) == IMT_NET) {
+            net = (int) Ctrl->IMessageDirect(IM_PLUG_NET, id);
+            name = (char*) Ctrl->IMessageDirect(IM_PLUG_NETNAME, id);
+
+            if (name.length()) {
+              combo += name + AP_ICO + itos(UIIcon(IT_LOGO, net, 0, 0));
+              combo += AP_VALUE + itos(net) + "\n";
+            }
+          }
+        } else {
+          combo += "Brak" AP_ICO "#2E" AP_VALUE "0\n";
+        }
+      }
+      UIActionSetText(ui::forward::cfgGroup, ui::forward::netsCombo, Helpers::trim(combo).c_str());
     }
   }
 }
