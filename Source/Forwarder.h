@@ -25,9 +25,6 @@
 #include <stamina/timer.h>
 
 namespace kAway2 {
-  /**
-    * Forwarder
-    */
   class Forwarder {
   public:
     class Summary;
@@ -37,7 +34,7 @@ namespace kAway2 {
     Forwarder(std::string id, std::string title, int ico,
       bool isSummarizable = false, 
       bool isForwardable = false);
-    ~Forwarder();
+    virtual ~Forwarder();
 
   public:
     virtual void setCfgCols() = 0;
@@ -47,6 +44,8 @@ namespace kAway2 {
     virtual bool preSummary() = 0;
 
     inline void onISetCols() {
+      this->setCfgCols();
+
       if (this->isSummarizable) {
         Ctrl->SetColumn(DTCFG, this->cfgCols["isSummaryActive"], DT_CT_INT, 0, ("kAway2/" + this->id + "/isSummaryActive").c_str());
       }
@@ -133,6 +132,7 @@ namespace kAway2 {
       tMsgSenders msgSenders;
       Forwarder *parent;
     };
+
   /**
     * Forward
     */
@@ -152,8 +152,6 @@ namespace kAway2 {
 
     protected:
       Forwarder *parent;
-      cMessage *msg;
-      int cnt;
     };
   };
 }

@@ -51,7 +51,9 @@ namespace kAway2 {
     FwdControl();
     ~FwdControl();
 
-    void UIDraw(int colCount = 3);
+    void UIDrawActiveSum();
+    void UIDrawActiveFwd();
+
     void registerCfgGroups();
     Forwarder* getById(std::string id);
     void fwdRegister(Forwarder *f);

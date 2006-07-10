@@ -29,6 +29,7 @@ namespace kAway2 {
 
       const unsigned int cfgGroup = forward + 1;
       const unsigned int userCombo = forward + 2;
+      const unsigned int netsCombo = forward + 3;
     }
   }
 
@@ -41,6 +42,9 @@ namespace kAway2 {
       const unsigned int forward = cfg + 500;
 
       const unsigned int cnt = forward + 1;
+      const unsigned int type = forward + 4;
+      const unsigned int uid = forward + 5;
+      const unsigned int net = forward + 6;
 
       const unsigned int isSummaryActive = forward + 2;
       const unsigned int isForwardActive = forward + 3;
@@ -54,12 +58,19 @@ namespace kAway2 {
 
   class CntForwarder : public Forwarder {
   public:
+    enum enType { toCnt, toUid };
+
+  public:
     CntForwarder();
-    ~CntForwarder();
+    // ~CntForwarder();
 
   public:
     inline bool preSummary() {
-      return(GETINT(cfg::forward::cnt));
+      if (GETINT(cfg::forward::type) == toCnt) {
+        return(GETINT(cfg::forward::cnt));
+      } else {
+        return(GETINT(cfg::forward::net) && strlen(GETSTRA(cfg::forward::uid)));
+      }
     }
 
     inline bool preForward(int cnt, cMessage *msg) {

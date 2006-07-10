@@ -34,10 +34,10 @@ namespace kAway2 {
     }
   }
 
-  void FwdControl::UIDraw(int colCount) {
-    int i = 0, col = 0, fwdCount = this->summarizableCount;
+  void FwdControl::UIDrawActiveSum() {
+    int i = 0, col = 0, colCount = 3, fwdCount = this->summarizableCount;
 
-    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUP, "Aktywne raporty");
+    // UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUP, "Aktywne raporty");
     for (tForwarders::iterator it = this->forwarders.begin(); it != this->forwarders.end(); it++) {
       if (!(*it)->isSummarizable) continue;
 
@@ -47,11 +47,13 @@ namespace kAway2 {
         (*it)->title.c_str(), (*it)->cfgCols["isSummaryActive"]);
       i++; col++;
     }
-    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
+    // UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
+  }
 
-    i = col = 0; fwdCount = this->forwardableCount;
+  void FwdControl::UIDrawActiveFwd() {
+    int i = 0, col = 0, colCount = 3, fwdCount = this->forwardableCount;
 
-    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUP, "Aktywne przekierowania");
+    // UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUP, "Aktywne przekierowania");
     for (tForwarders::iterator it = this->forwarders.begin(); it != this->forwarders.end(); it++) {
       if (!(*it)->isForwardable) continue;
 
@@ -61,7 +63,7 @@ namespace kAway2 {
         (*it)->title.c_str(), (*it)->cfgCols["isForwardActive"]);
       i++; col++;
     }
-    UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
+    // UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
   }
 
   void FwdControl::fwdRegister(Forwarder *f) {

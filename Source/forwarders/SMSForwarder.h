@@ -40,6 +40,7 @@ namespace kAway2 {
 
       const unsigned int gate = sms + 2;
       const unsigned int number = sms + 3;
+      const unsigned int sig = sms + 6;
 
       const unsigned int isSummaryActive = sms + 4;
       const unsigned int isForwardActive = sms + 5;
@@ -54,7 +55,7 @@ namespace kAway2 {
   class SMSForwarder : public Forwarder {
   public:
     SMSForwarder();
-    ~SMSForwarder();
+    // ~SMSForwarder();
 
   public:
     inline bool preSummary() {
