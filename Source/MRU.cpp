@@ -6,31 +6,21 @@
  *
  *  @filesource
  *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://kplugins.net/kaway2/ kAway2 plugin SVN Repo
+ *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
  *  @version      $Revision$
  *  @modifiedby   $LastChangedBy$
  *  @lastmodified $Date$
  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
  */
 
-#pragma once
+#include "stdafx.h"
 #include "MRU.h"
-
-MRU::MRU(std::string name, int count, bool dtbCount) {
-  this->dtbCount = dtbCount;
-  this->count = count;
-  this->name = name;
-}
-
-MRU::~MRU() {
-  //
-}
 
 MRU::tMRUlist MRU::get(bool rev, const char * buff, int buffSize) {
   tMRUlist list;
   sMRU mruList;
 
-  mruList.name = this->name.c_str();
+  mruList.name = this->name.a_str();
   mruList.count = this->getCount();
   mruList.flags = MRU_SET_LOADFIRST;
 
@@ -49,13 +39,13 @@ MRU::tMRUlist MRU::get(bool rev, const char * buff, int buffSize) {
   for (int i = 0; i < mru.MRU->count; i++) {
     if (!mru.MRU->values[i]) break;
     (rev) ?
-      list.push_back((char*)mru.MRU->values[i]) :
-      list.push_front((char*)mru.MRU->values[i]);
+      list.push_back((String) mru.MRU->values[i]) :
+      list.push_front((String) mru.MRU->values[i]);
   }
-  return(list);
+  return list;
 }
 
-void MRU::append(std::string current) {
+void MRU::append(const StringRef& current) {
   tMRUlist list;
   list.push_back(current);
   this->append(list);
@@ -66,9 +56,9 @@ void MRU::append(tMRUlist list) {
   for (tMRUlist::iterator it = list.begin(); it != list.end(); it++) {
     sMRU mru;
 
-    mru.name = this->name.c_str();
+    mru.name = this->name.a_str();
     mru.flags = MRU_SET_LOADFIRST | MRU_GET_USETEMP;
-    mru.current = (*it).c_str();
+    mru.current = (*it).a_str();
     mru.count = count;
 
     Ctrl->IMessage(&sIMessage_MRU(IMC_MRU_SET, &mru));

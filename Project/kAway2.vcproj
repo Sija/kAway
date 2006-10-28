@@ -1,120 +1,177 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.10"
+	Version="8,00"
 	Name="kAway2"
-	ProjectGUID="{4EDCA059-6CF8-4752-A73D-6D4ECA2D8EC7}"
+	ProjectGUID="{0264B4BA-8091-4240-8D30-D8334572C61C}"
 	RootNamespace="kAway2"
-	Keyword="Win32Proj">
+	Keyword="Win32Proj"
+	>
 	<Platforms>
 		<Platform
-			Name="Win32"/>
+			Name="Win32"
+		/>
 	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="Debug"
-			IntermediateDirectory="Debug"
+			OutputDirectory="$(SolutionDir)..\Builds\$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)..\Builds\$(ConfigurationName)"
 			ConfigurationType="2"
-			CharacterSet="2">
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;KAWAY2_EXPORTS"
-				MinimalRebuild="TRUE"
+				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				UsePrecompiledHeader="0"
+				UsePrecompiledHeader="2"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="TRUE"
-				DebugInformationFormat="4"/>
+				Detect64BitPortabilityProblems="true"
+				DebugInformationFormat="4"
+				ShowIncludes="true"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/FORCE"
-				OutputFile="$(OutDir)/$(ProjectName).debug.dll"
+				AdditionalDependencies="stamina_d.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="$(ProjectDir)lib"
-				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
+				AdditionalLibraryDirectories="$(ProjectDir)Lib"
+				GenerateDebugInformation="true"
+				GenerateMapFile="true"
+				MapExports="true"
 				SubSystem="2"
-				ImportLibrary="$(OutDir)/$(ProjectName).lib"
-				TargetMachine="1"/>
+				TargetMachine="1"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCAppVerifierTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCWebDeploymentTool"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="Release"
-			IntermediateDirectory="Release"
+			OutputDirectory="$(SolutionDir)..\Builds\$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)..\Builds\$(ConfigurationName)"
 			ConfigurationType="2"
-			CharacterSet="2">
+			CharacterSet="2"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;KAWAY2_EXPORTS"
-				MinimalRebuild="TRUE"
 				RuntimeLibrary="2"
-				UsePrecompiledHeader="0"
+				UsePrecompiledHeader="2"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="TRUE"
-				DebugInformationFormat="3"/>
+				Detect64BitPortabilityProblems="true"
+				DebugInformationFormat="3"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/FORCE"
-				OutputFile="$(OutDir)/$(ProjectName).dll"
+				AdditionalDependencies="stamina.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="$(ProjectDir)lib"
-				GenerateDebugInformation="TRUE"
-				GenerateMapFile="TRUE"
-				MapFileName="$(OutDir)/$(ProjectName).map"
-				MapExports="TRUE"
-				MapLines="TRUE"
+				AdditionalLibraryDirectories="$(ProjectDir)Lib"
+				IgnoreDefaultLibraryNames=""
+				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary="$(OutDir)/$(ProjectName).lib"
-				TargetMachine="1"/>
+				TargetMachine="1"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCAppVerifierTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCWebDeploymentTool"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 	</Configurations>
 	<References>
@@ -122,154 +179,250 @@
 	<Files>
 		<Filter
 			Name="Source Files"
-			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
-			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
+			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
+			>
 			<File
-				RelativePath="..\Source\AwayWnd.cpp">
+				RelativePath="..\Source\AwayWnd.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\Source\forwarders\CntForwarder.cpp">
+				RelativePath="..\Source\forwarders\CntForwarder.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\Source\Control.cpp">
+				RelativePath="..\Source\Control.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\Source\editFix.h">
+				RelativePath="..\Source\EditFix.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\Source\Format.cpp">
+				RelativePath="..\Source\Format.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\Source\Forwarder.cpp">
+				RelativePath="..\Source\Forwarder.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\Source\FwdControl.cpp">
+				RelativePath="..\Source\FwdControl.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\Source\Helpers.cpp">
+				RelativePath="..\Source\Helpers.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\Source\main.cpp">
+				RelativePath="..\Source\kAway2.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\Source\Message.cpp">
+				RelativePath="..\Source\Message.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\Source\MRU.cpp">
+				RelativePath="..\Source\MRU.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\Source\NetList.cpp">
+				RelativePath="..\Source\NetList.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\Source\forwarders\SMSForwarder.cpp">
+				RelativePath="..\Source\forwarders\SMSForwarder.cpp"
+				>
 			</File>
 			<File
-				RelativePath="..\Source\Status.cpp">
+				RelativePath="..\Source\Status.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Source\stdafx.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
+			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
+			>
 			<File
-				RelativePath="..\Source\AwayWnd.h">
+				RelativePath="..\Source\AwayWnd.h"
+				>
 			</File>
 			<File
-				RelativePath="..\Source\forwarders\CntForwarder.h">
+				RelativePath="..\Source\forwarders\CntForwarder.h"
+				>
 			</File>
 			<File
-				RelativePath="..\Source\Control.h">
+				RelativePath="..\Source\Control.h"
+				>
 			</File>
 			<File
-				RelativePath="..\Source\Format.h">
+				RelativePath="..\Source\EditFix.h"
+				>
 			</File>
 			<File
-				RelativePath="..\Source\Forwarder.h">
+				RelativePath="..\Source\Format.h"
+				>
 			</File>
 			<File
-				RelativePath="..\Source\FwdControl.h">
+				RelativePath="..\Source\FormattedStatus.h"
+				>
 			</File>
 			<File
-				RelativePath="..\Source\Helpers.h">
+				RelativePath="..\Source\Forwarder.h"
+				>
 			</File>
 			<File
-				RelativePath="..\Source\main.h">
+				RelativePath="..\Source\FwdControl.h"
+				>
 			</File>
 			<File
-				RelativePath="..\Source\Message.h">
+				RelativePath="..\Source\globals.h"
+				>
 			</File>
 			<File
-				RelativePath="..\Source\MRU.h">
+				RelativePath="..\Source\Helpers.h"
+				>
 			</File>
 			<File
-				RelativePath="..\Source\NetList.h">
+				RelativePath="..\Source\kAway2.h"
+				>
 			</File>
 			<File
-				RelativePath="..\Source\plugsNET.h">
+				RelativePath="..\Source\Message.h"
+				>
 			</File>
 			<File
-				RelativePath="resource.h">
+				RelativePath="..\Source\MRU.h"
+				>
 			</File>
 			<File
-				RelativePath="..\Source\forwarders\SMSForwarder.h">
+				RelativePath="..\Source\NetList.h"
+				>
 			</File>
 			<File
-				RelativePath="..\Source\Status.h">
+				RelativePath="..\Source\plugsNET.h"
+				>
 			</File>
 			<File
-				RelativePath="..\Source\stdafx.h">
+				RelativePath="..\Source\forwarders\SMSForwarder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Source\Status.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Source\stdafx.h"
+				>
 			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
-			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
-			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
+			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
+			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
+			>
 			<File
-				RelativePath="..\Res\accept.ico">
+				RelativePath="..\Res\accept.ico"
+				>
 			</File>
 			<File
-				RelativePath="..\Res\cancel.ico">
+				RelativePath="..\Res\cancel.ico"
+				>
 			</File>
 			<File
-				RelativePath="..\Res\disable.ico">
+				RelativePath="..\Res\disable.ico"
+				>
 			</File>
 			<File
-				RelativePath="..\Res\enable.ico">
+				RelativePath="..\Res\enable.ico"
+				>
 			</File>
 			<File
-				RelativePath="..\Res\forward.ico">
+				RelativePath="..\Res\forward.ico"
+				>
 			</File>
 			<File
-				RelativePath="..\Res\help.ico">
+				RelativePath="..\Res\help.ico"
+				>
 			</File>
 			<File
-				RelativePath="..\Res\ignore.ico">
+				RelativePath="..\Res\ignore.ico"
+				>
 			</File>
 			<File
-				RelativePath="..\Res\lightbulb.ico">
+				RelativePath="..\Res\logo.ico"
+				>
 			</File>
 			<File
-				RelativePath="..\Res\logo.ico">
+				RelativePath="..\Res\msg.ico"
+				>
 			</File>
 			<File
-				RelativePath="..\Res\msg.ico">
+				RelativePath="..\Res\reply.ico"
+				>
 			</File>
 			<File
-				RelativePath="..\Res\reply.ico">
+				RelativePath=".\resource.rc"
+				>
 			</File>
 			<File
-				RelativePath="resource.rc">
+				RelativePath="..\Res\status.ico"
+				>
 			</File>
 			<File
-				RelativePath="..\Res\status.ico">
+				RelativePath="..\Res\trashbin.ico"
+				>
 			</File>
 			<File
-				RelativePath="..\Res\trashbin.ico">
-			</File>
-			<File
-				RelativePath="..\Res\unignore.ico">
+				RelativePath="..\Res\unignore.ico"
+				>
 			</File>
 		</Filter>
+		<File
+			RelativePath="..\license.txt"
+			>
+		</File>
+		<File
+			RelativePath="..\readme.txt"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

@@ -6,7 +6,7 @@
  *
  *  @filesource
  *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://kplugins.net/kaway2/ kAway2 plugin SVN Repo
+ *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
  *  @version      $Revision$
  *  @modifiedby   $LastChangedBy$
  *  @lastmodified $Date$
@@ -15,14 +15,17 @@
 
 #pragma once
 
-#include "stdafx.h"
-#include "main.h"
+#ifndef __CONTROL_H__
+#define __CONTROL_H__
+
+#include "kAway2.h"
+#include "globals.h"
 
 #include "Helpers.h"
 #include "MRU.h"
 #include "NetList.h"
 #include "Format.h"
-#include "Status.h"
+#include "FormattedStatus.h"
 #include "Message.h"
 #include "FwdControl.h"
 
@@ -48,16 +51,15 @@ namespace kAway2 {
         ignored(_ignored), historySess(_historySess), lastMsgTime(_lastMsgTime) { }
     };
 
-    typedef std::map<int, sCnt> tCnts;
+    typedef std::map<tCntId, sCnt> tCnts;
 
   public:
     Control();
-    ~Control();
 
-    bool enable(std::string msg = "", int status = 0, bool silent = false);
-    bool disable(std::string msg = "", bool silent = false);
+    bool enable(const StringRef& msg = "", int status = 0, bool silent = false);
+    bool disable(const StringRef& msg = "", bool silent = false);
 
-    void sendMsgTpl(int cnt, enAutoMsgTpl tpl, std::string msgVal = "");
+    void sendMsgTpl(int cnt, enAutoMsgTpl tpl, const StringRef& msgVal = "");
     void showKNotify(const char * text, int ico = ico::logoSmall);
 
     inline void fromWnd(bool state) {
@@ -65,47 +67,43 @@ namespace kAway2 {
     }
 
     inline bool isMuteSwitched() {
-      return(this->muteStateSwitched);
+      return this->muteStateSwitched;
     }
 
     inline bool isEnabled() {
-      return(this->isOn);
+      return this->isOn;
     }
 
     inline bool isAwayMsgSet() {
-      return(this->awayMsg.length() ? true : false);
+      return this->awayMsg.length() ? true : false;
     }
 
     inline bool isAutoAway() {
-      return(this->autoAway);
+      return this->autoAway;
     }
 
     inline void setAutoAway(bool state) {
       this->autoAway = state;
     }
 
-    inline void setStatusCtrl(Status *handle) {
-      this->sCtrl = handle;
-    }
-
     inline int getPluginsGroup() {
-      return(this->pluginsGroup);
+      return this->pluginsGroup;
     }
 
-    const std::string& getAwayMsg() const {
-      return(this->awayMsg);
+    const StringRef& getAwayMsg() const {
+      return this->awayMsg;
     }
 
     inline Stamina::Date64 getAwayTime() {
-      return(this->awayTime);
+      return this->awayTime;
     }
 
     inline tCnts getCnts() {
-      return(this->cntProps);
+      return this->cntProps;
     }
 
-    inline sCnt *cntProp(int id) {
-      return(&this->cntProps[Ctrl->DTgetID(DTCNT, id)]);
+    inline sCnt* cntProp(int id) {
+      return &this->cntProps[Ctrl->DTgetID(DTCNT, id)];
     }
 
     inline void addMsg2CntQueue(int cnt, cMessage *msg) {
@@ -113,7 +111,7 @@ namespace kAway2 {
     }
 
     inline bool isCntSaved(int cnt) {
-      return(this->cntProps.find(cnt) != this->cntProps.end());
+      return this->cntProps.find(cnt) != this->cntProps.end();
     }
 
   protected:
@@ -124,24 +122,11 @@ namespace kAway2 {
     int pluginsGroup;
 
     tCnts cntProps;
-    std::string awayMsg;
+    String awayMsg;
     Stamina::Date64 awayTime;
-    Status *sCtrl;
 
     void switchBtns(bool state);
   };
-
-  namespace lCtrl {
-    NetList *status = NULL;
-
-    NetList *reply = NULL;
-    NetList *sms = NULL;
-    NetList *email = NULL;
-    NetList *forward = NULL;
-  }
-
-  Control *pCtrl = NULL;
-  FwdControl *fCtrl = NULL;
-  Status *sCtrl = NULL;
-  MRU *MRUlist = NULL;
 }
+
+#endif // __CONTROL_H__

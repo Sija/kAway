@@ -6,7 +6,7 @@
  *
  *  @filesource
  *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://kplugins.net/kaway2/ kAway2 plugin SVN Repo
+ *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
  *  @version      $Revision$
  *  @modifiedby   $LastChangedBy$
  *  @lastmodified $Date$
@@ -15,12 +15,16 @@
 
 #pragma once
 
-#include "../stdafx.h"
-#include "../main.h"
+#ifndef __CNTFORWARDER_H__
+#define __CNTFORWARDER_H__
+
+#include "../kAway2.h"
+#include "../globals.h"
 
 #include "../Helpers.h"
-#include "../Control.h"
-#include "../Format.h"
+#include "../FwdControl.h"
+#include "../Forwarder.h"
+#include "../Message.h"
 
 namespace kAway2 {
   namespace ui {
@@ -58,7 +62,10 @@ namespace kAway2 {
 
   class CntForwarder : public Forwarder {
   public:
-    enum enType { toCnt, toUid };
+    enum enType { 
+      toCnt,
+      toUid
+    };
 
   public:
     CntForwarder();
@@ -67,14 +74,14 @@ namespace kAway2 {
   public:
     inline bool preSummary() {
       if (GETINT(cfg::forward::type) == toCnt) {
-        return(GETINT(cfg::forward::cnt));
+        return GETINT(cfg::forward::cnt);
       } else {
-        return(GETINT(cfg::forward::net) && strlen(GETSTRA(cfg::forward::uid)));
+        return GETINT(cfg::forward::net) && strlen(GETSTRA(cfg::forward::uid));
       }
     }
 
     inline bool preForward(int cnt, cMessage *msg) {
-      return(this->preSummary());
+      return this->preSummary();
     }
 
     inline void setCfgCols() {
@@ -86,9 +93,12 @@ namespace kAway2 {
       this->cfgCols["isForwardActive"] = cfg::forward::isForwardActive;
     }
 
-    void send(std::string msg);
+    void send(const StringRef& msg);
     void onISetCols();
     void onIPrepare();
     void onAction(int id, int code);
+    void onNewMsg(int cnt, cMessage *msg);
   };
 }
+
+#endif // __CNTFORWARDER_H__

@@ -6,7 +6,7 @@
  *
  *  @filesource
  *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://kplugins.net/kaway2/ kAway2 plugin SVN Repo
+ *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
  *  @version      $Revision$
  *  @modifiedby   $LastChangedBy$
  *  @lastmodified $Date$
@@ -15,18 +15,20 @@
 
 #pragma once
 
-#include "stdafx.h"
+#ifndef __FWDCONTROL_H__
+#define __FWDCONTROL_H__
 
 #include "Helpers.h"
 #include "Forwarder.h"
 
 #include <boost/signal.hpp>
 #include <boost/function.hpp>
+#include <boost/bind.hpp>
 
 namespace kAway2 {
   class FwdControl {
   public:
-    typedef std::deque<Forwarder *> tForwarders;
+    typedef std::deque<Forwarder*> tForwarders;
 
     typedef boost::function<void (unsigned)> fUnsigned;
     typedef boost::function<void ()> fVoid;
@@ -55,7 +57,7 @@ namespace kAway2 {
     void UIDrawActiveFwd();
 
     void registerCfgGroups();
-    Forwarder* getById(std::string id);
+    Forwarder* getById(const StringRef& id);
     void fwdRegister(Forwarder *f);
 
   public:
@@ -74,99 +76,101 @@ namespace kAway2 {
 
   public:
 		const sOnIStart& getEvtOnIStart() const {
-			return(this->onIStart);
+			return this->onIStart;
 		}
 
     inline bool setEvtOnIStart(fVoid f) {
       if (!f.empty()) {
 		    this->onIStart.connect(f);
-		    return(true);
+		    return true;
       }
-			return(false);
+			return false;
     }
 
 		const sOnIEnd& getEvtOnIEnd() const {
-			return(this->onIEnd);
+			return this->onIEnd;
 		}
 
     inline bool setEvtOnIEnd(fVoid f) {
       if (!f.empty()) {
 		    this->onIEnd.connect(f);
-		    return(true);
+		    return true;
       }
-			return(false);
+			return false;
     }
 
 		const sOnISetCols& getEvtOnISetCols() const {
-			return(this->onISetCols);
+			return this->onISetCols;
 		}
 
     inline bool setEvtOnISetCols(fVoid f) {
       if (!f.empty()) {
 		    this->onISetCols.connect(f);
-		    return(true);
+		    return true;
       }
-			return(false);
+			return false;
     }
 
 		const sOnIPrepare& getEvtOnIPrepare() const {
-			return(this->onIPrepare);
+			return this->onIPrepare;
 		}
 
     inline bool setEvtOnIPrepare(fVoid f) {
       if (!f.empty()) {
 		    this->onIPrepare.connect(f);
-		    return(true);
+		    return true;
       }
-			return(false);
+			return false;
     }
 
 		const sOnAction& getEvtOnAction() const {
-			return(this->onAction);
+			return this->onAction;
 		}
 
     inline bool setEvtOnAction(fAction f) {
       if (!f.empty()) {
 		    this->onAction.connect(f);
-		    return(true);
+		    return true;
       }
-			return(false);
+			return false;
     }
 
 		const sOnEnable& getEvtOnEnable() const {
-			return(this->onEnable);
+			return this->onEnable;
 		}
 
     inline bool setEvtOnEnable(fVoid f) {
       if (!f.empty()) {
 		    this->onEnable.connect(f);
-		    return(true);
+		    return true;
       }
-			return(false);
+			return false;
     }
 
 		const sOnDisable& getEvtOnDisable() const {
-			return(this->onDisable);
+			return this->onDisable;
 		}
 
     inline bool setEvtOnDisable(fVoid f) {
       if (!f.empty()) {
 		    this->onDisable.connect(f);
-		    return(true);
+		    return true;
       }
-			return(false);
+			return false;
     }
 
 		const sOnNewMsg& getEvtOnNewMsg() const {
-			return(this->onNewMsg);
+			return this->onNewMsg;
 		}
 
     inline bool setEvtOnNewMsg(fNewMsg f) {
       if (!f.empty()) {
 		    this->onNewMsg.connect(f);
-		    return(true);
+		    return true;
       }
-			return(false);
+			return false;
     }
   };
 }
+
+#endif // __FWDCONTROL_H__

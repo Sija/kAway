@@ -6,14 +6,14 @@
  *
  *  @filesource
  *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://kplugins.net/kaway2/ kAway2 plugin SVN Repo
+ *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
  *  @version      $Revision$
  *  @modifiedby   $LastChangedBy$
  *  @lastmodified $Date$
  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
  */
 
-#pragma once
+#include "stdafx.h"
 #include "CntForwarder.h"
 
 namespace kAway2 {
@@ -26,8 +26,8 @@ namespace kAway2 {
     fCtrl->setEvtOnDisable(boost::bind(&CntForwarder::onDisable, this));
   }
 
-  void CntForwarder::send(std::string msg) {
-    std::string ext;
+  void CntForwarder::send(const StringRef& msg) {
+    String ext;
     ext = SetExtParam(ext, cfg::extParamName, itos(cfg::tpl::forward));
     ext = SetExtParam(ext, MEX_ADDINFO, "kAway2");
     ext = SetExtParam(ext, MEX_NOSOUND, "1");
@@ -37,6 +37,11 @@ namespace kAway2 {
     } else {
       Message::send(GETSTRA(cfg::forward::uid), GETINT(cfg::forward::net), msg, MT_MESSAGE, ext, true);
     }
+  }
+
+  void CntForwarder::onNewMsg(int cnt, cMessage *msg) {
+    // wykrywanie zapêtlania
+    Forwarder::onNewMsg(cnt, msg);
   }
 
   void CntForwarder::onISetCols() {
@@ -78,7 +83,7 @@ namespace kAway2 {
   void CntForwarder::onAction(int id, int code) {
     if (id == ui::forward::userCombo && code == ACTN_CREATE) {
       int count = Ctrl->IMessage(IMC_CNT_COUNT);
-      std::string combo;
+      String combo;
 
       for (int i = 0; i < count; i++) {
         if (i) {
@@ -89,9 +94,9 @@ namespace kAway2 {
           combo += "Wy³¹czone" AP_ICO "#2E" AP_VALUE "0\n";
         }
       }
-      UIActionSetText(ui::forward::cfgGroup, ui::forward::userCombo, Helpers::trim(combo).c_str());
+      UIActionSetText(ui::forward::cfgGroup, ui::forward::userCombo, Helpers::trim(combo).a_str());
     } else if (id == ui::forward::netsCombo && code == ACTN_CREATE) {
-      std::string combo, name;
+      String combo, name;
 
       int count = Ctrl->IMessage(IMC_PLUG_COUNT);
       int id, type, net;
@@ -114,7 +119,7 @@ namespace kAway2 {
           combo += "Brak" AP_ICO "#2E" AP_VALUE "0\n";
         }
       }
-      UIActionSetText(ui::forward::cfgGroup, ui::forward::netsCombo, Helpers::trim(combo).c_str());
+      UIActionSetText(ui::forward::cfgGroup, ui::forward::netsCombo, Helpers::trim(combo).a_str());
     }
   }
 }

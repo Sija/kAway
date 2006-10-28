@@ -6,7 +6,7 @@
  *
  *  @filesource
  *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://kplugins.net/kaway2/ kAway2 plugin SVN Repo
+ *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
  *  @version      $Revision$
  *  @modifiedby   $LastChangedBy$
  *  @lastmodified $Date$
@@ -15,34 +15,46 @@
 
 #pragma once
 
-#include "stdafx.h"
+#ifndef __MESSAGE_H__
+#define __MESSAGE_H__
+
 #include <konnekt/sms.h>
 #include "Helpers.h"
 
-class Message {
-  public:
-    static cMessage prepare(const std::string& to, const std::string& from, int net, 
-      const std::string& body, int type, const std::string& ext, int flag);
-    static void reply(cMessage *msg, std::string body, std::string ext = "", 
-      bool useHtml = false);
+class Message : public iObject {
+public:
+  /*
+   * Class version
+   */
+	STAMINA_OBJECT_CLASS_VERSION(Message, iObject, Version(0,1,0,0));
 
-    static void send(cMessage *msg);
+  static cMessage prepare(const StringRef& to, const StringRef& from, int net, 
+    const StringRef& body, int type, const StringRef& ext, int flag);
+  static void reply(cMessage *msg, const StringRef& body, const StringRef& ext = "", 
+    bool html = false);
 
-    inline static void send(int cnt, std::string body, int type = MT_MESSAGE, 
-      std::string ext = "", bool useHtml = false, bool insInMsgWnd = false) {
-      Message::send(cnt, "", body, type, ext, useHtml, insInMsgWnd);
-    }
-    static void send(int cnt, std::string from, std::string body, int type = MT_MESSAGE, 
-      std::string ext = "", bool useHtml = false, bool insInMsgWnd = false);
+  static void send(cMessage *msg);
 
-    inline static void send(std::string to, int net, std::string body, int type = MT_MESSAGE, 
-      std::string ext = "", bool useHtml = false) {
-      Message::send(to, "", net, body, type, ext, useHtml);
-    }
-    static void send(std::string to, std::string from, int net, std::string body, 
-      int type = MT_MESSAGE, std::string ext = "", bool useHtml = false);
+  inline static void send(tCntId cnt, const StringRef& body, int type = MT_MESSAGE, 
+    const StringRef& ext = "", bool html = false, bool inject = false) 
+  {
+    Message::send(cnt, "", body, type, ext, html, inject);
+  }
+  static void send(int cnt, const StringRef& from, const StringRef& body, int type = MT_MESSAGE, 
+    const StringRef& ext = "", bool html = false, bool inject = false);
 
-    static void sms(std::string to, std::string body, std::string gate, std::string from = "", std::string ext = "");
-    static void insInMsgWnd(cMessage *msg, int cntID, const char * display = 0, 
-      bool scroll = true);
+  inline static void send(const StringRef& to, int net, const StringRef& body, int type = MT_MESSAGE, 
+    const StringRef& ext = "", bool html = false) 
+  {
+    Message::send(to, "", net, body, type, ext, html);
+  }
+  static void send(const StringRef& to, const StringRef& from, int net, const StringRef& body, 
+    int type = MT_MESSAGE, const StringRef& ext = "", bool html = false);
+
+  static void sms(const StringRef& to, const StringRef& body, const StringRef& gate, 
+    const StringRef& from = "", StringRef ext = "");
+  static void inject(cMessage *msg, int cntID, const char * display = 0, 
+    bool scroll = true);
 };
+
+#endif // __MESSAGE_H__

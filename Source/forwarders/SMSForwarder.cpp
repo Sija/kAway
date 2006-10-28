@@ -6,14 +6,14 @@
  *
  *  @filesource
  *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://kplugins.net/kaway2/ kAway2 plugin SVN Repo
+ *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
  *  @version      $Revision$
  *  @modifiedby   $LastChangedBy$
  *  @lastmodified $Date$
  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
  */
 
-#pragma once
+#include "stdafx.h"
 #include "SMSForwarder.h"
 
 namespace kAway2 {
@@ -26,7 +26,7 @@ namespace kAway2 {
     fCtrl->setEvtOnDisable(boost::bind(&SMSForwarder::onDisable, this));
   }
 
-  void SMSForwarder::send(std::string msg) {
+  void SMSForwarder::send(const StringRef& msg) {
     Message::sms(itos(GETINT(cfg::sms::number)), msg, GETSTRA(cfg::sms::gate), GETSTRA(cfg::sms::sig));
   }
 
