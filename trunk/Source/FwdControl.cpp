@@ -6,14 +6,14 @@
  *
  *  @filesource
  *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://kplugins.net/kaway2/ kAway2 plugin SVN Repo
+ *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
  *  @version      $Revision$
  *  @modifiedby   $LastChangedBy$
  *  @lastmodified $Date$
  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
  */
 
-#pragma once
+#include "stdafx.h"
 #include "FwdControl.h"
 
 namespace kAway2 {
@@ -30,7 +30,7 @@ namespace kAway2 {
 
   void FwdControl::registerCfgGroups() {
     for (tForwarders::iterator it = this->forwarders.begin(); it != this->forwarders.end(); it++) {
-      UIGroupAdd(ui::cfgGroup, (*it)->cfgCols["cfgGroup"], ACTR_SAVE, (*it)->title.c_str(), (*it)->ico);
+      UIGroupAdd(ui::cfgGroup, (*it)->cfgCols["cfgGroup"], ACTR_SAVE, (*it)->title.a_str(), (*it)->ico);
     }
   }
 
@@ -42,9 +42,9 @@ namespace kAway2 {
       if (!(*it)->isSummarizable) continue;
 
       col %= colCount;
-      UIActionCfgAdd(ui::cfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16((*it)->ico).c_str(), 0, (col > 0) ? 10 : 0);
+      UIActionCfgAdd(ui::cfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16((*it)->ico).a_str(), 0, (col > 0) ? 10 : 0);
       UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK | ((col != (colCount - 1) && i != (fwdCount - 1)) ? ACTSC_INLINE : 0), 
-        (*it)->title.c_str(), (*it)->cfgCols["isSummaryActive"]);
+        (*it)->title.a_str(), (*it)->cfgCols["isSummaryActive"]);
       i++; col++;
     }
     // UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
@@ -58,9 +58,9 @@ namespace kAway2 {
       if (!(*it)->isForwardable) continue;
 
       col %= colCount;
-      UIActionCfgAdd(ui::cfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16((*it)->ico).c_str(), 0, (col > 0) ? 10 : 0);
+      UIActionCfgAdd(ui::cfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16((*it)->ico).a_str(), 0, (col > 0) ? 10 : 0);
       UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK | ((col != (colCount - 1) && i != (fwdCount - 1)) ? ACTSC_INLINE : 0), 
-        (*it)->title.c_str(), (*it)->cfgCols["isForwardActive"]);
+        (*it)->title.a_str(), (*it)->cfgCols["isForwardActive"]);
       i++; col++;
     }
     // UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
@@ -77,9 +77,9 @@ namespace kAway2 {
     }
   }
 
-  Forwarder* FwdControl::getById(std::string id) {
+  Forwarder* FwdControl::getById(const StringRef& id) {
     for (tForwarders::iterator it = this->forwarders.begin(); it != this->forwarders.end(); it++) {
-      if ((*it)->id == id) return(*it);
+      if ((*it)->id == id) return *it;
     }
   }
 }

@@ -6,7 +6,7 @@
  *
  *  @filesource
  *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://kplugins.net/kaway2/ kAway2 plugin SVN Repo
+ *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
  *  @version      $Revision$
  *  @modifiedby   $LastChangedBy$
  *  @lastmodified $Date$
@@ -15,67 +15,84 @@
 
 #pragma once
 
-#include "stdafx.h"
+#ifndef __NETLIST_H__
+#define __NETLIST_H__
+
 #include "Helpers.h"
 
-class NetList {
-  public:
-    struct sItemNet {
-      unsigned int id;
-      unsigned int net;
-      std::string name;
-      bool use;
+class NetList : public iObject {
+public:
+  static const struct IM {
+    static const unsigned int key = IM_USER + (668 * 1000) + 50;
+    static const unsigned int hidePresence = key + 1;
+  };
 
-      sItemNet(int _id = 0, int _net = 0, std::string _name = "", bool _use = true) :
-        id(_id), net(_net), name(_name), use(_use) { }
-    };
+public:
+  /*
+   * Class version
+   */
+	STAMINA_OBJECT_CLASS_VERSION(NetList, iObject, Version(0,1,0,0));
 
-    enum enCfgDraw {
-      checkboxes,
-      radiosEmpty,
-      radios
-    };
+  struct sNet {
+    unsigned int id;
+    unsigned int net;
+    String name;
+    bool use;
 
-typedef std::list<sItemNet> tItemNets;
-typedef std::deque<int> tIgnoredNets;
+    sNet(int _id, int _net, String _name, bool _use = true) :
+      id(_id), net(_net), name(_name), use(_use) { }
+    sNet() { }
+  };
 
-  public:
-    NetList(int cfgCol, int cfgGroup, int dynActGroup, 
-      int actCreate, int actDestroy, enCfgDraw uiDraw = checkboxes);
-    ~NetList();
+  enum enSelectionType {
+    typeCheckboxes,
+    typeRadiosEmpty,
+    typeRadios
+  };
 
-    void loadNets();
-    void saveNets();
+  typedef std::list<sNet> tNets;
+  typedef std::deque<int> tIgnoredNets;
 
-    void actionHandle(int id, int code);
+public:
+  NetList(int _cfgCol, int _cfgGroup, int _dynActGroup, int _actCreate, int _actDestroy, enSelectionType _selection = typeCheckboxes) :
+    cfgCol(_cfgCol), cfgGroup(_cfgGroup), dynActGroup(_dynActGroup), actCreate(_actCreate), actDestroy(_actDestroy), defaultUse(true), 
+    netsDrawn(false), selection(_selection) { }
 
-    void UIDraw(int colCount = 3, char *groupTitle = NULL);
-    void UIGetState();
-    void UISetState();
+  void loadNets();
+  void saveNets();
 
-    std::string getNetName(int net);
-    bool setNetState(int net, bool use);
-    bool getNetState(int net);
+  void actionHandle(int id, int code);
 
-    inline tItemNets getNets() {
-      return(this->nets);
-    }
-    bool isConnected(int net);
+  void UIDraw(int colCount = 3, char* groupTitle = NULL);
+  void UIGetState();
+  void UISetState();
 
-    bool isIgnored(int net);
-    void addIgnored(int net);
-    void removeIgnored(int net);
+  String getNetName(int net);
+  bool setNetState(int net, bool use);
+  bool getNetState(int net);
 
-  protected:
-    unsigned int cfgCol;
-    unsigned int cfgGroup;
-    unsigned int dynActGroup;
-    unsigned int actCreate;
-    unsigned int actDestroy;
+  inline tNets getNets() {
+    return this->nets;
+  }
+  bool isConnected(int net);
 
-    tIgnoredNets ignoredNets;
-    tItemNets nets;
+  bool isIgnored(int net);
+  void addIgnored(int net);
+  void removeIgnored(int net);
 
-    enCfgDraw uiDraw;
-    bool netsDrawn;
+protected:
+  unsigned int cfgCol;
+  unsigned int cfgGroup;
+  unsigned int dynActGroup;
+  unsigned int actCreate;
+  unsigned int actDestroy;
+
+  tIgnoredNets ignoredNets;
+  tNets nets;
+
+  enSelectionType selection;
+  bool netsDrawn;
+  bool defaultUse;
 };
+
+#endif // __NETLIST_H__

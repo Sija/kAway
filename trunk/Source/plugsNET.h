@@ -2,7 +2,7 @@
  * Konnekt SDK (Software Development Kit)
  *
  * Nag³ówek: wartoœci NET wszystkich wtyczek
- * Modyfikowany: 2006-01-06
+ * Modyfikowany: $Date$
  * Zgodny z wersj¹: 0.6.x.x
  * Info: namespace zawieraj¹cy wartoœci NET wszystkich wtyczek
  *
@@ -65,14 +65,18 @@ namespace plugsNET {
   const int kjabber9 = 179;
   const int kjabber10 = 180;
   const int kmigacz = 229;
+  const int statusek = 256;
   const int kstatuslog = 267;
   const int klawa = 301;
   const int kdodatki = 302;
   const int tabletka = 306;
+  const int klock = 307;
+  const int ksend64 = 310;
   const int krss = 324;
   const int olewk = 336;
   const int kterminarz = 368;
   const int kpilot2 = 444;
+  const int tlok = 500;
   const int impgg = 551;
   const int kaway = 666; ///< stara wersja
   const int kaway2 = 667;
@@ -87,6 +91,7 @@ namespace plugsNET {
   const int kallstatus = 781;
   const int kik = 888;
   const int linker = 1001;
+  const int kaqq = 1313;
   const int ggimage = 1331;
   const int knotes = 1337;
   const int kpaleta = 1338;

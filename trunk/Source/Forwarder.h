@@ -6,7 +6,7 @@
  *
  *  @filesource
  *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://kplugins.net/kaway2/ kAway2 plugin SVN Repo
+ *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
  *  @version      $Revision$
  *  @modifiedby   $LastChangedBy$
  *  @lastmodified $Date$
@@ -15,14 +15,15 @@
 
 #pragma once
 
-#include "stdafx.h"
-#include "main.h"
-
-#include "Helpers.h"
-#include "Format.h"
+#ifndef __FORWARDER_H__
+#define __FORWARDER_H__
 
 #include <boost/bind.hpp>
 #include <stamina/timer.h>
+
+#include "kAway2.h"
+#include "Helpers.h"
+#include "Format.h"
 
 namespace kAway2 {
   class Forwarder {
@@ -31,14 +32,14 @@ namespace kAway2 {
     class Forward;
 
   public:
-    Forwarder(std::string id, std::string title, int ico,
+    Forwarder(const StringRef& id, const StringRef& title, int ico,
       bool isSummarizable = false, 
       bool isForwardable = false);
     virtual ~Forwarder();
 
   public:
     virtual void setCfgCols() = 0;
-    virtual void send(std::string msg) = 0;
+    virtual void send(const StringRef& msg) = 0;
 
     virtual bool preForward(int cnt, cMessage *msg) = 0;
     virtual bool preSummary() = 0;
@@ -47,10 +48,10 @@ namespace kAway2 {
       this->setCfgCols();
 
       if (this->isSummarizable) {
-        Ctrl->SetColumn(DTCFG, this->cfgCols["isSummaryActive"], DT_CT_INT, 0, ("kAway2/" + this->id + "/isSummaryActive").c_str());
+        Ctrl->SetColumn(DTCFG, this->cfgCols["isSummaryActive"], DT_CT_INT, 0, ("kAway2/" + this->id + "/isSummaryActive").a_str());
       }
       if (this->isForwardable) {
-        Ctrl->SetColumn(DTCFG, this->cfgCols["isForwardActive"], DT_CT_INT, 0, ("kAway2/" + this->id + "/isForwardActive").c_str());
+        Ctrl->SetColumn(DTCFG, this->cfgCols["isForwardActive"], DT_CT_INT, 0, ("kAway2/" + this->id + "/isForwardActive").a_str());
       }
     }
     inline void onIPrepare() {
@@ -61,7 +62,7 @@ namespace kAway2 {
         this->oForward->cfgTplDraw();
       }
     }
-    inline void onNewMsg(int cnt, cMessage *msg) {
+    virtual void onNewMsg(int cnt, cMessage *msg) {
       if (this->isSummarizable) {
         this->oSummary->onNewMsg(cnt, msg);
       }
@@ -83,8 +84,8 @@ namespace kAway2 {
   public:
     std::map<std::string, int> cfgCols;
     unsigned int ico;
-    std::string title;
-    std::string id;
+    String title;
+    String id;
 
     bool isSummarizable;
     bool isForwardable;
@@ -99,7 +100,7 @@ namespace kAway2 {
   public:
     class Summary {
     public:
-      typedef std::deque<std::string> tMsgSenders;
+      typedef std::deque<String> tMsgSenders;
 
     public:
       Summary(Forwarder *fwd);
@@ -115,20 +116,20 @@ namespace kAway2 {
       void cfgTplDraw();
 
       inline bool isActive() {
-        return(GETINT(this->parent->cfgCols["isSummaryActive"]));
+        return GETINT(this->parent->cfgCols["isSummaryActive"]);
       }
 
       void onEnable();
       void onDisable();
       void onNewMsg(int cnt, cMessage *msg);
 
-      std::string getMsgSendersList();
-      std::string getBody();
+      String getMsgSendersList();
+      String getBody();
 
     protected:
       boost::shared_ptr<Stamina::TimerDynamic> timer;
       unsigned int receivedMsgCount;
-      std::string lastMsgFrom;
+      String lastMsgFrom;
       tMsgSenders msgSenders;
       Forwarder *parent;
     };
@@ -144,10 +145,10 @@ namespace kAway2 {
     public:
       void cfgTplDraw();
       void onNewMsg(int cnt, cMessage *msg);
-      std::string getBody(int cnt, cMessage *msg);
+      String getBody(int cnt, cMessage *msg);
 
       inline bool isActive() {
-        return(GETINT(this->parent->cfgCols["isForwardActive"]));
+        return GETINT(this->parent->cfgCols["isForwardActive"]);
       }
 
     protected:
@@ -155,3 +156,5 @@ namespace kAway2 {
     };
   };
 }
+
+#endif // __FORWARDER_H__

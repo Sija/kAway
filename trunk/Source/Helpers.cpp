@@ -6,23 +6,23 @@
  *
  *  @filesource
  *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://kplugins.net/kaway2/ kAway2 plugin SVN Repo
+ *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
  *  @version      $Revision$
  *  @modifiedby   $LastChangedBy$
  *  @lastmodified $Date$
  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
  */
 
-#pragma once
+#include "stdafx.h"
 #include "Helpers.h"
 
 /*
  *  Integer -> String conversion
  */
 
-std::string itos(int i, int radix) {
+String itos(int i, int radix) {
   char buff[64]; _itoa(i, buff, radix);
-  return(buff);
+  return buff;
 }
 
 /*
@@ -30,32 +30,33 @@ std::string itos(int i, int radix) {
  */
 
 char * btoa(bool value) {
-  return(value ? "yes" : "no");
+  return value ? "yes" : "no";
 }
 
-std::string btos(bool value) {
-  return(btoa(value));
+String btos(bool value) {
+  return btoa(value);
 }
 
 /*
  *  NULL -> Human readable string
  */
 
-char * nullChk(const std::string& value) {
-  return(value.length() ? value.c_str() : "(none)");
+char * nullChk(const StringRef& value) {
+  return value.length() ? value.a_str() : "(none)";
 }
 
 char * nullChk(char * value) {
-  return(strlen(value) ? value : "(none)");
+  return strlen(value) ? value : "(none)";
 }
 
 /*
- *  Logging helpers, just a little short cut ;>
+ *  Logging helpers, just a little shortcut ;>
  */
 
 void log(enDebugLevel level, const char * format, va_list ap) {
-  if (Ctrl && Ctrl->DebugLevel(level))
+  if (Ctrl && Ctrl->DebugLevel(level)) {
     Ctrl->IMLOG_(level, format, ap);
+  }
 }
 
 void log(const char * format, ...) {
@@ -77,41 +78,55 @@ void logDebug(const char * format, ...) {
  */
 
 namespace Helpers {
-  std::string icon16(int ico) {
-    return("reg://IML16/" + itos(ico) + ".ico");
+  String icon16(int ico) {
+    return "reg://IML16/" + itos(ico) + ".ico";
   }
 
-  std::string icon32(int ico) {
-    return("reg://IML32/" + itos(ico) + ".ico");
+  String icon32(int ico) {
+    return "reg://IML32/" + itos(ico) + ".ico";
   }
 
-  std::string trim(std::string txt) {
-    CStdString buff(txt); txt = buff.Trim();
-    return(txt);
+  String trunc(StringRef txt, int limit, const StringRef& suffix) {
+    if (limit && (txt.length() > limit)) {
+      txt.erase(limit);
+
+      if (int suffixSize = suffix.length()) {
+        txt.replace(txt.length() - suffixSize, suffix, suffixSize);
+      }
+    }
+    return PassStringRef(txt);
+  }
+
+  String trim(const StringRef& txt) {
+    CStdString buff(txt.a_str()); 
+    buff = buff.Trim();
+
+    return buff;
   }
 
   int altCfgVal(int cntId, int colId, bool isBool) {
-    if (isBool)
+    if (isBool) {
       return((GETINT(colId) && (GETCNTI(cntId, colId) < 2) || 
         (!GETINT(colId) && (GETCNTI(cntId, colId) == 1))) ? true : false);
-    else
-      return((GETCNTI(cntId, colId) >= 0) ? GETCNTI(cntId, colId) : GETINT(colId));
+    } else {
+      return (GETCNTI(cntId, colId) >= 0) ? GETCNTI(cntId, colId) : GETINT(colId);
+    }
   }
 
   const char * altCfgStrVal(int cntId, int colId) {
-    return(strlen(GETCNTC(cntId, colId)) ? GETCNTC(cntId, colId) : GETSTRA(colId));
+    return strlen(GETCNTC(cntId, colId)) ? GETCNTC(cntId, colId) : GETSTRA(colId);
   }
 
   int getPluginsGroup() {
-    return(Ctrl->ICMessage(IMI_GETPLUGINSGROUP));
+    return Ctrl->ICMessage(IMI_GETPLUGINSGROUP);
   }
 
   int pluginExists(int net, int type) {
-    return(Ctrl->ICMessage(IMC_FINDPLUG, net, type));
+    return Ctrl->ICMessage(IMC_FINDPLUG, net, type);
   }
 
   const char * getPlugName(int plugID) {
-    return(SAFECHAR((char*) Ctrl->IMessageDirect(IM_PLUG_NAME, plugID)));
+    return SAFECHAR((char*) Ctrl->IMessageDirect(IM_PLUG_NAME, plugID));
   }
 
   void UIActionCall(int group, int act, int cntID) {
@@ -121,7 +136,7 @@ namespace Helpers {
 
 #ifdef SHARED_TABLETKA_H
   bool isMsgWndOpen(int cnt) {
-    return(Tabs::GetWindowState(cnt) != 0);
+    return Tabs::GetWindowState(cnt) != 0;
   }
 #endif
 
@@ -133,16 +148,13 @@ namespace Helpers {
   bool isToday(Stamina::Date64 date) {
     Stamina::Date64 today(true);
 
-    if ((date.day != today.day) || (date.month != today.month) || (date.year != today.year)) {
-      return(false);
-    } else {
-      return(true);
-    }
+    return ((date.day != today.day) || (date.month != today.month) || (date.year != today.year)) 
+      ? false : true;
   }
 #endif
 
   int findParentAction(int group, int id) {
-    return(Ctrl->ICMessage(IMI_ACTION_FINDPARENT, (int) &sUIAction(group, id)));
+    return Ctrl->ICMessage(IMI_ACTION_FINDPARENT, (int) &sUIAction(group, id));
   }
 
   int subclassAction(int group, int id, int mask) {
@@ -162,16 +174,16 @@ namespace Helpers {
     Ctrl->ICMessage(IMI_ACTION, (int)&nfo);
     delete [] nfo.txt;
 
-    return(prevOwner);
+    return prevOwner;
   }
 
-  void addItemToHistory(cMessage* msg, int cnt, const char * dir, std::string name, int session) {
+  void addItemToHistory(cMessage* msg, int cnt, const char * dir, const StringRef& name, int session) {
     sHISTORYADD item;
 
     item.cnt = cnt;
     item.m = msg;
     item.dir = dir;
-    item.name = name.c_str();
+    item.name = name.a_str();
     item.session = session;
 
     Ctrl->ICMessage(IMI_HISTORY_ADD, (int) &item);

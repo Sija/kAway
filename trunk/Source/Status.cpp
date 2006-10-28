@@ -6,46 +6,31 @@
  *
  *  @filesource
  *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://kplugins.net/kaway2/ kAway2 plugin SVN Repo
+ *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
  *  @version      $Revision$
  *  @modifiedby   $LastChangedBy$
  *  @lastmodified $Date$
  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
  */
 
-#pragma once
+#include "stdafx.h"
 #include "Status.h"
 
-Status::Status(NetList *lCtrl, int onHiddenCfgCol, int dotsCfgCol, std::string stInfoVar) {
-  this->lCtrl = lCtrl;
-  this->fCtrl = new Format;
-
-  this->stInfoVar = stInfoVar;
-  this->onHiddenCfgCol = onHiddenCfgCol;
-  this->dotsCfgCol = dotsCfgCol;
-  this->remember = false;
-
-  this->stInfoMaxChars.push_back(sStInfoMaxChars(plugsNET::dwutlenek, 255));
-  this->stInfoMaxChars.push_back(sStInfoMaxChars(plugsNET::gg, 70));
+Status::Status(NetList *_lCtrl, int _onHiddenCfgCol, int _dotsCfgCol) :
+  lCtrl(_lCtrl), onHiddenCfgCol(_onHiddenCfgCol), dotsCfgCol(_dotsCfgCol), remember(false) 
+{
+  this->infoCharLimits.push_back(sInfoCharLimit(plugsNET::dwutlenek, 255));
+  this->infoCharLimits.push_back(sInfoCharLimit(plugsNET::kaqq, 255));
+  this->infoCharLimits.push_back(sInfoCharLimit(plugsNET::gg, 70));
 }
 
-Status::~Status() {
-  delete this->fCtrl;
-  this->fCtrl = NULL;
-
-  this->stReplacements.clear();
-  this->rememberedSt.clear();
-  this->stInfoMaxChars.clear();
-  this->lastSt.clear();
-}
-
-int Status::applyReplacementSt(int net, int st) {
+tStatus Status::applyReplacementSt(int net, int st) {
   for (tStReplacements::iterator it = this->stReplacements.begin(); it != this->stReplacements.end(); it++) {
     if (it->net == net && it->before == st) {
       st = it->after; break;
     }
   }
-  return(st);
+  return st;
 }
 
 void Status::addReplacementSt(int net, int before, int after) {
@@ -61,15 +46,15 @@ void Status::removeReplacementSt(int net, int before) {
 }
 
 void Status::changeStatus(int st) {
-  NetList::tItemNets nets = this->lCtrl->getNets();
-  for (NetList::tItemNets::iterator it = nets.begin(); it != nets.end(); it++) {
+  NetList::tNets nets = this->lCtrl->getNets();
+  for (NetList::tNets::iterator it = nets.begin(); it != nets.end(); it++) {
     if (this->isNetValid(it->net)) this->changeStatus(it->net, st);
   }
 }
 
-void Status::changeStatus(std::string info, int st) {
-  NetList::tItemNets nets = this->lCtrl->getNets();
-  for (NetList::tItemNets::iterator it = nets.begin(); it != nets.end(); it++) {
+void Status::changeStatus(const StringRef& info, int st) {
+  NetList::tNets nets = this->lCtrl->getNets();
+  for (NetList::tNets::iterator it = nets.begin(); it != nets.end(); it++) {
     if (this->isNetValid(it->net)) this->changeStatus(it->net, info, st);
   }
 }
@@ -78,8 +63,9 @@ void Status::changeStatus(int net, int st) {
   if (st == -1 || st == this->getActualStatus(net)) return;
 
   st = this->applyReplacementSt(net, st);
-  if (this->isRemembered())
-    this->lastSt[net] = sItemInfo(net, st);
+  if (this->isRemembered()) {
+    this->lastSt[net] = sInfo(net, st);
+  }
 
   Ctrl->IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, 0);
 
@@ -87,55 +73,51 @@ void Status::changeStatus(int net, int st) {
     this, net, st);
 }
 
-void Status::changeStatus(int net, std::string info, int st) {
-  if (info == this->getActualInfo(net) && st != ST_OFFLINE)
-    return(this->changeStatus(net, st));
-
-  if (info.length()) {
-    bool dynSt = (this->stInfoVar.length() && 
-      this->fCtrl->addVar(this->stInfoVar, this->getInfo(net), false));
-
-    info = this->fCtrl->parse(info);
-    info = Helpers::trim(info);
-    info = this->limitChars(info, net);
-
-    if (dynSt) this->fCtrl->removeVar(this->stInfoVar);
+void Status::changeStatus(int net, const StringRef& info, int st) {
+  if (info == this->getActualInfo(net) && st != ST_OFFLINE) {
+    return this->changeStatus(net, st);
   }
 
-  if (st != -1) 
+  String new_info(info);
+
+  if (new_info.length()) {
+    new_info = this->parseInfo(new_info, net, st);
+  }
+
+  if (st != -1) {
     st = this->applyReplacementSt(net, st);
+  }
+  if (this->isRemembered()) {
+    this->lastSt[net] = sInfo(net, st, new_info);
+  }
 
-  if (this->isRemembered())
-    this->lastSt[net] = sItemInfo(net, st, info);
-
-  Ctrl->IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, (int) info.c_str());
+  Ctrl->IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, (int) new_info.c_str());
 
   logDebug("[Status<%i>::changeStatus().item]: net = %i, status = %i, info = %s",
-    this, net, st, nullChk(info));
+    this, net, st, nullChk(new_info));
 }
 
 tStatus Status::getActualStatus(int net) {
-  return(Ctrl->IMessage(IM_GET_STATUS, net));
+  return Ctrl->IMessage(IM_GET_STATUS, net);
 }
 
 int Status::getStatus(int net) {
-  for (tItemInfos::iterator it = this->rememberedSt.begin(); it != this->rememberedSt.end(); it++) {
-    if (it->net == net) return(it->st);
+  for (tInfos::iterator it = this->rememberedSt.begin(); it != this->rememberedSt.end(); it++) {
+    if (it->net == net) return it->st;
   }
-  return(-1);
+  return -1;
 }
 
-std::string Status::getActualInfo(int net) {
-  std::string status((char*) Ctrl->IMessage(IM_GET_STATUSINFO, net));
-  return(status);
+String Status::getActualInfo(int net) {
+  return (char*) Ctrl->IMessage(IM_GET_STATUSINFO, net);
 }
 
-std::string Status::getInfo(int net) {
-  std::string fake;
-  for (tItemInfos::iterator it = this->rememberedSt.begin(); it != this->rememberedSt.end(); it++) {
-    if (it->net == net) return(it->info);
+String Status::getInfo(int net) {
+  String fake;
+  for (tInfos::iterator it = this->rememberedSt.begin(); it != this->rememberedSt.end(); it++) {
+    if (it->net == net) return it->info;
   }
-  return(fake);
+  return fake;
 }
 
 void Status::rememberInfo() {
@@ -143,8 +125,8 @@ void Status::rememberInfo() {
   this->lastSt.clear();
   this->rememberedSt.clear();
 
-  NetList::tItemNets nets = this->lCtrl->getNets();
-  for (NetList::tItemNets::iterator it = nets.begin(); it != nets.end(); it++) {
+  NetList::tNets nets = this->lCtrl->getNets();
+  for (NetList::tNets::iterator it = nets.begin(); it != nets.end(); it++) {
     this->rememberInfo(it->net);
   }
 }
@@ -153,15 +135,15 @@ void Status::rememberInfo(int net) {
   if (!this->isNetValid(net)) return;
 
   int st = this->getActualStatus(net);
-  std::string info = this->getActualInfo(net);
-  this->rememberedSt.push_back(sItemInfo(net, st, info));
+  String info = this->getActualInfo(net);
+  this->rememberedSt.push_back(sInfo(net, st, info));
 
   logDebug("[Status<%i>::rememberInfo().item]: net = %i, status = %i, info = %s",
     this, net, st, nullChk(info));
 }
 
 void Status::restoreInfo() {
-  for (tItemInfos::iterator it = this->rememberedSt.begin(); it != this->rememberedSt.end(); it++) {
+  for (tInfos::iterator it = this->rememberedSt.begin(); it != this->rememberedSt.end(); it++) {
     this->restoreInfo(it->net);
   }
   this->remember = false;
@@ -171,7 +153,7 @@ void Status::restoreInfo(int net) {
   if (!this->isRemembered(net)) return;
 
   int st = !this->getActualStatus(net) ? ST_OFFLINE : this->getStatus(net);
-  std::string info = this->getInfo(net);
+  String info = this->getInfo(net);
   Ctrl->IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, (int) info.c_str());
 
   logDebug("[Status<%i>::restoreInfo().item]: net = %i, status = %i, info = %s",
@@ -185,10 +167,10 @@ void Status::actionHandle(sIMessage_base *msgBase) {
   int net = Ctrl->IMessageDirect(IM_PLUG_NET, st->plugID);
 
   if ((this->getStatus(net) != -1) && (st->status != ST_CONNECTING) && (st->status != ST_OFFLINE)) {
-    for (tItemInfos::iterator it = this->rememberedSt.begin(); it != this->rememberedSt.end(); it++) {
+    for (tInfos::iterator it = this->rememberedSt.begin(); it != this->rememberedSt.end(); it++) {
       if (it->net == net) {
         if (st->status != this->lastSt[net].st) it->st = st->status;
-        if (st->info != this->lastSt[net].info) it->info = st->info;
+        if ((String) st->info != this->lastSt[net].info) it->info = st->info;
         break;
       }
     }
@@ -198,31 +180,20 @@ void Status::actionHandle(sIMessage_base *msgBase) {
 }
 
 bool Status::chgOnHidden() {
-  return(this->onHiddenCfgCol ? (bool) GETINT(this->onHiddenCfgCol) : true);
+  return this->onHiddenCfgCol ? GETINT(this->onHiddenCfgCol) : true;
 }
 
 bool Status::isNetValid(int net) {
   if (this->lCtrl->getNetState(net) && this->lCtrl->isConnected(net)) {
     if (!this->chgOnHidden() && (ST_HIDDEN == this->getActualStatus(net))) {
-      return(false);
+      return false;
     } else {
-      return(true);
+      return true;
     }
   }
-  return(false);
+  return false;
 }
 
-std::string Status::limitChars(std::string status, int net) {
-  int limit = this->getStInfoMaxLength(net);
-  if (limit && (status.length() > limit)) {
-    // truncating string
-    status.resize(limit);
-
-    // dots magic ;)
-    std::string dots = this->getDots();
-    if (int dotsSize = dots.length()) {
-      status.replace(status.length() - dotsSize, dotsSize, dots);
-    }
-  }
-  return(status);
+String Status::limitChars(StringRef status, int net) {
+  return Helpers::trunc(status, this->getInfoCharLimit(net), this->getDots());
 }

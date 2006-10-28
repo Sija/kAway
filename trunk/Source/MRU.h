@@ -6,7 +6,7 @@
  *
  *  @filesource
  *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://kplugins.net/kaway2/ kAway2 plugin SVN Repo
+ *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
  *  @version      $Revision$
  *  @modifiedby   $LastChangedBy$
  *  @lastmodified $Date$
@@ -15,81 +15,90 @@
 
 #pragma once
 
-#include "stdafx.h"
+#ifndef __MRU_H__
+#define __MRU_H__
+
 #include "Helpers.h"
 
-class MRU {
-  public:
-    typedef std::deque<std::string> tMRUlist;
+class MRU : public iObject {
+public:
+  typedef std::deque<String> tMRUlist;
 
-  public:
-    MRU(std::string name, int count = 100, bool dtbCount = false);
-    ~MRU();
+  /*
+   * Class version
+   */
+	STAMINA_OBJECT_CLASS_VERSION(MRU, iObject, Version(0,1,0,0));
 
-  public:
-    tMRUlist get(bool rev = true, const char * buff = 0, int buffSize = 1024);
-    void append(std::string current);
-    void append(tMRUlist list);
+public:
+  MRU(const StringRef& _name, int _count = 100, bool _dtbCount = false) : 
+    name(_name), count(_count), dtbCount(_dtbCount) { }
 
-    inline void set(std::string current) {
-      this->clear();
-      this->append(current);
-    }
+public:
+  tMRUlist get(bool rev = true, const char * buff = 0, int buffSize = 1024);
+  void append(const StringRef& current);
+  void append(tMRUlist list);
 
-    inline void set(tMRUlist list) {
-      this->clear();
-      this->append(list);
-    }
+  inline void set(const StringRef& current) {
+    this->clear();
+    this->append(current);
+  }
 
-    inline void clear() {
-      sMRU mru;
+  inline void set(tMRUlist list) {
+    this->clear();
+    this->append(list);
+  }
 
-      mru.name = this->name.c_str();
-      mru.count = 0;
+  inline void clear() {
+    sMRU mru;
 
-      Ctrl->IMessage(&sIMessage_MRU(IMC_MRU_SET, &mru));
-    }
+    mru.name = this->name.a_str();
+    mru.count = 0;
 
-    inline int getCount() {
-      return((this->dtbCount) ? GETINT(this->count) : this->count);
-    }
+    Ctrl->IMessage(&sIMessage_MRU(IMC_MRU_SET, &mru));
+  }
 
-    /*
-     *  Static methods
-     */
-    inline static tMRUlist get(const char * name, int count = 100, bool rev = true, 
-      const char * buff = 0, int buffSize = 1024) {
-      MRU mru(name, count);
-      return(mru.get(rev, buff, buffSize));
-    }
+  inline int getCount() {
+    return this->dtbCount ? GETINT(this->count) : this->count;
+  }
 
-    inline static void append(const char * name, std::string current, int count = 100) {
-      MRU mru(name, count);
-      mru.append(current);
-    }
+  /*
+   *  Static methods
+   */
+  inline static tMRUlist get(const StringRef& name, int count = 100, bool rev = true, 
+    const char * buff = 0, int buffSize = 1024) {
+    MRU mru(name, count);
+    return mru.get(rev, buff, buffSize);
+  }
 
-    inline static void append(const char * name, tMRUlist list, int count = 100) {
-      MRU mru(name, count);
-      mru.append(list);
-    }
+  inline static void append(const StringRef& name, const StringRef& current, int count = 100) {
+    MRU mru(name, count);
+    mru.append(current);
+  }
 
-    inline static void set(const char * name, std::string current, int count = 100) {
-      MRU mru(name, count);
-      mru.set(current);
-    }
+  inline static void append(const StringRef& name, tMRUlist list, int count = 100) {
+    MRU mru(name, count);
+    mru.append(list);
+  }
 
-    inline static void set(const char * name, tMRUlist list, int count = 100) {
-      MRU mru(name, count);
-      mru.set(list);
-    }
+  inline static void set(const StringRef& name, const StringRef& current, int count = 100) {
+    MRU mru(name, count);
+    mru.set(current);
+  }
 
-    inline static void clear(const char * name) {
-      MRU mru(name);
-      mru.clear();
-    }
+  inline static void set(const StringRef& name, tMRUlist list, int count = 100) {
+    MRU mru(name, count);
+    mru.set(list);
+  }
 
-  public:
-    std::string name;
-    unsigned int count;
-    bool dtbCount;
+  inline static void clear(const StringRef& name) {
+    MRU mru(name);
+    mru.clear();
+  }
+
+public:
+  String name;
+  unsigned int count;
+  bool dtbCount;
 };
+
+#endif // __MRU_H__

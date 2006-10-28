@@ -6,14 +6,14 @@
  *
  *  @filesource
  *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://kplugins.net/kaway2/ kAway2 plugin SVN Repo
+ *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
  *  @version      $Revision$
  *  @modifiedby   $LastChangedBy$
  *  @lastmodified $Date$
  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
  */
 
-#pragma once
+#include "stdafx.h"
 #include "Control.h"
 
 namespace kAway2 {
@@ -21,12 +21,8 @@ namespace kAway2 {
     this->pluginsGroup = Helpers::getPluginsGroup();
   }
 
-  Control::~Control() {
-    this->cntProps.clear();
-  }
-
-  bool Control::enable(std::string msg, int status, bool silent) {
-    if (this->isOn) return(false);
+  bool Control::enable(const StringRef& msg, int status, bool silent) {
+    if (this->isOn) return false;
 
     this->awayMsg = msg;
     this->awayTime.now();
@@ -36,24 +32,24 @@ namespace kAway2 {
       this->awayTime = this->awayTime.getTime64() - GETINT(CFG_AUTOAWAY);
     }
 
-    if (this->sCtrl) {
-      int chgStatus = GETINT(this->isFromWnd ? cfg::wnd::changeOnEnable : cfg::status::changeOnEnable);
-      int chgInfo = GETINT(this->isFromWnd ? cfg::wnd::changeInfoOnEnable : cfg::status::changeInfoOnEnable);
+    bool chgStatus = GETINT(this->isFromWnd ? cfg::wnd::changeOnEnable : cfg::status::changeOnEnable);
+    bool chgInfo = GETINT(this->isFromWnd ? cfg::wnd::changeInfoOnEnable : cfg::status::changeInfoOnEnable);
 
-      if (chgInfo) {
-        this->sCtrl->fCtrl->addVar("date", this->awayTime.strftime(GETSTRA(cfg::dateFormat)));
-        this->sCtrl->fCtrl->addVar("time", this->awayTime.strftime(GETSTRA(cfg::timeFormat)));
-        this->sCtrl->fCtrl->addVar("msg", msg);
-      }
+    if (chgInfo) {
+      sCtrl->oFormat->addVar("date", this->awayTime.strftime(GETSTRA(cfg::dateFormat)));
+      sCtrl->oFormat->addVar("time", this->awayTime.strftime(GETSTRA(cfg::timeFormat)));
+      sCtrl->oFormat->addVar("msg", msg);
+    }
 
-      if (chgStatus || chgInfo) {
-        this->sCtrl->rememberInfo();
-        if (chgInfo)
-          this->sCtrl->changeStatus(GETSTRA(cfg::tpl::status), 
-            chgStatus ? (status ? status : GETINT(this->isFromWnd ? cfg::wnd::onEnableSt : cfg::status::onEnableSt)) : -1);
-        else if (chgStatus)
-          this->sCtrl->changeStatus(status ? status : GETINT(this->isFromWnd ? cfg::wnd::onEnableSt : cfg::status::onEnableSt));
-      }
+    if (chgStatus || chgInfo) {
+      sCtrl->rememberInfo();
+    }
+
+    if (chgInfo) {
+      sCtrl->changeStatus(GETSTRA(cfg::tpl::status), 
+        chgStatus ? (status ? status : GETINT(this->isFromWnd ? cfg::wnd::onEnableSt : cfg::status::onEnableSt)) : -1);
+    } else if (chgStatus) {
+      sCtrl->changeStatus(status ? status : GETINT(this->isFromWnd ? cfg::wnd::onEnableSt : cfg::status::onEnableSt));
     }
 
     if (GETINT(this->isFromWnd ? cfg::wnd::muteOnEnable : cfg::muteOnEnable) && !GETINT(kSound::Cfg::mute)) {
@@ -78,16 +74,14 @@ namespace kAway2 {
     Ctrl->IMessage(api::isAway, NET_BROADCAST, -1, (int) msg.c_str(), status);
 
     fCtrl->onEnable();
-    return(true);
+    return true;
   }
 
-  bool Control::disable(std::string msg, bool silent) {
-    if (!this->isOn) return(false);
+  bool Control::disable(const StringRef& msg, bool silent) {
+    if (!this->isOn) return false;
 
-    if (this->sCtrl) {
-      this->sCtrl->fCtrl->clearVars();
-      this->sCtrl->restoreInfo();
-    }
+    sCtrl->oFormat->clearVars();
+    sCtrl->restoreInfo();
 
     if (this->muteStateSwitched && GETINT(kSound::Cfg::mute)) {
       Helpers::UIActionCall(this->pluginsGroup, kSound::action::mute);
@@ -124,7 +118,7 @@ namespace kAway2 {
     Ctrl->IMessage(api::isBack, NET_BROADCAST, -1, (int) msg.c_str());
 
     fCtrl->onDisable();
-    return(true);
+    return true;
   }
 
   void Control::showKNotify(const char * text, int ico) {
@@ -139,27 +133,25 @@ namespace kAway2 {
     Helpers::chgBtn(IMIG_TRAY, ui::powerInTrayMenu, name, ico);
     Helpers::chgBtn(this->pluginsGroup, ui::powerInMainWnd, name, ico, 
       (state && (Helpers::findParentAction(IMIG_MAINWND, this->pluginsGroup) != IMIG_MAINTB)) ? ACTS_CHECKED : 0);
-    Helpers::chgBtn(IMIG_MSGTB, ui::msgTbGrp, "kAway2", ico::logoSmall, 
-      ACTR_INIT | ACTS_GROUP | (state ? ACTS_CHECKED : 0));
+    Helpers::chgBtn(IMIG_MSGTB, ui::msgTbGrp, "kAway2", ico::logoSmall, ACTR_INIT | ACTS_GROUP | (state ? ACTS_CHECKED : 0));
 
     int count = Ctrl->IMessage(IMC_CNT_COUNT);
     for (int i = 1; i < count; i++) {
       if (Helpers::isMsgWndOpen(i)) {
-        Helpers::chgBtn(IMIG_MSGTB, ui::msgTbGrp, i, "kAway2", ico::logoSmall, 
-          ACTR_INIT | ACTS_GROUP | (state ? ACTS_CHECKED : 0));
+        Helpers::chgBtn(IMIG_MSGTB, ui::msgTbGrp, i, "kAway2", ico::logoSmall, ACTR_INIT | ACTS_GROUP | (state ? ACTS_CHECKED : 0));
       }
     }
     delete [] name;
   }
 
-  void Control::sendMsgTpl(int cnt, enAutoMsgTpl tpl, std::string msgVal) {
+  void Control::sendMsgTpl(int cnt, enAutoMsgTpl tpl, const StringRef& msgVal) {
     int session, net = GETCNTI(cnt, CNT_NET);
 
     if (((sCtrl->getActualStatus(net) == ST_HIDDEN) && !Helpers::altCfgVal(cnt, cfg::reply::whenInvisible)) || 
       !lCtrl::reply->getNetState(net) || !lCtrl::reply->isConnected(net))
       return;
 
-    std::string ext, uid(GETCNTC(cnt, CNT_UID));
+    String ext, uid(GETCNTC(cnt, CNT_UID));
     ext = SetExtParam(ext, cfg::extParamName, itos(tpl));
     ext = SetExtParam(ext, MEX_ADDINFO, "kAway2");
     ext = SetExtParam(ext, MEX_NOSOUND, "1");
@@ -175,19 +167,21 @@ namespace kAway2 {
     format.addVar("msg", (tpl == tplDisable) ? msgVal : this->awayMsg);
 
     /*
-    std::string body = Helpers::trim(format.parse(Helpers::altCfgStrVal(cnt, tpl)));
+    String body = Helpers::trim(format.parse(Helpers::altCfgStrVal(cnt, tpl)));
     cMessage msg = Message::prepare(uid, "", net, body, MT_MESSAGE, ext, 
       MF_SEND | (Helpers::altCfgVal(cnt, cfg::reply::useHtml) ? MF_HTML : 0));
 
     HWND hwndMsg = (HWND) UIGroupHandle(sUIAction(0, IMIG_MSGWND, cnt));
-    if (!(session = (int) GetProp(hwndMsg, "MsgSession")))
+    if (!(session = (int) GetProp(hwndMsg, "MsgSession"))) {
       SetProp(hwndMsg, "MsgSession", (HANDLE) 1);
+    }
 
     Helpers::addItemToHistory(&msg, cnt, "messages", "", session);
     Message::send(&msg);
 
-    if (Helpers::altCfgVal(cnt, cfg::reply::showInWnd))
-       Message::insInMsgWnd(&msg, cnt);
+    if (Helpers::altCfgVal(cnt, cfg::reply::showInWnd)) {
+      Message::inject(&msg, cnt);
+    }
     */
     Message::send(cnt, Helpers::trim(format.parse(Helpers::altCfgStrVal(cnt, tpl))), 
       MT_MESSAGE, ext, Helpers::altCfgVal(cnt, cfg::reply::useHtml));
