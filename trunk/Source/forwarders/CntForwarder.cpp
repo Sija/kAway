@@ -18,12 +18,12 @@
 
 namespace kAway2 {
   CntForwarder::CntForwarder() : Forwarder("forward", "Lustereczko", ico::forward, true, true) {
-    fCtrl->setEvtOnISetCols(boost::bind(&CntForwarder::onISetCols, this));
-    fCtrl->setEvtOnIPrepare(boost::bind(&CntForwarder::onIPrepare, this));
-    fCtrl->setEvtOnAction(boost::bind(&CntForwarder::onAction, this, _1, _2));
-    fCtrl->setEvtOnNewMsg(boost::bind(&CntForwarder::onNewMsg, this, _1, _2));
-    fCtrl->setEvtOnEnable(boost::bind(&CntForwarder::onEnable, this));
-    fCtrl->setEvtOnDisable(boost::bind(&CntForwarder::onDisable, this));
+    //fCtrl->setEvtOnISetCols(boost::bind(&CntForwarder::onISetCols, this));
+    //fCtrl->setEvtOnIPrepare(boost::bind(&CntForwarder::onIPrepare, this));
+    //fCtrl->setEvtOnAction(boost::bind(&CntForwarder::onAction, this, _1, _2));
+    //fCtrl->setEvtOnNewMsg(boost::bind(&CntForwarder::onNewMsg, this, _1, _2));
+    //fCtrl->setEvtOnEnable(boost::bind(&CntForwarder::onEnable, this));
+    //fCtrl->setEvtOnDisable(boost::bind(&CntForwarder::onDisable, this));
   }
 
   void CntForwarder::send(const StringRef& msg) {
@@ -40,7 +40,7 @@ namespace kAway2 {
   }
 
   void CntForwarder::onNewMsg(int cnt, cMessage *msg) {
-    // wykrywanie zapêtlania
+    // TODO: wykrywanie zapêtlania
     Forwarder::onNewMsg(cnt, msg);
   }
 

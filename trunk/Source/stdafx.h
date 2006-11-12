@@ -59,6 +59,10 @@
   #pragma comment(lib, "stamina.lib")
 #endif
 
+#include <boost/signal.hpp>
+#include <boost/function.hpp>
+#include <boost/bind.hpp>
+
 /*
 #include <stamina/threadrun.h>
 #include <stamina/thread.h>
@@ -67,10 +71,12 @@
 */
 
 #include <stamina/helpers.h>
-#include <stamina/regex.h>
-#include <stamina/time64.h>
 #include <stamina/object.h>
+#include <stamina/objectimpl.h>
+#include <stamina/exception.h>
 #include <stamina/string.h>
+#include <stamina/time64.h>
+#include <stamina/regex.h>
 
 using namespace Stamina;
 using namespace std;
@@ -84,6 +90,26 @@ using namespace std;
 #include <konnekt/tabletka.h>
 #include <konnekt/ui_message_controls.h>
 #include <konnekt/lib.h>
+#include <konnekt/plugsNET.h>
 
 #include "../Project/resource.h"
-#include "plugsNET.h"
+
+/*
+ * Konnekt::ShowBits helpers
+ */
+#define ifPRO if (Konnekt::ShowBits::checkLevel(Konnekt::ShowBits::levelPro))
+#define ifADV if (Konnekt::ShowBits::checkLevel(Konnekt::ShowBits::levelAdvanced))
+#define ifNORM if (Konnekt::ShowBits::checkLevel(Konnekt::ShowBits::levelNormal))
+#define ifINT if (Konnekt::ShowBits::checkLevel(Konnekt::ShowBits::levelIntermediate))
+
+#define ifToolTipADV if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showTooltipsAdvanced))
+#define ifToolTipNORM if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showTooltipsNormal))
+#define ifToolTipBEG if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showTooltipsBeginner))
+
+#define ifInfoADV if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showInfoAdvanced))
+#define ifInfoNORM if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showInfoNormal))
+#define ifInfoBEG if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showInfoBeginner))
+
+#define ifWizardsADV if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showWizardsAdvanced))
+#define ifWizardsNORM if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showWizardsNormal))
+#define ifWizardsBEG if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showWizardsBeginner))

@@ -49,7 +49,7 @@ std::string __stdcall fCallback(Stamina::RegEx* reg, void* param) {
   return result;
 }
 
-Format::Format(const StringRef& ldelim, const StringRef& rdelim) {
+Format::Format(const StringRef& ldelim, const StringRef& rdelim) : SharedObject<iSharedObject>() {
   this->pattern = 
     "/\\" + ldelim + "([^a-z0-9]*|(\\((?:\"[^\"]+\"|'[^']+')\\)))"
     "([a-z0-9]+)(?:\\|([a-z0-9]+|(?:\\((?:\"[^\"]+\"|'[^']+')\\))))?"

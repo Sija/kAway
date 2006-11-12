@@ -21,7 +21,7 @@
 #include "Helpers.h"
 #include "NetList.h"
 
-class Status : public iObject {
+class Status : public SharedObject<iSharedObject> {
 public:
   static const struct IM {
     static const unsigned int key = IM_USER + (668 * 1000) + 1;
@@ -32,7 +32,7 @@ public:
   /*
    * Class version
    */
-	STAMINA_OBJECT_CLASS_VERSION(Status, iObject, Version(0,1,0,0));
+	STAMINA_OBJECT_CLASS_VERSION(Status, iSharedObject, Version(0,1,0,0));
 
   struct sInfo {
     unsigned int net;
@@ -68,7 +68,7 @@ public:
   typedef std::list<sInfoCharLimit> tInfoCharLimits;
 
 public:
-  Status(NetList *lCtrl, int onHiddenCfgCol = 0, int dotsCfgCol = 0);
+  Status(NetList* netList, int onHiddenCfgCol = 0, int dotsCfgCol = 0);
 
   // Obcina status do maks. d³ugoœci
   String limitChars(StringRef status, int net);
@@ -81,64 +81,14 @@ public:
   void actionHandle(sIMessage_base *msgBase);
 
   // tekstowa nazwa statusu
-  inline String labelById(int st) {
-    String name = "?";
-
-    switch (st) {
-      case ST_ONLINE: name = "Dostêpny"; break;
-      case ST_CHAT: name = "Pogadam"; break;
-      case ST_AWAY: name = "Zaraz wracam"; break;
-      case ST_NA: name = "Nieosi¹galny"; break;
-      case ST_DND: name = "Nie przeszkadzaæ"; break;
-      case ST_HIDDEN: name = "Ukryty"; break;
-      case ST_OFFLINE: name = "Niedostêpny"; break;
-    }
-    return name;
-  }
-
+  String labelById(int st);
   // "..." przy obcinanym opisie
-  inline String getDots() {
-    if (!this->dotsCfgCol) return "";
-
-    if (Ctrl->DTgetType(DTCFG, this->dotsCfgCol) == DT_CT_STR) {
-      return GETSTRA(this->dotsCfgCol);
-    }
-    return GETINT(this->dotsCfgCol) ? "…" : "";
-  }
-
-  inline bool isRemembered(int net = 0) {
-    if (!net) {
-      return this->remember;
-    } else {
-      for (tInfos::iterator it = this->rememberedSt.begin(); it != this->rememberedSt.end(); it++) {
-        if (it->net == net) return true;
-      }
-      return false;
-    }
-  }
-
-  inline int getInfoCharLimit(int net = 0) {
-    for (tInfoCharLimits::iterator it = this->infoCharLimits.begin(); it != this->infoCharLimits.end(); it++) {
-      if (it->net == net) return it->length;
-    }
-
-    int limit = 0;
-    if (net) {
-      Ctrl->IMessage(IM::infoCharLimit, net, limit);
-      if (Ctrl->getError() != IMERROR_NORESULT) {
-        return limit;
-      }
-    }
-    return 0;
-  }
+  String getDots();
+  // zwraca limit znaków opisu dla danej sieci
+  int getInfoCharLimit(int net = 0);
 
   // Formatuje status
-  inline virtual String parseInfo(StringRef info, int net, int st = -1) {
-    info = Helpers::trim(info);
-    info = this->limitChars(info, net);
-
-    return PassStringRef(info);
-  }
+  virtual String parseInfo(StringRef info, int net, int st = -1);
 
   // Zmienia status, txt - opis, st - id statusu
   void changeStatus(const StringRef& info, int st = -1);
@@ -147,6 +97,7 @@ public:
   void changeStatus(int net, const StringRef& info, int st = -1);
   void changeStatus(int net, int st);
 
+  bool isRemembered(int net = 0);
   // Zapamiêtuje aktualny opis na ka¿dej sieci
   void rememberInfo();
   // Zapamiêtuje aktualny opis na wybranej sieci
@@ -172,7 +123,7 @@ public:
   void removeReplacementSt(int net, int before);
 
   // lista z sieciami
-  NetList *lCtrl;
+  NetList* netList;
 
 protected:
   // kolumna konfiguracji ktora odpowiada za opcje 'zmieniaj status przy statusie ukryty'
@@ -188,5 +139,7 @@ protected:
   // maksymalne d³ugoœci statusów opisowych
   tInfoCharLimits infoCharLimits;
 };
+
+typedef Stamina::SharedPtr<Status> oStatus;
 
 #endif // __STATUS_H__

@@ -19,7 +19,6 @@
 #define __SMSFORWARDER_H__
 
 #include "../kAway2.h"
-#include "../globals.h"
 
 #include "../Helpers.h"
 #include "../FwdControl.h"
@@ -79,8 +78,8 @@ namespace kAway2 {
     }
 
     void send(const StringRef& msg);
-    void onISetCols();
-    void onIPrepare();
+    void onISetCols(Controller* pCtrl);
+    void onIPrepare(Controller* pCtrl);
     void onAction(int id, int code);
   };
 }

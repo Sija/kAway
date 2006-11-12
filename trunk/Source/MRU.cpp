@@ -64,3 +64,21 @@ void MRU::append(tMRUlist list) {
     Ctrl->IMessage(&sIMessage_MRU(IMC_MRU_SET, &mru));
   }
 }
+void MRU::clear() {
+  sMRU mru;
+
+  mru.name = this->name.a_str();
+  mru.count = 0;
+
+  Ctrl->IMessage(&sIMessage_MRU(IMC_MRU_SET, &mru));
+}
+
+void MRU::set(const StringRef& current) {
+  this->clear();
+  this->append(current);
+}
+
+void MRU::set(tMRUlist list) {
+  this->clear();
+  this->append(list);
+}

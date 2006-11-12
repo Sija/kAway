@@ -18,19 +18,19 @@
 
 namespace kAway2 {
   SMSForwarder::SMSForwarder() : Forwarder("sms", "SMS", 501, true, true) {
-    fCtrl->setEvtOnISetCols(boost::bind(&SMSForwarder::onISetCols, this));
-    fCtrl->setEvtOnIPrepare(boost::bind(&SMSForwarder::onIPrepare, this));
-    fCtrl->setEvtOnAction(boost::bind(&SMSForwarder::onAction, this, _1, _2));
-    fCtrl->setEvtOnNewMsg(boost::bind(&SMSForwarder::onNewMsg, this, _1, _2));
-    fCtrl->setEvtOnEnable(boost::bind(&SMSForwarder::onEnable, this));
-    fCtrl->setEvtOnDisable(boost::bind(&SMSForwarder::onDisable, this));
+    //Controller::getInstance()->registerObserver(IM_SETCOLS, boost::bind(&SMSForwarder::onISetCols, this, _1));
+    //Controller::getInstance()->registerObserver(IM_UI_PREPARE, boost::bind(&SMSForwarder::onIPrepare, this, _1));
+    //fCtrl->setEvtOnAction(boost::bind(&SMSForwarder::onAction, this, _1, _2));
+    //fCtrl->setEvtOnNewMsg(boost::bind(&SMSForwarder::onNewMsg, this, _1, _2));
+    //fCtrl->setEvtOnEnable(boost::bind(&SMSForwarder::onEnable, this));
+    //fCtrl->setEvtOnDisable(boost::bind(&SMSForwarder::onDisable, this));
   }
 
   void SMSForwarder::send(const StringRef& msg) {
     Message::sms(itos(GETINT(cfg::sms::number)), msg, GETSTRA(cfg::sms::gate), GETSTRA(cfg::sms::sig));
   }
 
-  void SMSForwarder::onISetCols() {
+  void SMSForwarder::onISetCols(Controller* pCtrl) {
     Ctrl->SetColumn(DTCFG, cfg::tpl::smsForward, DT_CT_STR, 
       "Wiadomoœæ od kontaktu [{msgFrom}] wys³ana o {msgTime}{, msgDate}:"
       "\r\n\r\n{msgBody}", "kAway2/tpl/smsForward");
@@ -46,7 +46,7 @@ namespace kAway2 {
     Forwarder::onISetCols();
   }
 
-  void SMSForwarder::onIPrepare() {
+  void SMSForwarder::onIPrepare(Controller* pCtrl) {
     UIActionCfgAdd(ui::sms::cfgGroup, 0, ACTT_GROUP, "Ustawienia");
     UIActionCfgAdd(ui::sms::cfgGroup, ui::sms::number, ACTT_EDIT | ACTSC_INLINE | ACTSC_INT | ACTR_CHECK | ACTR_INIT, 0, 
       cfg::sms::number, 0, 0, 120);

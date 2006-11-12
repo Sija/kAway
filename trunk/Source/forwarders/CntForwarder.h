@@ -19,7 +19,6 @@
 #define __CNTFORWARDER_H__
 
 #include "../kAway2.h"
-#include "../globals.h"
 
 #include "../Helpers.h"
 #include "../FwdControl.h"

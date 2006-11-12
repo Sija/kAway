@@ -1,5 +1,5 @@
 /**
- *  Forwarders Control class
+ *  Forwarders Controller class
  *
  *  Licensed under The GNU Lesser General Public License
  *  Redistributions of files must retain the above copyright notice.
@@ -17,24 +17,24 @@
 #include "FwdControl.h"
 
 namespace kAway2 {
-  FwdControl::FwdControl() : summarizableCount(0), forwardableCount(0) {
-    this->setEvtOnIPrepare(boost::bind(&FwdControl::registerCfgGroups, this));
+  FwdController::FwdController() : summarizableCount(0), forwardableCount(0) {
+    this->setEvtOnIPrepare(boost::bind(&FwdController::registerCfgGroups, this));
   }
 
-  FwdControl::~FwdControl() {
+  FwdController::~FwdController() {
     for (tForwarders::iterator it = this->forwarders.begin(); it != this->forwarders.end(); it++) {
       delete *it; *it = NULL;
     }
     this->forwarders.clear();
   }
 
-  void FwdControl::registerCfgGroups() {
+  void FwdController::registerCfgGroups() {
     for (tForwarders::iterator it = this->forwarders.begin(); it != this->forwarders.end(); it++) {
       UIGroupAdd(ui::cfgGroup, (*it)->cfgCols["cfgGroup"], ACTR_SAVE, (*it)->title.a_str(), (*it)->ico);
     }
   }
 
-  void FwdControl::UIDrawActiveSum() {
+  void FwdController::UIDrawActiveSum() {
     int i = 0, col = 0, colCount = 3, fwdCount = this->summarizableCount;
 
     // UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUP, "Aktywne raporty");
@@ -50,7 +50,7 @@ namespace kAway2 {
     // UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
   }
 
-  void FwdControl::UIDrawActiveFwd() {
+  void FwdController::UIDrawActiveFwd() {
     int i = 0, col = 0, colCount = 3, fwdCount = this->forwardableCount;
 
     // UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUP, "Aktywne przekierowania");
@@ -66,7 +66,7 @@ namespace kAway2 {
     // UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
   }
 
-  void FwdControl::fwdRegister(Forwarder *f) {
+  void FwdController::fwdRegister(Forwarder *f) {
     this->forwarders.push_back(f);
 
     if (f->isSummarizable) {
@@ -77,7 +77,7 @@ namespace kAway2 {
     }
   }
 
-  Forwarder* FwdControl::getById(const StringRef& id) {
+  Forwarder* FwdController::getById(const StringRef& id) {
     for (tForwarders::iterator it = this->forwarders.begin(); it != this->forwarders.end(); it++) {
       if ((*it)->id == id) return *it;
     }

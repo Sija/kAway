@@ -28,8 +28,9 @@ namespace kAway2 {
     intervalTypeBoth
   };
 
-  const unsigned int net = 667;
   const char poweredBy[] = "planet boelex";
+  const char sig[] = "KAWAY2";
+  const unsigned int net = 667;
 
   namespace api {
     const unsigned int api = net * 1000 + IM_USER;

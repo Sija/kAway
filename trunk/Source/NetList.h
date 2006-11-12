@@ -20,7 +20,7 @@
 
 #include "Helpers.h"
 
-class NetList : public iObject {
+class NetList : public SharedObject<iSharedObject> {
 public:
   static const struct IM {
     static const unsigned int key = IM_USER + (668 * 1000) + 50;
@@ -31,7 +31,7 @@ public:
   /*
    * Class version
    */
-	STAMINA_OBJECT_CLASS_VERSION(NetList, iObject, Version(0,1,0,0));
+	STAMINA_OBJECT_CLASS_VERSION(NetList, iSharedObject, Version(0,1,0,0));
 
   struct sNet {
     unsigned int id;
@@ -55,8 +55,8 @@ public:
 
 public:
   NetList(int _cfgCol, int _cfgGroup, int _dynActGroup, int _actCreate, int _actDestroy, enSelectionType _selection = typeCheckboxes) :
-    cfgCol(_cfgCol), cfgGroup(_cfgGroup), dynActGroup(_dynActGroup), actCreate(_actCreate), actDestroy(_actDestroy), defaultUse(true), 
-    netsDrawn(false), selection(_selection) { }
+    SharedObject<iSharedObject>(), cfgCol(_cfgCol), cfgGroup(_cfgGroup), dynActGroup(_dynActGroup), actCreate(_actCreate), actDestroy(_actDestroy), 
+    defaultUse(true), netsDrawn(false), selection(_selection) { }
 
   void loadNets();
   void saveNets();
@@ -94,5 +94,7 @@ protected:
   bool netsDrawn;
   bool defaultUse;
 };
+
+typedef Stamina::SharedPtr<NetList> oNetList;
 
 #endif // __NETLIST_H__

@@ -23,10 +23,11 @@
 
 #include "kAway2.h"
 #include "Helpers.h"
+#include "Control.h"
 #include "Format.h"
 
 namespace kAway2 {
-  class Forwarder {
+  class Forwarder : public boost::signals::trackable {
   public:
     class Summary;
     class Forward;

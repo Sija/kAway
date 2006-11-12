@@ -1,5 +1,5 @@
 /**
- *  Forwarders Control class
+ *  Forwarders Controller class
  *
  *  Licensed under The GNU Lesser General Public License
  *  Redistributions of files must retain the above copyright notice.
@@ -15,8 +15,8 @@
 
 #pragma once
 
-#ifndef __FWDCONTROL_H__
-#define __FWDCONTROL_H__
+#ifndef __FWDCONTROLLER_H__
+#define __FWDCONTROLLER_H__
 
 #include "Helpers.h"
 #include "Forwarder.h"
@@ -26,7 +26,7 @@
 #include <boost/bind.hpp>
 
 namespace kAway2 {
-  class FwdControl {
+  class FwdController {
   public:
     typedef std::deque<Forwarder*> tForwarders;
 
@@ -50,8 +50,8 @@ namespace kAway2 {
     int forwardableCount;
 
   public:
-    FwdControl();
-    ~FwdControl();
+    FwdController();
+    ~FwdController();
 
     void UIDrawActiveSum();
     void UIDrawActiveFwd();
@@ -173,4 +173,4 @@ namespace kAway2 {
   };
 }
 
-#endif // __FWDCONTROL_H__
+#endif // __FWDCONTROLLER_H__

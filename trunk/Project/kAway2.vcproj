@@ -62,6 +62,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="stamina_d.lib"
+				OutputFile="C:\Program Files\Konnekt\plugins\$(ProjectName).debug.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="$(ProjectDir)Lib"
 				GenerateDebugInformation="true"
@@ -139,6 +140,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="stamina.lib"
+				OutputFile="C:\Program Files\Konnekt\plugins\$(ProjectName).dev.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="$(ProjectDir)Lib"
 				IgnoreDefaultLibraryNames=""
@@ -313,11 +315,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Source\globals.h"
+				RelativePath="..\Source\Helpers.h"
 				>
 			</File>
 			<File
-				RelativePath="..\Source\Helpers.h"
+				RelativePath="..\Source\IMControl.h"
 				>
 			</File>
 			<File
@@ -334,10 +336,6 @@
 			</File>
 			<File
 				RelativePath="..\Source\NetList.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Source\plugsNET.h"
 				>
 			</File>
 			<File

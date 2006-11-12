@@ -20,42 +20,28 @@
 
 #include "Helpers.h"
 
-class MRU : public iObject {
+class MRU : public SharedObject<iSharedObject> {
 public:
   typedef std::deque<String> tMRUlist;
 
   /*
    * Class version
    */
-	STAMINA_OBJECT_CLASS_VERSION(MRU, iObject, Version(0,1,0,0));
+	STAMINA_OBJECT_CLASS_VERSION(MRU, iSharedObject, Version(0,1,0,0));
 
 public:
   MRU(const StringRef& _name, int _count = 100, bool _dtbCount = false) : 
-    name(_name), count(_count), dtbCount(_dtbCount) { }
+    SharedObject<iSharedObject>(), name(_name), count(_count), dtbCount(_dtbCount) { }
 
 public:
   tMRUlist get(bool rev = true, const char * buff = 0, int buffSize = 1024);
   void append(const StringRef& current);
   void append(tMRUlist list);
 
-  inline void set(const StringRef& current) {
-    this->clear();
-    this->append(current);
-  }
+  void set(const StringRef& current);
+  void set(tMRUlist list);
 
-  inline void set(tMRUlist list) {
-    this->clear();
-    this->append(list);
-  }
-
-  inline void clear() {
-    sMRU mru;
-
-    mru.name = this->name.a_str();
-    mru.count = 0;
-
-    Ctrl->IMessage(&sIMessage_MRU(IMC_MRU_SET, &mru));
-  }
+  void clear();
 
   inline int getCount() {
     return this->dtbCount ? GETINT(this->count) : this->count;
@@ -95,10 +81,12 @@ public:
     mru.clear();
   }
 
-public:
+protected:
   String name;
   unsigned int count;
   bool dtbCount;
 };
+
+typedef Stamina::SharedPtr<MRU> oMRU;
 
 #endif // __MRU_H__

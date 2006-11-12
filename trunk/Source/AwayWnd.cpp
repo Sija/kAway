@@ -16,7 +16,9 @@
  */
 
 #include "stdafx.h"
+
 #include "AwayWnd.h"
+#include "Control.h"
 
 // dlg ctrl ID
 #define STATUS_OK           0x2000
@@ -39,7 +41,7 @@ namespace kAway2 {
         AwayWnd::sWndData *data = new AwayWnd::sWndData(net);
         SetWindowLong(hWnd, GWL_USERDATA, (LONG) data);
 
-        wCtrl->addInstance(net, hWnd);
+        Controller::getInstance()->wnd->addInstance(net, hWnd);
 
         HFONT font = CreateFont(-11, 0, 0, 0, 0, 0, 0, 0, EASTEUROPE_CHARSET, OUT_DEFAULT_PRECIS, 
           CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, "Tahoma");
@@ -85,7 +87,7 @@ namespace kAway2 {
           ti.hwnd = hWndTmp;
           ti.lpszText = (LPSTR) it->name.a_str();
           SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM) &ti);
-          wCtrl->prepareButtonImage(it->img, hWnd, net, it->id);
+          Controller::getInstance()->wnd->prepareButtonImage(it->img, hWnd, net, it->id);
         }
         // int chkSt = IMessage(IM_GET_STATUS, net);
         CheckDlgButton(hWnd, GETINT(cfg::wnd::onEnableSt), BST_CHECKED);
@@ -137,7 +139,7 @@ namespace kAway2 {
         CheckDlgButton(hWnd, MUTE, GETINT(cfg::muteOnEnable) ? BST_CHECKED : 0);
 
         // odczytujemy liste mru
-        MRU::tMRUlist list = MRUlist->get();
+        MRU::tMRUlist list = Controller::getInstance()->mruList->get();
 
         // wype³niamy combobox
         for (MRU::tMRUlist::iterator it = list.begin(); it != list.end(); it++) {
@@ -156,7 +158,7 @@ namespace kAway2 {
 
       case WM_DESTROY: {
         AwayWnd::sWndData *data = (AwayWnd::sWndData *) GetWindowLong(hWnd, GWL_USERDATA);
-        wCtrl->removeInstance(data->net);
+        Controller::getInstance()->wnd->removeInstance(data->net);
 
         delete data;
         return 0;
@@ -171,7 +173,7 @@ namespace kAway2 {
             char * msg = new char[len];
             
             GetWindowText(GetDlgItem(hWnd, STATUS_EDIT_INFO), msg, len);
-            MRUlist->append(msg);
+            Controller::getInstance()->mruList->append(msg);
 
             if (IsDlgButtonChecked(hWnd, ST_ONLINE)) st = ST_ONLINE;
             if (IsDlgButtonChecked(hWnd, ST_CHAT)) st = ST_CHAT;
@@ -188,8 +190,8 @@ namespace kAway2 {
             SETINT(cfg::wnd::changeInfoOnEnable, (IsDlgButtonChecked(hWnd, STATUS_CHANGE_INFO) == BST_CHECKED) ? 1 : 0);
             SETINT(cfg::wnd::muteOnEnable, (IsDlgButtonChecked(hWnd, MUTE) == BST_CHECKED) ? 1 : 0);
 
-            pCtrl->fromWnd(true);
-            pCtrl->enable(msg);
+            Controller::getInstance()->fromWnd(true);
+            Controller::getInstance()->enable(msg);
 
             delete [] msg;
             DestroyWindow(hWnd);

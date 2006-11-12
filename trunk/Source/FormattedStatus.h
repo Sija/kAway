@@ -31,23 +31,18 @@ public:
   FormattedStatus(NetList *_lCtrl, int _onHiddenCfgCol = 0, int _dotsCfgCol = 0, const StringRef& _infoVar = "") : 
     Status(_lCtrl, _onHiddenCfgCol, _dotsCfgCol), infoVar(_infoVar) 
   {
-    this->oFormat = new Format;
-  }
-
-  ~FormattedStatus() {
-    delete this->oFormat;
-    this->oFormat = NULL;
+    this->stringFormatter = new Format;
   }
 
   inline String parseInfo(StringRef info, int net, int st = -1) {
     bool dynSt = this->infoVar.length() && 
-      this->oFormat->addVar(this->infoVar, this->getInfo(net), false);
+      this->stringFormatter->addVar(this->infoVar, this->getInfo(net), false);
 
-    info = this->oFormat->parse(info);
+    info = this->stringFormatter->parse(info);
     info = Status::parseInfo(info, net, st);
 
     if (dynSt) {
-      this->oFormat->removeVar(this->infoVar);
+      this->stringFormatter->removeVar(this->infoVar);
     }
     return PassStringRef(info);
   }
@@ -56,7 +51,9 @@ public:
   // nazwa zmiennej do której wrzucany bêdzie aktualny opis statusu
   String infoVar;
   // formatowanie statusu
-  Format *oFormat;
+  oFormat stringFormatter;
 };
+
+typedef Stamina::SharedPtr<FormattedStatus> oFormattedStatus;
 
 #endif // __FORMATTEDSTATUS_H__

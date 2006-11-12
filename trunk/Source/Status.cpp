@@ -16,8 +16,9 @@
 #include "stdafx.h"
 #include "Status.h"
 
-Status::Status(NetList *_lCtrl, int _onHiddenCfgCol, int _dotsCfgCol) :
-  lCtrl(_lCtrl), onHiddenCfgCol(_onHiddenCfgCol), dotsCfgCol(_dotsCfgCol), remember(false) 
+Status::Status(NetList* _netList, int _onHiddenCfgCol, int _dotsCfgCol) :
+  SharedObject<iSharedObject>(), netList(_netList), onHiddenCfgCol(_onHiddenCfgCol), 
+  dotsCfgCol(_dotsCfgCol), remember(false) 
 {
   this->infoCharLimits.push_back(sInfoCharLimit(plugsNET::dwutlenek, 255));
   this->infoCharLimits.push_back(sInfoCharLimit(plugsNET::kaqq, 255));
@@ -46,14 +47,14 @@ void Status::removeReplacementSt(int net, int before) {
 }
 
 void Status::changeStatus(int st) {
-  NetList::tNets nets = this->lCtrl->getNets();
+  NetList::tNets nets = this->netList->getNets();
   for (NetList::tNets::iterator it = nets.begin(); it != nets.end(); it++) {
     if (this->isNetValid(it->net)) this->changeStatus(it->net, st);
   }
 }
 
 void Status::changeStatus(const StringRef& info, int st) {
-  NetList::tNets nets = this->lCtrl->getNets();
+  NetList::tNets nets = this->netList->getNets();
   for (NetList::tNets::iterator it = nets.begin(); it != nets.end(); it++) {
     if (this->isNetValid(it->net)) this->changeStatus(it->net, info, st);
   }
@@ -120,14 +121,14 @@ String Status::getInfo(int net) {
   return fake;
 }
 
-void Status::rememberInfo() {
-  this->remember = true;
-  this->lastSt.clear();
-  this->rememberedSt.clear();
-
-  NetList::tNets nets = this->lCtrl->getNets();
-  for (NetList::tNets::iterator it = nets.begin(); it != nets.end(); it++) {
-    this->rememberInfo(it->net);
+bool Status::isRemembered(int net) {
+  if (!net) {
+    return this->remember;
+  } else {
+    for (tInfos::iterator it = this->rememberedSt.begin(); it != this->rememberedSt.end(); it++) {
+      if (it->net == net) return true;
+    }
+    return false;
   }
 }
 
@@ -142,11 +143,15 @@ void Status::rememberInfo(int net) {
     this, net, st, nullChk(info));
 }
 
-void Status::restoreInfo() {
-  for (tInfos::iterator it = this->rememberedSt.begin(); it != this->rememberedSt.end(); it++) {
-    this->restoreInfo(it->net);
+void Status::rememberInfo() {
+  this->remember = true;
+  this->lastSt.clear();
+  this->rememberedSt.clear();
+
+  NetList::tNets nets = this->netList->getNets();
+  for (NetList::tNets::iterator it = nets.begin(); it != nets.end(); it++) {
+    this->rememberInfo(it->net);
   }
-  this->remember = false;
 }
 
 void Status::restoreInfo(int net) {
@@ -158,6 +163,13 @@ void Status::restoreInfo(int net) {
 
   logDebug("[Status<%i>::restoreInfo().item]: net = %i, status = %i, info = %s",
     this, net, st, nullChk(info));
+}
+
+void Status::restoreInfo() {
+  for (tInfos::iterator it = this->rememberedSt.begin(); it != this->rememberedSt.end(); it++) {
+    this->restoreInfo(it->net);
+  }
+  this->remember = false;
 }
 
 void Status::actionHandle(sIMessage_base *msgBase) {
@@ -183,8 +195,58 @@ bool Status::chgOnHidden() {
   return this->onHiddenCfgCol ? GETINT(this->onHiddenCfgCol) : true;
 }
 
+String Status::labelById(int st) {
+  String name = "?";
+
+  switch (st) {
+    case ST_ONLINE: name = "Dostępny"; break;
+    case ST_CHAT: name = "Pogadam"; break;
+    case ST_AWAY: name = "Zaraz wracam"; break;
+    case ST_NA: name = "Nieosiągalny"; break;
+    case ST_DND: name = "Nie przeszkadzać"; break;
+    case ST_HIDDEN: name = "Ukryty"; break;
+    case ST_OFFLINE: name = "Niedostępny"; break;
+  }
+  return name;
+}
+
+int Status::getInfoCharLimit(int net) {
+  for (tInfoCharLimits::iterator it = this->infoCharLimits.begin(); it != this->infoCharLimits.end(); it++) {
+    if (it->net == net) return it->length;
+  }
+
+  int limit = 0;
+  if (net) {
+    Ctrl->IMessage(IM::infoCharLimit, net, limit);
+    if (Ctrl->getError() != IMERROR_NORESULT) {
+      return limit;
+    }
+  }
+  return 0;
+}
+
+String Status::limitChars(StringRef status, int net) {
+  return Helpers::trunc(status, this->getInfoCharLimit(net), this->getDots());
+}
+
+String Status::parseInfo(StringRef info, int net, int st) {
+  info = Helpers::trim(info);
+  info = this->limitChars(info, net);
+
+  return PassStringRef(info);
+}
+
+String Status::getDots() {
+  if (!this->dotsCfgCol) return "";
+
+  if (Ctrl->DTgetType(DTCFG, this->dotsCfgCol) == DT_CT_STR) {
+    return GETSTRA(this->dotsCfgCol);
+  }
+  return GETINT(this->dotsCfgCol) ? "…" : "";
+}
+
 bool Status::isNetValid(int net) {
-  if (this->lCtrl->getNetState(net) && this->lCtrl->isConnected(net)) {
+  if (this->netList->getNetState(net) && this->netList->isConnected(net)) {
     if (!this->chgOnHidden() && (ST_HIDDEN == this->getActualStatus(net))) {
       return false;
     } else {
@@ -192,8 +254,4 @@ bool Status::isNetValid(int net) {
     }
   }
   return false;
-}
-
-String Status::limitChars(StringRef status, int net) {
-  return Helpers::trunc(status, this->getInfoCharLimit(net), this->getDots());
 }

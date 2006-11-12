@@ -21,15 +21,19 @@
 #define __AWAYWND_H__
 
 #include "kAway2.h"
-#include "globals.h"
 
 #include "Helpers.h"
 #include "MRU.h"
-#include "Control.h"
 #include "EditFix.h"
 
 namespace kAway2 {
-  class AwayWnd {
+  class AwayWnd : public SharedObject<iSharedObject> {
+  public:
+    /*
+     * Class version
+     */
+	  STAMINA_OBJECT_CLASS_VERSION(AwayWnd, iSharedObject, Version(0,1,0,0));
+
   public:
     struct sWndData {
       unsigned int net;
@@ -64,7 +68,7 @@ namespace kAway2 {
     typedef std::list<sStatus> tStats;
 
   public:
-    AwayWnd() {
+    AwayWnd() : SharedObject<iSharedObject>() {
       this->classRegister();
     }
     ~AwayWnd() {
@@ -96,6 +100,8 @@ namespace kAway2 {
   protected:
     std::map<int, HWND> instances;
   };
+
+  typedef Stamina::SharedPtr<AwayWnd> oAwayWnd;
 }
 
 #endif // __AWAYWND_H__

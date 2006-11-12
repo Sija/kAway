@@ -30,12 +30,12 @@ public:
   FormatException(const StringRef& reason) : ExceptionString(reason) { }
 };
 
-class Format : public iObject {
+class Format : public SharedObject<iSharedObject> {
 public:
   /*
    * Class version
    */
-	STAMINA_OBJECT_CLASS_VERSION(Format, iObject, Version(0,1,0,0));
+	STAMINA_OBJECT_CLASS_VERSION(Format, iSharedObject, Version(0,1,0,0));
 
   typedef boost::function<void(StringRef& value, StringRef& prefix, StringRef& suffix, 
     Stamina::RegEx& pRegEx, Stamina::RegEx& sRegEx)> ModifierCallback;
@@ -148,5 +148,7 @@ protected:
   tModifiers modifiers;
   tVars vars;
 };
+
+typedef Stamina::SharedPtr<Format> oFormat;
 
 #endif // __FORMAT_H__
