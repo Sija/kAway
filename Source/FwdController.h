@@ -1,17 +1,17 @@
 /**
- *  Forwarders Controller class
- *
- *  Licensed under The GNU Lesser General Public License
- *  Redistributions of files must retain the above copyright notice.
- *
- *  @filesource
- *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
- *  @version      $Revision$
- *  @modifiedby   $LastChangedBy$
- *  @lastmodified $Date$
- *  @license      http://creativecommons.org/licenses/LGPL/2.1/
- */
+  *  Forwarders Controller class
+  *
+  *  Licensed under The GNU Lesser General Public License
+  *  Redistributions of files must retain the above copyright notice.
+  *
+  *  @filesource
+  *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
+  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
+  *  @version      $Revision$
+  *  @modifiedby   $LastChangedBy$
+  *  @lastmodified $Date$
+  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  */
 
 #pragma once
 
@@ -22,7 +22,7 @@
 #include "Forwarder.h"
 
 namespace kAway2 {
-  class FwdController {
+  class FwdController : public SharedObject<iSharedObject> {
   public:
     typedef std::deque<Forwarder*> tForwarders;
 
@@ -44,6 +44,8 @@ namespace kAway2 {
   public:
     tForwarders forwarders;
   };
+
+  typedef SharedPtr<FwdController> oFwdController;
 }
 
 #endif // __FWDCONTROLLER_H__

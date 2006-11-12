@@ -1,17 +1,17 @@
 /**
- *  kAway2 Control class
- *
- *  Licensed under The GNU Lesser General Public License
- *  Redistributions of files must retain the above copyright notice.
- *
- *  @filesource
- *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
- *  @version      $Revision$
- *  @modifiedby   $LastChangedBy$
- *  @lastmodified $Date$
- *  @license      http://creativecommons.org/licenses/LGPL/2.1/
- */
+  *  kAway2 Control class
+  *
+  *  Licensed under The GNU Lesser General Public License
+  *  Redistributions of files must retain the above copyright notice.
+  *
+  *  @filesource
+  *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
+  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
+  *  @version      $Revision$
+  *  @modifiedby   $LastChangedBy$
+  *  @lastmodified $Date$
+  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  */
 
 #pragma once
 
@@ -31,6 +31,8 @@
 
 namespace kAway2 {
   class Controller : public IMController<Controller>, boost::signals::trackable {
+    friend class IMController<Controller>;
+
   public:
     typedef std::deque<cMessage*> tMsgQueue;
 
@@ -53,8 +55,8 @@ namespace kAway2 {
 
     typedef std::map<tCntId, sCnt> tCnts;
 
-  public:
-    inline Controller() : IMController<Controller>(), trackable(), isOn(false), muteStateSwitched(false), autoAway(false), pluginsGroup(0) {
+  protected:
+    inline Controller() : isOn(false), muteStateSwitched(false), autoAway(false), pluginsGroup(0) {
       this->addStaticValue(IM_PLUG_NET, net);
       this->addStaticValue(IM_PLUG_TYPE, IMT_UI | IMT_CONFIG | IMT_ALLMESSAGES);
       this->addStaticValue(IM_PLUG_VERSION, 0);

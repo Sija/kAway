@@ -1,17 +1,17 @@
 /**
- *  Forwarder Base class
- *
- *  Licensed under The GNU Lesser General Public License
- *  Redistributions of files must retain the above copyright notice.
- *
- *  @filesource
- *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
- *  @version      $Revision$
- *  @modifiedby   $LastChangedBy$
- *  @lastmodified $Date$
- *  @license      http://creativecommons.org/licenses/LGPL/2.1/
- */
+  *  Forwarder Base class
+  *
+  *  Licensed under The GNU Lesser General Public License
+  *  Redistributions of files must retain the above copyright notice.
+  *
+  *  @filesource
+  *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
+  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
+  *  @version      $Revision$
+  *  @modifiedby   $LastChangedBy$
+  *  @lastmodified $Date$
+  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  */
 
 #include "stdafx.h"
 #include "Forwarder.h"
@@ -47,11 +47,6 @@ namespace kAway2 {
     */
   Forwarder::Summary::Summary(Forwarder *fwd) : parent(fwd) {
     this->timer.reset(Stamina::timerTmplCreate(boost::bind(&Forwarder::Summary::send, this)));
-    this->clear();
-  }
-
-  Forwarder::Summary::~Summary() {
-    this->timer.reset();
     this->clear();
   }
 

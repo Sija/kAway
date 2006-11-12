@@ -1,21 +1,21 @@
 /**
- *  kAway2 stdafx
- *
- *  Include file for standard system include files,
- *  or project specific include files that are used frequently,
- *  but are changed infrequently.
- *
- *  Licensed under The GNU Lesser General Public License
- *  Redistributions of files must retain the above copyright notice.
- *
- *  @filesource
- *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
- *  @version      $Revision$
- *  @modifiedby   $LastChangedBy$
- *  @lastmodified $Date$
- *  @license      http://creativecommons.org/licenses/LGPL/2.1/
- */
+  *  kAway2 stdafx
+  *
+  *  Include file for standard system include files,
+  *  or project specific include files that are used frequently,
+  *  but are changed infrequently.
+  *
+  *  Licensed under The GNU Lesser General Public License
+  *  Redistributions of files must retain the above copyright notice.
+  *
+  *  @filesource
+  *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
+  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
+  *  @version      $Revision$
+  *  @modifiedby   $LastChangedBy$
+  *  @lastmodified $Date$
+  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  */
 
 #pragma once
 

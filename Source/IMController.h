@@ -1,17 +1,17 @@
 /**
- *  IMessage Controller class
- *
- *  Licensed under The GNU Lesser General Public License
- *  Redistributions of files must retain the above copyright notice.
- *
- *  @filesource
- *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
- *  @version      $Revision: 51 $
- *  @modifiedby   $LastChangedBy: sija $
- *  @lastmodified $Date: 2006-10-28 21:39:17 +0200 (So, 28 paü 2006) $
- *  @license      http://creativecommons.org/licenses/LGPL/2.1/
- */
+  *  IMessage Controller class
+  *
+  *  Licensed under The GNU Lesser General Public License
+  *  Redistributions of files must retain the above copyright notice.
+  *
+  *  @filesource
+  *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
+  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
+  *  @version      $Revision: 51 $
+  *  @modifiedby   $LastChangedBy: sija $
+  *  @lastmodified $Date: 2006-10-28 21:39:17 +0200 (So, 28 paü 2006) $
+  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  */
 
 #pragma once
 
@@ -44,15 +44,10 @@ namespace Konnekt {
 		}
 
   protected:
-    inline IMController() : SharedObject<iSharedObject>(), returnCodeSet(false), returnCode(0) { 
-      if (!instance.isValid()) {
-        // instance = this->castObject<CC>();
-      }
-
-      this->addStaticValue(IM_PLUG_SDKVERSION, KONNEKT_SDK_V);
-
+    inline IMController() : returnCodeSet(false), returnCode(0) { 
       this->registerObserver(IM_PLUG_INIT, boost::bind(&IMController::onInit, this, _1));
       this->registerObserver(IM_PLUG_DEINIT, boost::bind(&IMController::onDeInit, this, _1));
+      this->addStaticValue(IM_PLUG_SDKVERSION, KONNEKT_SDK_V);
     }
 
     inline IMController(CC const&) { }
@@ -67,12 +62,10 @@ namespace Konnekt {
       for (tObservers::iterator it = this->actionObservers.begin(); it != this->actionObservers.end(); it++) {
         delete it->second;
       }
-      SharedObject<iSharedObject>::~SharedObject();
     }
 
   public:
     inline static CC* getInstance() {
-      // static SharedPtr<CC> instance;
       if (!instance.isValid()) {
         instance = new CC;
       }
@@ -91,7 +84,9 @@ namespace Konnekt {
 
     inline bool handle(sIMessage_base* msgBase) {
       sIMessage_2params* msg = static_cast<sIMessage_2params*>(msgBase);
+
       IMLOG("[IMController<%i>::handle()]: id = %i", this, msg->id);
+      this->clear();
 
       if (this->staticValues.find(msg->id) != this->staticValues.end()) {
         this->setReturnCode(this->staticValues[msg->id]);
@@ -104,12 +99,22 @@ namespace Konnekt {
       return this->isReturnCodeSet();
     }
 
-    inline bool registerObserver(int id, fOnIMessage f, int priority = 0) {
+    inline bool registerObserver(int id, fOnIMessage f, int priority = 0, boost::signals::connect_position pos = boost::signals::at_back) {
       if (!f.empty()) {
         if (this->observers.find(id) == this->observers.end()) {
           this->observers[id] = new sigOnIMessage;
         }
-        return (*this->observers[id]).connect(priority, f).connected();
+        return (*this->observers[id]).connect(priority, f, pos).connected();
+      }
+      return false;
+    }
+
+    inline bool registerActionObserver(int id, fOnIMessage f, int priority = 0, boost::signals::connect_position pos = boost::signals::at_back) {
+      if (!f.empty()) {
+        if (this->actionObservers.find(id) == this->actionObservers.end()) {
+          this->actionObservers[id] = new sigOnIMessage;
+        }
+        return (*this->actionObservers[id]).connect(priority, f, pos).connected();
       }
       return false;
     }
@@ -119,16 +124,6 @@ namespace Konnekt {
 
       this->setIM(msg);
       (*this->observers[msg->id])(CC::getInstance());
-    }
-
-    inline bool registerActionObserver(int id, fOnIMessage f, int priority = 0) {
-      if (!f.empty()) {
-        if (this->actionObservers.find(id) == this->actionObservers.end()) {
-          this->actionObservers[id] = new sigOnIMessage;
-        }
-        return (*this->actionObservers[id]).connect(priority, f).connected();
-      }
-      return false;
     }
 
     inline void notifyActionObservers(sIMessage_2params* msg) {
