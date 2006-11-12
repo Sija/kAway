@@ -15,13 +15,13 @@
 
 #pragma once
 
-#ifndef __CONTROL_H__
-#define __CONTROL_H__
+#ifndef __CONTROLLER_H__
+#define __CONTROLLER_H__
 
 #include "kAway2.h"
 
 #include "Helpers.h"
-#include "IMControl.h"
+#include "IMController.h"
 #include "MRU.h"
 #include "NetList.h"
 #include "Format.h"
@@ -254,4 +254,4 @@ namespace kAway2 {
   };
 }
 
-#endif // __CONTROL_H__
+#endif // __CONTROLLER_H__

@@ -18,7 +18,7 @@
 #include "stdafx.h"
 
 #include "AwayWnd.h"
-#include "Control.h"
+#include "Controller.h"
 
 // dlg ctrl ID
 #define STATUS_OK           0x2000

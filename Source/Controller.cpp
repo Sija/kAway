@@ -14,7 +14,7 @@
  */
 
 #include "stdafx.h"
-#include "Control.h"
+#include "Controller.h"
 
 namespace kAway2 {
   void Controller::onPrepare(Controller* self) {

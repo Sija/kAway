@@ -193,7 +193,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Source\Control.cpp"
+				RelativePath="..\Source\Controller.cpp"
 				>
 			</File>
 			<File
@@ -225,7 +225,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Source\FwdControl.cpp"
+				RelativePath="..\Source\FwdController.cpp"
 				>
 			</File>
 			<File
@@ -291,7 +291,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Source\Control.h"
+				RelativePath="..\Source\Controller.h"
 				>
 			</File>
 			<File
@@ -311,7 +311,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Source\FwdControl.h"
+				RelativePath="..\Source\FwdController.h"
 				>
 			</File>
 			<File
@@ -319,7 +319,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Source\IMControl.h"
+				RelativePath="..\Source\IMController.h"
 				>
 			</File>
 			<File

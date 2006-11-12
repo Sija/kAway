@@ -23,7 +23,7 @@
 
 #include "kAway2.h"
 #include "Helpers.h"
-#include "Control.h"
+#include "Controller.h"
 #include "Format.h"
 
 namespace kAway2 {

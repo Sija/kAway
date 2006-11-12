@@ -21,10 +21,10 @@
 #include "NetList.h"
 #include "FormattedStatus.h"
 #include "AwayWnd.h"
-#include "Control.h"
-#include "IMControl.h"
+#include "Controller.h"
+#include "IMController.h"
 
-//#include "FwdControl.h"
+//#include "FwdController.h"
 
 //#include "Forwarders/CntForwarder.h"
 //#include "Forwarders/SMSForwarder.h"

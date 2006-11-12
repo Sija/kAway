@@ -20,8 +20,6 @@
 
 #include "../kAway2.h"
 
-#include "../Helpers.h"
-#include "../FwdControl.h"
 #include "../Forwarder.h"
 #include "../Message.h"
 
