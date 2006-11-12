@@ -101,13 +101,13 @@ namespace kAway2 {
 
     void inline onPluginsLoaded(Controller* self) {
       if (int oldId = Helpers::pluginExists(plugsNET::kaway)) {
-        Ctrl->IMessage(&sIMessage_plugOut(oldId, "kAway2 jest nastÄ™pcÄ… wtyczki K.Away :)",
+        Ctrl->IMessage(&sIMessage_plugOut(oldId, "kAway2 jest nastêpc¹ wtyczki K.Away :)",
           sIMessage_plugOut::erNo, sIMessage_plugOut::euNowAndOnNextStart));
         return this->setFailure();
       }
       if (int ggCrypt = Helpers::pluginExists(plugsNET::ggcrypt)) {
-        Ctrl->IMessage(&sIMessage_plugOut(ggCrypt, "Wtyczka GG Crypt jest przestarzaÅ‚a, przy czym\n"
-          "nie pozwala na poprawne dziaÅ‚anie wtyczki kAway2.",
+        Ctrl->IMessage(&sIMessage_plugOut(ggCrypt, "Wtyczka GG Crypt jest przestarza³a, przy czym\n"
+          "nie pozwala na poprawne dzia³anie wtyczki kAway2.",
           sIMessage_plugOut::erNo, sIMessage_plugOut::euNowAndOnNextStart));
         return this->setFailure();
       }

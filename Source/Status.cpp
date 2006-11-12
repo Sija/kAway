@@ -199,13 +199,13 @@ String Status::labelById(int st) {
   String name = "?";
 
   switch (st) {
-    case ST_ONLINE: name = "DostÄ™pny"; break;
+    case ST_ONLINE: name = "Dostêpny"; break;
     case ST_CHAT: name = "Pogadam"; break;
     case ST_AWAY: name = "Zaraz wracam"; break;
-    case ST_NA: name = "NieosiÄ…galny"; break;
-    case ST_DND: name = "Nie przeszkadzaÄ‡"; break;
+    case ST_NA: name = "Nieosi¹galny"; break;
+    case ST_DND: name = "Nie przeszkadzaæ"; break;
     case ST_HIDDEN: name = "Ukryty"; break;
-    case ST_OFFLINE: name = "NiedostÄ™pny"; break;
+    case ST_OFFLINE: name = "Niedostêpny"; break;
   }
   return name;
 }
@@ -242,7 +242,7 @@ String Status::getDots() {
   if (Ctrl->DTgetType(DTCFG, this->dotsCfgCol) == DT_CT_STR) {
     return GETSTRA(this->dotsCfgCol);
   }
-  return GETINT(this->dotsCfgCol) ? "â€¦" : "";
+  return GETINT(this->dotsCfgCol) ? "…" : "";
 }
 
 bool Status::isNetValid(int net) {
