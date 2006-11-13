@@ -18,7 +18,7 @@
 
 namespace kAway2 {
   FwdController::FwdController() : summarizableCount(0), forwardableCount(0) {
-    Controller::getInstance()->registerObserver(IM_UI_PREPARE, boost::bind(&FwdController::registerCfgGroups, this, _1));
+    Controller::getInstance()->registerObserver(IM_UI_PREPARE, bind(&FwdController::registerCfgGroups, this, _1));
   }
 
   FwdController::~FwdController() {

@@ -46,7 +46,7 @@ namespace kAway2 {
     * Forwarder::Summary
     */
   Forwarder::Summary::Summary(Forwarder *fwd) : parent(fwd) {
-    this->timer.reset(Stamina::timerTmplCreate(boost::bind(&Forwarder::Summary::send, this)));
+    this->timer.reset(timerTmplCreate(bind(&Forwarder::Summary::send, this)));
     this->clear();
   }
 
@@ -138,7 +138,7 @@ namespace kAway2 {
   }
 
   String Forwarder::Forward::getBody(int cnt, cMessage *msg) {
-    Stamina::Date64 date(msg->time);
+    Date64 date(msg->time);
     Format format;
 
     format.addVar("msgFrom", !strlen(GETCNTC(cnt, CNT_DISPLAY)) ? msg->fromUid : GETCNTC(cnt, CNT_DISPLAY));

@@ -16,7 +16,7 @@
 #include "stdafx.h"
 #include "Format.h"
 
-std::string __stdcall fCallback(Stamina::RegEx* reg, void* param) {
+std::string __stdcall fCallback(RegEx* reg, void* param) {
   Format* fCtrl = static_cast<Format*>(param);
 
   String value, prefix, suffix;
@@ -87,7 +87,7 @@ void Format::clearVars() {
 String Format::parse(const StringRef& txt) {
   if (!this->vars.size() || !txt.length()) return txt;
 
-  Stamina::RegEx reg;
+  RegEx reg;
 
   reg.setPattern(this->pattern);
   reg.setSubject(txt);
@@ -147,8 +147,8 @@ int Format::applyModifiers(StringRef& value, StringRef& prefix, StringRef& suffi
   int howMany = 0;
 
   for (tModifiers::iterator it = this->modifiers.begin(); it != this->modifiers.end(); it++) {
-    Stamina::RegEx pReg, sReg;
     sModifier* mod = *it;
+    RegEx pReg, sReg;
 
     if (mod->prefix.length())
       pReg.match(mod->prefix.a_str(), prefix.a_str());

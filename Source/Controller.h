@@ -35,7 +35,7 @@
 //#include "Forwarders/SMSForwarder.h"
 
 namespace kAway2 {
-  class Controller : public IMController<Controller>, boost::signals::trackable {
+  class Controller : public IMController<Controller>, signals::trackable {
   public:
     friend class IMController<Controller>;
     typedef std::deque<cMessage*> tMsgQueue;
@@ -71,24 +71,24 @@ namespace kAway2 {
       this->addStaticValue(IM_PLUG_NETNAME, 0);
       this->addStaticValue(IM_PLUG_PRIORITY, PLUGP_HIGHEST);
 
-      this->registerObserver(IM_UI_PREPARE, boost::bind(resolve_cast0(&Controller::onPrepare), this));
-      this->registerObserver(IM_SETCOLS, boost::bind(resolve_cast0(&Controller::onSetCols), this));
-      this->registerObserver(IM_UIACTION, boost::bind(resolve_cast0(&Controller::onAction), this));
-      this->registerObserver(IM_MSG_RCV, boost::bind(resolve_cast0(&Controller::onMsgRcv), this));
-      this->registerObserver(IM_BEFOREEND, boost::bind(resolve_cast0(&Controller::onEnd), this));
-      this->registerObserver(IM_STATUSCHANGE, boost::bind(resolve_cast0(&Controller::onStatusChange), this));
-      this->registerObserver(IM_ALLPLUGINSINITIALIZED, boost::bind(resolve_cast0(&Controller::onPluginsLoaded), this));
-      this->registerObserver(IM_AWAY, boost::bind(resolve_cast0(&Controller::onAutoAway), this));
-      this->registerObserver(IM_BACK, boost::bind(resolve_cast0(&Controller::onBack), this));
+      this->registerObserver(IM_UI_PREPARE, bind(resolve_cast0(&Controller::onPrepare), this));
+      this->registerObserver(IM_SETCOLS, bind(resolve_cast0(&Controller::onSetCols), this));
+      this->registerObserver(IM_UIACTION, bind(resolve_cast0(&Controller::onAction), this));
+      this->registerObserver(IM_MSG_RCV, bind(resolve_cast0(&Controller::onMsgRcv), this));
+      this->registerObserver(IM_BEFOREEND, bind(resolve_cast0(&Controller::onEnd), this));
+      this->registerObserver(IM_STATUSCHANGE, bind(resolve_cast0(&Controller::onStatusChange), this));
+      this->registerObserver(IM_ALLPLUGINSINITIALIZED, bind(resolve_cast0(&Controller::onPluginsLoaded), this));
+      this->registerObserver(IM_AWAY, bind(resolve_cast0(&Controller::onAutoAway), this));
+      this->registerObserver(IM_BACK, bind(resolve_cast0(&Controller::onBack), this));
 
       /* API */
-      this->registerObserver(api::isEnabled, boost::bind(resolve_cast0(&Controller::apiEnabled), this));
-      this->registerObserver(api::enable, boost::bind(resolve_cast0(&Controller::apiEnable), this));
-      this->registerObserver(api::disable, boost::bind(resolve_cast0(&Controller::apiDisable), this));
-      this->registerObserver(api::isIgnored, boost::bind(resolve_cast0(&Controller::apiIgnored), this));
-      this->registerObserver(api::isAutoAway, boost::bind(resolve_cast0(&Controller::apiAutoAway), this));
-      this->registerObserver(api::ignore, boost::bind(resolve_cast0(&Controller::apiIgnore), this));
-      this->registerObserver(api::showAwayWnd, boost::bind(resolve_cast0(&Controller::apiShowAwayWnd), this));
+      this->registerObserver(api::isEnabled, bind(resolve_cast0(&Controller::apiEnabled), this));
+      this->registerObserver(api::enable, bind(resolve_cast0(&Controller::apiEnable), this));
+      this->registerObserver(api::disable, bind(resolve_cast0(&Controller::apiDisable), this));
+      this->registerObserver(api::isIgnored, bind(resolve_cast0(&Controller::apiIgnored), this));
+      this->registerObserver(api::isAutoAway, bind(resolve_cast0(&Controller::apiAutoAway), this));
+      this->registerObserver(api::ignore, bind(resolve_cast0(&Controller::apiIgnore), this));
+      this->registerObserver(api::showAwayWnd, bind(resolve_cast0(&Controller::apiShowAwayWnd), this));
     }
 
   public:
@@ -151,7 +151,7 @@ namespace kAway2 {
       return this->awayMsg;
     }
 
-    inline Stamina::Date64 getAwayTime() {
+    inline Date64 getAwayTime() {
       return this->awayTime;
     }
 
@@ -180,7 +180,7 @@ namespace kAway2 {
 
     tCnts cntProps;
     String awayMsg;
-    Stamina::Date64 awayTime;
+    Date64 awayTime;
 
     void switchBtns(bool state);
 

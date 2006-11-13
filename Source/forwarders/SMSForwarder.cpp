@@ -20,12 +20,12 @@ namespace kAway2 {
   SMSForwarder::SMSForwarder() : Forwarder("sms", "SMS", 501, true, true) {
     Controller* pCtrl = Controller::getInstance();
 
-    pCtrl->registerObserver(IM_SETCOLS, boost::bind(resolve_cast0(&SMSForwarder::onISetCols), this));
-    pCtrl->registerObserver(IM_UI_PREPARE, boost::bind(resolve_cast0(&SMSForwarder::onIPrepare), this));
-    pCtrl->registerObserver(IM_MSG_RCV, boost::bind(&SMSForwarder::onNewMsg, this, _1)); // baaad
-    pCtrl->registerObserver(api::isAway, boost::bind(resolve_cast0(&SMSForwarder::onEnable), this));
-    pCtrl->registerObserver(api::isBack, boost::bind(resolve_cast0(&SMSForwarder::onDisable), this));
-    pCtrl->registerActionObserver(ui::sms::number, boost::bind(&SMSForwarder::refreshCombo, this, _1));
+    pCtrl->registerObserver(IM_SETCOLS, bind(resolve_cast0(&SMSForwarder::onISetCols), this));
+    pCtrl->registerObserver(IM_UI_PREPARE, bind(resolve_cast0(&SMSForwarder::onIPrepare), this));
+    pCtrl->registerObserver(IM_MSG_RCV, bind(&SMSForwarder::onNewMsg, this, _1)); // baaad
+    pCtrl->registerObserver(api::isAway, bind(resolve_cast0(&SMSForwarder::onEnable), this));
+    pCtrl->registerObserver(api::isBack, bind(resolve_cast0(&SMSForwarder::onDisable), this));
+    pCtrl->registerActionObserver(ui::sms::number, bind(&SMSForwarder::refreshCombo, this, _1));
   }
 
   void SMSForwarder::send(const StringRef& msg) {

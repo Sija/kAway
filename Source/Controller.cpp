@@ -526,18 +526,18 @@ namespace kAway2 {
     bool userMsg = !strlen(m->fromUid) && !GetExtParam(m->ext, cfg::extParamName).length() && (m->type == MT_MESSAGE);
 
     if (userMsg && (m->body[0] == '/' && strlen(m->body) > 1) && Helpers::altCfgVal(cnt, cfg::ircCmds)) {
-      Stamina::tStringVector params;
+      tStringVector params;
       std::string body(m->body); 
       body = body.substr(1, body.length());
 
-      Stamina::split(body, " ", params);
+      split(body, " ", params);
       String cmd = params[0];
       String awayMsg = (params.size() > 1) ? body.substr(params[0].length() + 1, body.length()) : "";
 
       bool del = false, set = false; // irc-type command like
       int st = 0; // default status
 
-      Stamina::RegEx reg;
+      RegEx reg;
       reg.match("/^(away|brb)\\[(.+)\\]$/", cmd.a_str());
 
       if (reg.isMatched()) {

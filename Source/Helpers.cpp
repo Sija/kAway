@@ -145,8 +145,8 @@ namespace Helpers {
   }
 
 #ifdef __STAMINA_TIME64__
-  bool isToday(Stamina::Date64 date) {
-    Stamina::Date64 today(true);
+  bool isToday(Date64 date) {
+    Date64 today(true);
 
     return ((date.day != today.day) || (date.month != today.month) || (date.year != today.year)) 
       ? false : true;

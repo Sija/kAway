@@ -20,12 +20,12 @@ namespace kAway2 {
   CntForwarder::CntForwarder() : Forwarder("forward", "Lustereczko", ico::forward, true, true) {
     Controller* pCtrl = Controller::getInstance();
 
-    pCtrl->registerObserver(IM_SETCOLS, boost::bind(resolve_cast0(&CntForwarder::onISetCols), this));
-    pCtrl->registerObserver(IM_UI_PREPARE, boost::bind(resolve_cast0(&CntForwarder::onIPrepare), this));
-    pCtrl->registerObserver(IM_UIACTION, boost::bind(&CntForwarder::onAction, this, _1));
-    pCtrl->registerObserver(IM_MSG_RCV, boost::bind(&CntForwarder::onNewMsg, this, _1)); // baaad
-    pCtrl->registerObserver(api::isAway, boost::bind(resolve_cast0(&CntForwarder::onEnable), this));
-    pCtrl->registerObserver(api::isBack, boost::bind(resolve_cast0(&CntForwarder::onDisable), this));
+    pCtrl->registerObserver(IM_SETCOLS, bind(resolve_cast0(&CntForwarder::onISetCols), this));
+    pCtrl->registerObserver(IM_UI_PREPARE, bind(resolve_cast0(&CntForwarder::onIPrepare), this));
+    pCtrl->registerObserver(IM_UIACTION, bind(&CntForwarder::onAction, this, _1));
+    pCtrl->registerObserver(IM_MSG_RCV, bind(&CntForwarder::onNewMsg, this, _1)); // baaad
+    pCtrl->registerObserver(api::isAway, bind(resolve_cast0(&CntForwarder::onEnable), this));
+    pCtrl->registerObserver(api::isBack, bind(resolve_cast0(&CntForwarder::onDisable), this));
   }
 
   void CntForwarder::send(const StringRef& msg) {

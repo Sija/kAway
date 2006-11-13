@@ -37,13 +37,13 @@ public:
    */
 	STAMINA_OBJECT_CLASS_VERSION(Format, iSharedObject, Version(0,1,0,0));
 
-  typedef boost::function<void(StringRef& value, StringRef& prefix, StringRef& suffix, 
-    Stamina::RegEx& pRegEx, Stamina::RegEx& sRegEx)> ModifierCallback;
-  typedef boost::signal<void(StringRef& value, StringRef& prefix, StringRef& suffix, 
-    Stamina::RegEx& pRegEx, Stamina::RegEx& sRegEx)> ModifierSig;
+  typedef function<void(StringRef& value, StringRef& prefix, StringRef& suffix, 
+    RegEx& pRegEx, RegEx& sRegEx)> ModifierCallback;
+  typedef signal<void(StringRef& value, StringRef& prefix, StringRef& suffix, 
+    RegEx& pRegEx, RegEx& sRegEx)> ModifierSig;
 
-  typedef boost::function<String(Format* fCtrl)> VarProcessCallback;
-  typedef boost::signal<String(Format* fCtrl)> VarProcessSig;
+  typedef function<String(Format* fCtrl)> VarProcessCallback;
+  typedef signal<String(Format* fCtrl)> VarProcessSig;
 
   enum enOperator {
     opAnd,

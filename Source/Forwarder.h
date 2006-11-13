@@ -27,7 +27,7 @@
 #include "Format.h"
 
 namespace kAway2 {
-  class Forwarder : public boost::signals::trackable {
+  class Forwarder : public signals::trackable {
   public:
     class Summary;
     class Forward;
@@ -130,7 +130,7 @@ namespace kAway2 {
       String getBody();
 
     protected:
-      boost::shared_ptr<Stamina::TimerDynamic> timer;
+      shared_ptr<TimerDynamic> timer;
       unsigned int receivedMsgCount;
       String lastMsgFrom;
       tMsgSenders msgSenders;

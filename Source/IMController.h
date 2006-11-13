@@ -42,21 +42,22 @@ namespace Konnekt {
 	  STAMINA_OBJECT_CLASS_VERSION(IMController<CC>, iSharedObject, Version(0,1,0,0));
 
   public:
-    typedef boost::function<void(CC*)> fOnIMessage;
-    typedef boost::signal<void(CC*)> sigOnIMessage;
+    typedef function<void(CC*)> fOnIMessage;
+    typedef signal<void(CC*)> sigOnIMessage;
 
   public:
-    typedef std::map<int, sigOnIMessage*> tObservers;
-    typedef std::map<int, int> tStaticValues;
+    struct sObserver {
+      std::map<String, signals::connection> connections;
+      sigOnIMessage signal;
+    };
 
-		CC* operator -> () {
-			return this->getInstance();
-		}
+    typedef std::map<int, sObserver*> tObservers;
+    typedef std::map<int, int> tStaticValues;
 
   protected:
     inline IMController() : returnCodeSet(false), returnCode(0) { 
-      this->registerObserver(IM_PLUG_INIT, boost::bind(resolve_cast0(&IMController::onInit), this));
-      this->registerObserver(IM_PLUG_DEINIT, boost::bind(resolve_cast0(&IMController::onDeInit), this));
+      this->registerObserver(IM_PLUG_INIT, bind(resolve_cast0(&IMController::onInit), this));
+      this->registerObserver(IM_PLUG_DEINIT, bind(resolve_cast0(&IMController::onDeInit), this));
       this->addStaticValue(IM_PLUG_SDKVERSION, KONNEKT_SDK_V);
     }
 
@@ -109,11 +110,11 @@ namespace Konnekt {
       return this->isReturnCodeSet();
     }
 
-    inline bool registerObserver(int id, fOnIMessage f, int priority = 0, boost::signals::connect_position pos = boost::signals::at_back) {
+    inline bool registerObserver(int id, fOnIMessage f, int priority = 0, signals::connect_position pos = signals::at_back) {
       return this->_registerObserver<observers>(id, f, priority, pos);
     }
 
-    inline bool registerActionObserver(int id, fOnIMessage f, int priority = 0, boost::signals::connect_position pos = boost::signals::at_back) {
+    inline bool registerActionObserver(int id, fOnIMessage f, int priority = 0, signals::connect_position pos = signals::at_back) {
       return this->_registerObserver<actionObservers>(id, f, priority, pos);
     }
 
@@ -121,7 +122,7 @@ namespace Konnekt {
       if (!this->isObserved(msg->id)) return;
 
       this->setIM(msg);
-      (*this->observers[msg->id])(CC::getInstance());
+      this->observers[msg->id]->signal(CC::getInstance());
     }
 
     inline void notifyActionObservers(sIMessage_2params* msg) {
@@ -129,7 +130,7 @@ namespace Konnekt {
       sUIActionNotify_2params* an = this->getAN();
 
       if (!this->isActionObserved(an->act.id)) return;
-      (*this->actionObservers[an->act.id])(CC::getInstance());
+      this->actionObservers[an->act.id]->signal(CC::getInstance());
     }
 
     inline void clear() {
@@ -178,26 +179,36 @@ namespace Konnekt {
 
     inline bool isObserved(int id) {
       if (this->observers.find(id) != this->observers.end()) {
-        return !(*this->observers[id]).empty();
+        return !this->observers[id]->signal.empty();
       }
       return false;
     }
 
     inline bool isActionObserved(int id) {
       if (this->actionObservers.find(id) != this->actionObservers.end()) {
-        return !(*this->actionObservers[id]).empty();
+        return !this->actionObservers[id]->signal.empty();
       }
       return false;
     }
 
   protected:
     template <tObservers& O>
-    inline bool _registerObserver(int id, fOnIMessage f, int priority, boost::signals::connect_position pos, tObservers& list = O) {
+    inline bool _registerObserver(int id, fOnIMessage f, int priority, signals::connect_position pos, tObservers& list = O) {
       if (!f.empty()) {
+        // temp
+        bool overwrite = true;
+        String name = "xxx";
+
         if (list.find(id) == list.end()) {
-          list[id] = new sigOnIMessage;
+          list[id] = new sObserver;
+        } else if (list[id]->connections.find(name) != list[id]->connections.end()) {
+          if (overwrite) {
+            list[id]->connections[name].disconnect();
+          } else {
+            return false;
+          }
         }
-        return (*list[id]).connect(priority, f, pos).connected();
+        return (list[id]->connections[name] = list[id]->signal.connect(priority, f, pos)).connected();
       }
       return false;
     }

@@ -71,7 +71,7 @@ namespace Helpers {
   #endif
 
   #ifdef __STAMINA_TIME64__
-  bool isToday(Stamina::Date64 date);
+  bool isToday(Date64 date);
   #endif
 
   void showKNotify(char * text, int ico);
