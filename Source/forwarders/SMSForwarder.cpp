@@ -18,19 +18,21 @@
 
 namespace kAway2 {
   SMSForwarder::SMSForwarder() : Forwarder("sms", "SMS", 501, true, true) {
-    //Controller::getInstance()->registerObserver(IM_SETCOLS, boost::bind(&SMSForwarder::onISetCols, this, _1));
-    //Controller::getInstance()->registerObserver(IM_UI_PREPARE, boost::bind(&SMSForwarder::onIPrepare, this, _1));
-    //fCtrl->setEvtOnAction(boost::bind(&SMSForwarder::onAction, this, _1, _2));
-    //fCtrl->setEvtOnNewMsg(boost::bind(&SMSForwarder::onNewMsg, this, _1, _2));
-    //fCtrl->setEvtOnEnable(boost::bind(&SMSForwarder::onEnable, this));
-    //fCtrl->setEvtOnDisable(boost::bind(&SMSForwarder::onDisable, this));
+    Controller* pCtrl = Controller::getInstance();
+
+    pCtrl->registerObserver(IM_SETCOLS, boost::bind(resolve_cast0(&SMSForwarder::onISetCols), this));
+    pCtrl->registerObserver(IM_UI_PREPARE, boost::bind(resolve_cast0(&SMSForwarder::onIPrepare), this));
+    pCtrl->registerObserver(IM_MSG_RCV, boost::bind(&SMSForwarder::onNewMsg, this, _1)); // baaad
+    pCtrl->registerObserver(api::isAway, boost::bind(resolve_cast0(&SMSForwarder::onEnable), this));
+    pCtrl->registerObserver(api::isBack, boost::bind(resolve_cast0(&SMSForwarder::onDisable), this));
+    pCtrl->registerActionObserver(ui::sms::number, boost::bind(&SMSForwarder::refreshCombo, this, _1));
   }
 
   void SMSForwarder::send(const StringRef& msg) {
     Message::sms(itos(GETINT(cfg::sms::number)), msg, GETSTRA(cfg::sms::gate), GETSTRA(cfg::sms::sig));
   }
 
-  void SMSForwarder::onISetCols(Controller* pCtrl) {
+  void SMSForwarder::onISetCols() {
     Ctrl->SetColumn(DTCFG, cfg::tpl::smsForward, DT_CT_STR, 
       "Wiadomoœæ od kontaktu [{msgFrom}] wys³ana o {msgTime}{, msgDate}:"
       "\r\n\r\n{msgBody}", "kAway2/tpl/smsForward");
@@ -46,7 +48,7 @@ namespace kAway2 {
     Forwarder::onISetCols();
   }
 
-  void SMSForwarder::onIPrepare(Controller* pCtrl) {
+  void SMSForwarder::onIPrepare() {
     UIActionCfgAdd(ui::sms::cfgGroup, 0, ACTT_GROUP, "Ustawienia");
     UIActionCfgAdd(ui::sms::cfgGroup, ui::sms::number, ACTT_EDIT | ACTSC_INLINE | ACTSC_INT | ACTR_CHECK | ACTR_INIT, 0, 
       cfg::sms::number, 0, 0, 120);
@@ -62,8 +64,9 @@ namespace kAway2 {
     Forwarder::onIPrepare();
   }
 
-  void SMSForwarder::onAction(int id, int code) {
-    if (id == ui::sms::number && (code == ACTN_CHECK || code == ACTN_CREATE)) {
+  void SMSForwarder::refreshCombo(Controller* pCtrl) {
+    int code = pCtrl->getAN()->code;
+    if (code == ACTN_CHECK || code == ACTN_CREATE) {
       UIActionSetText(ui::sms::cfgGroup, ui::sms::gates, (char*) Ctrl->IMessage(Sms::IM::getGatewaysComboText, NET_SMS, IMT_ALL, (int) UIActionCfgGetValue(sUIAction(ui::sms::cfgGroup, ui::sms::number), 0, 0)));
     }
   }

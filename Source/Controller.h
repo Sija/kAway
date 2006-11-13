@@ -29,6 +29,11 @@
 #include "Message.h"
 #include "AwayWnd.h"
 
+//#include "FwdController.h"
+
+//#include "Forwarders/CntForwarder.h"
+//#include "Forwarders/SMSForwarder.h"
+
 namespace kAway2 {
   class Controller : public IMController<Controller>, boost::signals::trackable {
   public:
@@ -73,7 +78,7 @@ namespace kAway2 {
       this->registerObserver(IM_BEFOREEND, boost::bind(resolve_cast0(&Controller::onEnd), this));
       this->registerObserver(IM_STATUSCHANGE, boost::bind(resolve_cast0(&Controller::onStatusChange), this));
       this->registerObserver(IM_ALLPLUGINSINITIALIZED, boost::bind(resolve_cast0(&Controller::onPluginsLoaded), this));
-      this->registerObserver(IM_AWAY, boost::bind(resolve_cast0(&Controller::onAway), this));
+      this->registerObserver(IM_AWAY, boost::bind(resolve_cast0(&Controller::onAutoAway), this));
       this->registerObserver(IM_BACK, boost::bind(resolve_cast0(&Controller::onBack), this));
 
       /* API */
@@ -87,94 +92,27 @@ namespace kAway2 {
     }
 
   public:
-    /* IMessage events */
+    /* IMessage callback methods */
     void onPrepare();
     void onSetCols();
     void onAction();
     void onMsgRcv();
     void onEnd();
+    void onStatusChange();
+    void onPluginsLoaded();
+    void onAutoAway();
+    void onBack();
 
-    void inline onStatusChange() {
-      if (this->isEnabled() && !this->isAutoAway()) {
-        statusCtrl->actionHandle(this->getIM());
-      }
-    }
+    /* API callback methods */
+    void apiEnabled();
+    void apiEnable();
+    void apiDisable();
+    void apiIgnored();
+    void apiAutoAway();
+    void apiIgnore();
+    void apiShowAwayWnd();
 
-    void inline onPluginsLoaded() {
-      if (int oldId = Helpers::pluginExists(plugsNET::kaway)) {
-        Ctrl->IMessage(&sIMessage_plugOut(oldId, "kAway2 jest nastêpc¹ wtyczki K.Away :)",
-          sIMessage_plugOut::erNo, sIMessage_plugOut::euNowAndOnNextStart));
-        return this->setFailure();
-      }
-      if (int ggCrypt = Helpers::pluginExists(plugsNET::ggcrypt)) {
-        Ctrl->IMessage(&sIMessage_plugOut(ggCrypt, "Wtyczka GG Crypt jest przestarza³a, przy czym\n"
-          "nie pozwala na poprawne dzia³anie wtyczki kAway2.",
-          sIMessage_plugOut::erNo, sIMessage_plugOut::euNowAndOnNextStart));
-        return this->setFailure();
-      }
-      this->setSuccess();
-    }
-
-    void inline onAway() {
-      if (!this->isEnabled() && GETINT(cfg::autoAwaySync)) {
-        this->setAutoAway(true);
-        this->enable(GETSTRA(cfg::tpl::autoAway), GETINT(cfg::status::onAutoAwaySt), true);
-      }
-    }
-
-    void inline onBack() {
-      if (this->isEnabled() && this->isAutoAway()) {
-        this->disable("", true);
-        this->setAutoAway(false);
-      }
-    }
-
-    /* API */
-
-    void inline apiEnabled() {
-      this->setReturnCode(this->isEnabled());
-    }
-
-    void inline apiEnable() {
-      sIMessage_2params* msg = this->getIM();
-
-      logDebug("Remote API Call [enable]: from = %s, msg = %s, status = %i", 
-        Helpers::getPlugName(msg->sender), nullChk((char*)msg->p1), msg->p2);
-      this->setReturnCode(this->enable((char*)msg->p1, msg->p2));
-    }
-
-    void inline apiDisable() {
-      sIMessage_2params* msg = this->getIM();
-
-      logDebug("Remote API Call [disable]: from = %s, msg = %s", 
-        Helpers::getPlugName(msg->sender), nullChk((char*)msg->p1));
-      this->setReturnCode(this->disable((char*)msg->p1));
-    }
-
-    void inline apiIgnored() {
-      this->setReturnCode(this->cntProp(this->getIM()->p1)->ignored);
-    }
-
-    void inline apiAutoAway() {
-      this->setReturnCode(this->isAutoAway());
-    }
-
-    void inline apiIgnore() {
-      sIMessage_2params* msg = this->getIM();
-
-      logDebug("Remote API Call [ignore]: from = %s, cnt = %i, ignore = %s", 
-        Helpers::getPlugName(msg->sender), msg->p1, btoa((bool)msg->p2));
-      if (this->isEnabled()) {
-        this->cntProp(msg->p1)->ignored = (bool) msg->p2;
-      }
-    }
-
-    void inline apiShowAwayWnd() {
-      logDebug("Remote API Call [showAwayWnd]: from = %s",
-        Helpers::getPlugName(this->getIM()->sender));
-      wnd->show();
-    }
-
+    /* strictly Controller methods */
     bool enable(const StringRef& msg = "", int status = 0, bool silent = false);
     bool disable(const StringRef& msg = "", bool silent = false);
 
@@ -250,6 +188,7 @@ namespace kAway2 {
     oNetList autoReplyList;
     oNetList statusList;
     oFormattedStatus statusCtrl;
+    //oFwdController fwdCtrl;
     oAwayWnd wnd;
     oMRU mruList;
   };

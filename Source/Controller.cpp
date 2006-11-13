@@ -17,6 +17,8 @@
 #include "Controller.h"
 
 namespace kAway2 {
+  /* IMessage callback methods */
+
   void Controller::onPrepare() {
     this->pluginsGroup = Helpers::getPluginsGroup();
 
@@ -45,8 +47,8 @@ namespace kAway2 {
     statusCtrl->addReplacementSt(plugsNET::gg, ST_DND, ST_AWAY);
     statusCtrl->addReplacementSt(plugsNET::gg, ST_NA, ST_AWAY);
 
-    log("[kAway2::IPrepare()]: Ctrl = %i, Controller = %i, statusCtrl = %i, wnd = %i", 
-      Ctrl, this, statusCtrl, wnd);
+    log("[Controller<%i>::onPrepare()]: Ctrl = %i, sCtrl = %i, wnd = %i", 
+      this, Ctrl, statusCtrl, wnd);
 
     /* Defining help variables */
     Format::tHelpVars stVars, rVars;
@@ -516,7 +518,7 @@ namespace kAway2 {
 
     // hmmm, i have to remove it some sunny day...
     if ((m->type != MT_MESSAGE) || (m->flag & MF_AUTOMATED)) {
-      return;
+      return this->setReturnCode(0);
     }
 
     // we're searchin' for contact id
@@ -591,7 +593,7 @@ namespace kAway2 {
 
     if (this->isEnabled() && !this->cntProp(cnt)->ignored) {
       if (userMsg && Helpers::altCfgVal(cnt, cfg::disableOnMsgSend)) {
-        this->disable(); return;
+        this->disable(); return this->setReturnCode(0);
       }
 
       if (Helpers::altCfgVal(cnt, cfg::saveToHistory)) {
@@ -628,7 +630,7 @@ namespace kAway2 {
     sUIActionNotify_2params* an = this->getAN();
     int cnt = an->act.cnt;
 
-    logDebug("[kAway2::actionProc()]: an->act.id = %i, an->act.cnt = %i, an->code = %i", 
+    logDebug("[Controller::onAction()]: an->act.id = %i, an->act.cnt = %i, an->code = %i", 
       an->act.id, an->act.cnt, an->code);
 
     statusList->actionHandle(an->act.id, an->code);
@@ -708,6 +710,89 @@ namespace kAway2 {
     }
   }
 
+  void Controller::onStatusChange() {
+    if (this->isEnabled() && !this->isAutoAway()) {
+      statusCtrl->actionHandle(this->getIM());
+    }
+  }
+
+  void Controller::onPluginsLoaded() {
+    if (int oldId = Helpers::pluginExists(plugsNET::kaway)) {
+      Ctrl->IMessage(&sIMessage_plugOut(oldId, "kAway2 jest nastêpc¹ wtyczki K.Away :)",
+        sIMessage_plugOut::erNo, sIMessage_plugOut::euNowAndOnNextStart));
+      return this->setFailure();
+    }
+    if (int ggCrypt = Helpers::pluginExists(plugsNET::ggcrypt)) {
+      Ctrl->IMessage(&sIMessage_plugOut(ggCrypt, "Wtyczka GG Crypt jest przestarza³a, przy czym\n"
+        "nie pozwala na poprawne dzia³anie wtyczki kAway2.",
+        sIMessage_plugOut::erNo, sIMessage_plugOut::euNowAndOnNextStart));
+      return this->setFailure();
+    }
+    this->setSuccess();
+  }
+
+  void Controller::onAutoAway() {
+    if (!this->isEnabled() && GETINT(cfg::autoAwaySync)) {
+      this->setAutoAway(true);
+      this->enable(GETSTRA(cfg::tpl::autoAway), GETINT(cfg::status::onAutoAwaySt), true);
+    }
+  }
+
+  void Controller::onBack() {
+    if (this->isEnabled() && this->isAutoAway()) {
+      this->disable("", true);
+      this->setAutoAway(false);
+    }
+  }
+
+  /* API callback methods */
+
+  void Controller::apiEnabled() {
+    this->setReturnCode(this->isEnabled());
+  }
+
+  void Controller::apiEnable() {
+    sIMessage_2params* msg = this->getIM();
+
+    logDebug("Remote API Call [enable]: from = %s, msg = %s, status = %i", 
+      Helpers::getPlugName(msg->sender), nullChk((char*)msg->p1), msg->p2);
+    this->setReturnCode(this->enable((char*)msg->p1, msg->p2));
+  }
+
+  void Controller::apiDisable() {
+    sIMessage_2params* msg = this->getIM();
+
+    logDebug("Remote API Call [disable]: from = %s, msg = %s", 
+      Helpers::getPlugName(msg->sender), nullChk((char*)msg->p1));
+    this->setReturnCode(this->disable((char*)msg->p1));
+  }
+
+  void Controller::apiIgnored() {
+    this->setReturnCode(this->cntProp(this->getIM()->p1)->ignored);
+  }
+
+  void Controller::apiAutoAway() {
+    this->setReturnCode(this->isAutoAway());
+  }
+
+  void Controller::apiIgnore() {
+    sIMessage_2params* msg = this->getIM();
+
+    logDebug("Remote API Call [ignore]: from = %s, cnt = %i, ignore = %s", 
+      Helpers::getPlugName(msg->sender), msg->p1, btoa((bool)msg->p2));
+    if (this->isEnabled()) {
+      this->cntProp(msg->p1)->ignored = (bool) msg->p2;
+    }
+  }
+
+  void Controller::apiShowAwayWnd() {
+    logDebug("Remote API Call [showAwayWnd]: from = %s",
+      Helpers::getPlugName(this->getIM()->sender));
+    wnd->show();
+  }
+
+  /* strictly Controller methods */
+
   bool Controller::enable(const StringRef& msg, int status, bool silent) {
     if (this->isOn) return false;
 
@@ -757,7 +842,7 @@ namespace kAway2 {
     }
 
     this->showKNotify("Tryb away zosta³ <b>w³¹czony<b>", ico::enable);
-    log("[Controller::enable()]: msg = %s, silent = %s", nullChk(msg), btoa(silent));
+    log("[Controller<%i>::enable()]: msg = %s, silent = %s", this, nullChk(msg), btoa(silent));
     Ctrl->IMessage(api::isAway, NET_BROADCAST, -1, (int) msg.c_str(), status);
 
     return true;
@@ -800,7 +885,7 @@ namespace kAway2 {
     this->muteStateSwitched = false;
 
     this->showKNotify("Tryb away zosta³ <b>wy³¹czony<b>", ico::disable);
-    log("[Controller::disable()]: msg = %s, silent = %s", nullChk(msg), btoa(silent));
+    log("[Controller<%i>::disable()]: msg = %s, silent = %s", this, nullChk(msg), btoa(silent));
     Ctrl->IMessage(api::isBack, NET_BROADCAST, -1, (int) msg.c_str());
 
     return true;

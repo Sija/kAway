@@ -66,7 +66,6 @@ namespace kAway2 {
 
   public:
     CntForwarder();
-    // ~CntForwarder();
 
   public:
     inline bool preSummary() {
@@ -93,8 +92,8 @@ namespace kAway2 {
     void send(const StringRef& msg);
     void onISetCols();
     void onIPrepare();
-    void onAction(int id, int code);
-    void onNewMsg(int cnt, cMessage *msg);
+    void onAction(Controller* pCtrl);
+    void onNewMsg(Controller* pCtrl);
   };
 }
 

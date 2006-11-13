@@ -63,7 +63,10 @@ namespace kAway2 {
         this->oForward->cfgTplDraw();
       }
     }
-    virtual void onNewMsg(int cnt, cMessage *msg) {
+    virtual void onNewMsg(Controller* pCtrl) {
+      cMessage* msg = (cMessage*) pCtrl->getIM()->p1;
+      int cnt = 0; // baaad
+
       if (this->isSummarizable) {
         this->oSummary->onNewMsg(cnt, msg);
       }

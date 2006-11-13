@@ -14,20 +14,7 @@
   */
 
 #include "stdafx.h"
-
-#include "kAway2.h"
-#include "Helpers.h"
-#include "MRU.h"
-#include "NetList.h"
-#include "FormattedStatus.h"
-#include "AwayWnd.h"
 #include "Controller.h"
-#include "IMController.h"
-
-//#include "FwdController.h"
-
-//#include "Forwarders/CntForwarder.h"
-//#include "Forwarders/SMSForwarder.h"
 
 using namespace kAway2;
 

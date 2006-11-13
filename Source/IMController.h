@@ -110,11 +110,11 @@ namespace Konnekt {
     }
 
     inline bool registerObserver(int id, fOnIMessage f, int priority = 0, boost::signals::connect_position pos = boost::signals::at_back) {
-      return this->_registerObserver<fOnIMessage, observers>(id, f, priority, pos);
+      return this->_registerObserver<observers>(id, f, priority, pos);
     }
 
     inline bool registerActionObserver(int id, fOnIMessage f, int priority = 0, boost::signals::connect_position pos = boost::signals::at_back) {
-      return this->_registerObserver<fOnIMessage, actionObservers>(id, f, priority, pos);
+      return this->_registerObserver<actionObservers>(id, f, priority, pos);
     }
 
     inline void notifyObservers(sIMessage_2params* msg) {
@@ -191,8 +191,8 @@ namespace Konnekt {
     }
 
   protected:
-    template <typename F, tObservers& O>
-    inline bool _registerObserver(int id, F f, int priority, boost::signals::connect_position pos, tObservers& list = O) {
+    template <tObservers& O>
+    inline bool _registerObserver(int id, fOnIMessage f, int priority, boost::signals::connect_position pos, tObservers& list = O) {
       if (!f.empty()) {
         if (list.find(id) == list.end()) {
           list[id] = new sigOnIMessage;

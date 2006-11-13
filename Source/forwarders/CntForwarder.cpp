@@ -18,12 +18,14 @@
 
 namespace kAway2 {
   CntForwarder::CntForwarder() : Forwarder("forward", "Lustereczko", ico::forward, true, true) {
-    //fCtrl->setEvtOnISetCols(boost::bind(&CntForwarder::onISetCols, this));
-    //fCtrl->setEvtOnIPrepare(boost::bind(&CntForwarder::onIPrepare, this));
-    //fCtrl->setEvtOnAction(boost::bind(&CntForwarder::onAction, this, _1, _2));
-    //fCtrl->setEvtOnNewMsg(boost::bind(&CntForwarder::onNewMsg, this, _1, _2));
-    //fCtrl->setEvtOnEnable(boost::bind(&CntForwarder::onEnable, this));
-    //fCtrl->setEvtOnDisable(boost::bind(&CntForwarder::onDisable, this));
+    Controller* pCtrl = Controller::getInstance();
+
+    pCtrl->registerObserver(IM_SETCOLS, boost::bind(resolve_cast0(&CntForwarder::onISetCols), this));
+    pCtrl->registerObserver(IM_UI_PREPARE, boost::bind(resolve_cast0(&CntForwarder::onIPrepare), this));
+    pCtrl->registerObserver(IM_UIACTION, boost::bind(&CntForwarder::onAction, this, _1));
+    pCtrl->registerObserver(IM_MSG_RCV, boost::bind(&CntForwarder::onNewMsg, this, _1)); // baaad
+    pCtrl->registerObserver(api::isAway, boost::bind(resolve_cast0(&CntForwarder::onEnable), this));
+    pCtrl->registerObserver(api::isBack, boost::bind(resolve_cast0(&CntForwarder::onDisable), this));
   }
 
   void CntForwarder::send(const StringRef& msg) {
@@ -39,9 +41,9 @@ namespace kAway2 {
     }
   }
 
-  void CntForwarder::onNewMsg(int cnt, cMessage *msg) {
+  void CntForwarder::onNewMsg(Controller* pCtrl) {
     // TODO: wykrywanie zapêtlania
-    Forwarder::onNewMsg(cnt, msg);
+    Forwarder::onNewMsg(pCtrl);
   }
 
   void CntForwarder::onISetCols() {
@@ -80,7 +82,9 @@ namespace kAway2 {
     Forwarder::onIPrepare();
   }
 
-  void CntForwarder::onAction(int id, int code) {
+  void CntForwarder::onAction(Controller* pCtrl) {
+    int id = pCtrl->getAN()->act.id, code = pCtrl->getAN()->code;
+
     if (id == ui::forward::userCombo && code == ACTN_CREATE) {
       int count = Ctrl->IMessage(IMC_CNT_COUNT);
       String combo;

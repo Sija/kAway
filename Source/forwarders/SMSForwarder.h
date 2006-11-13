@@ -76,9 +76,9 @@ namespace kAway2 {
     }
 
     void send(const StringRef& msg);
-    void onISetCols(Controller* pCtrl);
-    void onIPrepare(Controller* pCtrl);
-    void onAction(int id, int code);
+    void onISetCols();
+    void onIPrepare();
+    void refreshCombo(Controller* pCtrl);
   };
 }
 
