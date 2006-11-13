@@ -71,7 +71,7 @@ public:
   bool setNetState(int net, bool use);
   bool getNetState(int net);
 
-  inline tNets getNets() {
+  inline const tNets& getNets() {
     return this->nets;
   }
   bool isConnected(int net);

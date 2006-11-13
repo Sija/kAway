@@ -174,6 +174,7 @@ namespace kAway2 {
       UIActionCfgAdd(ui::cfgGroup, 0, ACTT_SEPARATOR, "Powód nieobecnoœci:");
       UIActionCfgAdd(ui::cfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::autoAway);
       UIActionCfgAdd(ui::cfgGroup, 0, ACTT_SEPARATOR, "Zmieniaj status na:");
+      UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Tylko przy statusach 'dostêpny' i 'pogadam'", cfg::status::onAutoAwayChgOnlyIfOnline);
       UIActionCfgAdd(ui::cfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(UIIcon(IT_STATUS, 0, ST_AWAY, 0)).a_str());
       UIActionCfgAdd(ui::cfgGroup, 0, ACTT_RADIO | ACTSC_INLINE, "Zaraz wracam" AP_VALUE "65", cfg::status::onAutoAwaySt);
       UIActionCfgAdd(ui::cfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(UIIcon(IT_STATUS, 0, ST_NA, 0)).a_str());
@@ -199,6 +200,7 @@ namespace kAway2 {
     UIActionCfgAdd(ui::cfgGroup, act::clearMru, ACTT_BUTTON, "wyczyœæ" AP_ICO "667112", 0, 0, 0, 80, 30);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
 
+    /*
     ifPRO {
       UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUP, "Ustawienia raportowania");
       UIActionCfgAdd(ui::cfgGroup, 0, ACTT_SEPARATOR, "Aktywne metody raportu:");
@@ -224,6 +226,7 @@ namespace kAway2 {
       UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Wysy³aj w trybie auto-away", cfg::fwd::inAutoAway);
       UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
     }
+    */
 
     /* Status tab */
     /* |-> Settings group */
@@ -430,6 +433,8 @@ namespace kAway2 {
   }
 
   void Controller::onSetCols() {
+    // TODO: forwardery powinny same dopinac sie do Controller-a
+
     // fCtrl->fwdRegister(new SMSForwarder);
     // fCtrl->fwdRegister(new CntForwarder);
 
@@ -485,6 +490,7 @@ namespace kAway2 {
     Ctrl->SetColumn(DTCFG, cfg::status::changeInfoOnEnable, DT_CT_INT, 1, "kAway2/status/changeInfoOnEnable");
     Ctrl->SetColumn(DTCFG, cfg::status::netChange, DT_CT_STR, "", "kAway2/status/netChange");
     Ctrl->SetColumn(DTCFG, cfg::status::dotsAppend, DT_CT_INT, 1, "kAway2/status/dotsAppend");
+    Ctrl->SetColumn(DTCFG, cfg::status::onAutoAwayChgOnlyIfOnline, DT_CT_INT, 1, "kAway2/status/onAutoAwayChgOnlyIfOnline");
 
     Ctrl->SetColumn(DTCNT, cfg::tpl::enable, DT_CT_STR, "", "kAway2/tpl/enable");
     Ctrl->SetColumn(DTCNT, cfg::tpl::disable, DT_CT_STR, "", "kAway2/tpl/disable");
@@ -815,13 +821,22 @@ namespace kAway2 {
 
     if (chgStatus || chgInfo) {
       statusCtrl->rememberInfo();
-    }
 
-    if (chgInfo) {
-      statusCtrl->changeStatus(GETSTRA(cfg::tpl::status), 
-        chgStatus ? (status ? status : GETINT(this->isFromWnd ? cfg::wnd::onEnableSt : cfg::status::onEnableSt)) : -1);
-    } else if (chgStatus) {
-      statusCtrl->changeStatus(status ? status : GETINT(this->isFromWnd ? cfg::wnd::onEnableSt : cfg::status::onEnableSt));
+      NetList::tNets nets = statusList->getNets();
+      int actSt, chgOnlyIfOnline = this->autoAway && GETINT(cfg::status::onAutoAwayChgOnlyIfOnline);
+      int st = this->isFromWnd ? cfg::wnd::onEnableSt : cfg::status::onEnableSt;
+
+      for (NetList::tNets::iterator it = nets.begin(); it != nets.end(); it++) {
+        actSt = statusCtrl->getActualStatus(it->net);
+        if (!statusCtrl->isNetValid(it->net) || (chgOnlyIfOnline && (actSt != ST_ONLINE && actSt != ST_CHAT))) {
+          continue;
+        }
+        if (chgInfo) {
+          statusCtrl->changeStatus(GETSTRA(cfg::tpl::status), chgStatus ? (status ? status : GETINT(st)) : -1);
+        } else if (chgStatus) {
+          statusCtrl->changeStatus(status ? status : GETINT(st));
+        }
+      }
     }
 
     if (GETINT(this->isFromWnd ? cfg::wnd::muteOnEnable : cfg::muteOnEnable) && !GETINT(kSound::Cfg::mute)) {
