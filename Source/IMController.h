@@ -23,6 +23,16 @@
 #include <boost/bind.hpp>
 
 namespace Konnekt {
+  template<typename TC, typename TR>
+  TR (TC::* resolve_cast0(TR (TC::* pFunc)(void)))(void) {
+    return pFunc;
+  }
+
+  template<typename TP, typename TC, typename TR>
+  TR (TC::* resolve_cast1(TR (TC::* pFunc)(TP)))(TP) {
+    return pFunc;
+  }
+
   template <class CC /* Controller Class */> 
   class IMController : public SharedObject<iSharedObject> {
   public:
@@ -45,8 +55,8 @@ namespace Konnekt {
 
   protected:
     inline IMController() : returnCodeSet(false), returnCode(0) { 
-      this->registerObserver(IM_PLUG_INIT, boost::bind(&IMController::onInit, this, _1));
-      this->registerObserver(IM_PLUG_DEINIT, boost::bind(&IMController::onDeInit, this, _1));
+      this->registerObserver(IM_PLUG_INIT, boost::bind(resolve_cast0(&IMController::onInit), this));
+      this->registerObserver(IM_PLUG_DEINIT, boost::bind(resolve_cast0(&IMController::onDeInit), this));
       this->addStaticValue(IM_PLUG_SDKVERSION, KONNEKT_SDK_V);
     }
 
@@ -72,12 +82,12 @@ namespace Konnekt {
       return instance;
     }
 
-    void inline onInit(CC* self) {
+    void inline onInit() {
       Plug_Init(this->getIM()->p1, this->getIM()->p2);
       return this->setSuccess();
     }
 
-    void inline onDeInit(CC* self) {
+    void inline onDeInit() {
       Plug_Deinit(this->getIM()->p1, this->getIM()->p2);
       return this->setSuccess();
     }
@@ -100,23 +110,11 @@ namespace Konnekt {
     }
 
     inline bool registerObserver(int id, fOnIMessage f, int priority = 0, boost::signals::connect_position pos = boost::signals::at_back) {
-      if (!f.empty()) {
-        if (this->observers.find(id) == this->observers.end()) {
-          this->observers[id] = new sigOnIMessage;
-        }
-        return (*this->observers[id]).connect(priority, f, pos).connected();
-      }
-      return false;
+      return this->_registerObserver<fOnIMessage, observers>(id, f, priority, pos);
     }
 
     inline bool registerActionObserver(int id, fOnIMessage f, int priority = 0, boost::signals::connect_position pos = boost::signals::at_back) {
-      if (!f.empty()) {
-        if (this->actionObservers.find(id) == this->actionObservers.end()) {
-          this->actionObservers[id] = new sigOnIMessage;
-        }
-        return (*this->actionObservers[id]).connect(priority, f, pos).connected();
-      }
-      return false;
+      return this->_registerObserver<fOnIMessage, actionObservers>(id, f, priority, pos);
     }
 
     inline void notifyObservers(sIMessage_2params* msg) {
@@ -193,6 +191,17 @@ namespace Konnekt {
     }
 
   protected:
+    template <typename F, tObservers& O>
+    inline bool _registerObserver(int id, F f, int priority, boost::signals::connect_position pos, tObservers& list = O) {
+      if (!f.empty()) {
+        if (list.find(id) == list.end()) {
+          list[id] = new sigOnIMessage;
+        }
+        return (*list[id]).connect(priority, f, pos).connected();
+      }
+      return false;
+    }
+
     static SharedPtr<CC> instance;
     tStaticValues staticValues;
     tObservers actionObservers;

@@ -17,7 +17,7 @@
 #include "Controller.h"
 
 namespace kAway2 {
-  void Controller::onPrepare(Controller* self) {
+  void Controller::onPrepare() {
     this->pluginsGroup = Helpers::getPluginsGroup();
 
     this->mruList = new MRU(cfg::mruName, cfg::mruSize, true);
@@ -427,7 +427,7 @@ namespace kAway2 {
     this->setSuccess();
   }
 
-  void Controller::onSetCols(Controller* self) {
+  void Controller::onSetCols() {
     // fCtrl->fwdRegister(new SMSForwarder);
     // fCtrl->fwdRegister(new CntForwarder);
 
@@ -504,14 +504,14 @@ namespace kAway2 {
     this->setSuccess();
   }
 
-  void Controller::onEnd(Controller* self) {
+  void Controller::onEnd() {
     if (this->isEnabled()) {
       this->disable("", true);
     }
     this->setSuccess();
   }
 
-  void Controller::onMsgRcv(Controller* self) {
+  void Controller::onMsgRcv() {
     cMessage *m = (cMessage*) this->getIM()->p1;
 
     // hmmm, i have to remove it some sunny day...
@@ -624,7 +624,7 @@ namespace kAway2 {
     }
   }
 
-  void Controller::onAction(Controller* self) {
+  void Controller::onAction() {
     sUIActionNotify_2params* an = this->getAN();
     int cnt = an->act.cnt;
 

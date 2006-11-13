@@ -136,7 +136,7 @@ namespace kAway2 {
         ti.hwnd = hWndTmp;
         ti.lpszText = "Wycisz wszystkie dŸwiêki";
         SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM) &ti);
-        CheckDlgButton(hWnd, MUTE, GETINT(cfg::muteOnEnable) ? BST_CHECKED : 0);
+        CheckDlgButton(hWnd, MUTE, GETINT(cfg::wnd::muteOnEnable) ? BST_CHECKED : 0);
 
         // odczytujemy liste mru
         MRU::tMRUlist list = Controller::getInstance()->mruList->get();

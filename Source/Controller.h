@@ -31,9 +31,8 @@
 
 namespace kAway2 {
   class Controller : public IMController<Controller>, boost::signals::trackable {
-    friend class IMController<Controller>;
-
   public:
+    friend class IMController<Controller>;
     typedef std::deque<cMessage*> tMsgQueue;
 
     enum enAutoMsgTpl {
@@ -67,41 +66,41 @@ namespace kAway2 {
       this->addStaticValue(IM_PLUG_NETNAME, 0);
       this->addStaticValue(IM_PLUG_PRIORITY, PLUGP_HIGHEST);
 
-      this->registerObserver(IM_UI_PREPARE, boost::bind(&Controller::onPrepare, this, _1));
-      this->registerObserver(IM_SETCOLS, boost::bind(&Controller::onSetCols, this, _1));
-      this->registerObserver(IM_UIACTION, boost::bind(&Controller::onAction, this, _1));
-      this->registerObserver(IM_MSG_RCV, boost::bind(&Controller::onMsgRcv, this, _1));
-      this->registerObserver(IM_BEFOREEND, boost::bind(&Controller::onEnd, this, _1));
-      this->registerObserver(IM_STATUSCHANGE, boost::bind(&Controller::onStatusChange, this, _1));
-      this->registerObserver(IM_ALLPLUGINSINITIALIZED, boost::bind(&Controller::onPluginsLoaded, this, _1));
-      this->registerObserver(IM_AWAY, boost::bind(&Controller::onAway, this, _1));
-      this->registerObserver(IM_BACK, boost::bind(&Controller::onBack, this, _1));
+      this->registerObserver(IM_UI_PREPARE, boost::bind(resolve_cast0(&Controller::onPrepare), this));
+      this->registerObserver(IM_SETCOLS, boost::bind(resolve_cast0(&Controller::onSetCols), this));
+      this->registerObserver(IM_UIACTION, boost::bind(resolve_cast0(&Controller::onAction), this));
+      this->registerObserver(IM_MSG_RCV, boost::bind(resolve_cast0(&Controller::onMsgRcv), this));
+      this->registerObserver(IM_BEFOREEND, boost::bind(resolve_cast0(&Controller::onEnd), this));
+      this->registerObserver(IM_STATUSCHANGE, boost::bind(resolve_cast0(&Controller::onStatusChange), this));
+      this->registerObserver(IM_ALLPLUGINSINITIALIZED, boost::bind(resolve_cast0(&Controller::onPluginsLoaded), this));
+      this->registerObserver(IM_AWAY, boost::bind(resolve_cast0(&Controller::onAway), this));
+      this->registerObserver(IM_BACK, boost::bind(resolve_cast0(&Controller::onBack), this));
 
       /* API */
-      this->registerObserver(api::isEnabled, boost::bind(&Controller::apiEnabled, this, _1));
-      this->registerObserver(api::enable, boost::bind(&Controller::apiEnable, this, _1));
-      this->registerObserver(api::disable, boost::bind(&Controller::apiDisable, this, _1));
-      this->registerObserver(api::isIgnored, boost::bind(&Controller::apiIgnored, this, _1));
-      this->registerObserver(api::isAutoAway, boost::bind(&Controller::apiAutoAway, this, _1));
-      this->registerObserver(api::ignore, boost::bind(&Controller::apiIgnore, this, _1));
-      this->registerObserver(api::showAwayWnd, boost::bind(&Controller::apiShowAwayWnd, this, _1));
+      this->registerObserver(api::isEnabled, boost::bind(resolve_cast0(&Controller::apiEnabled), this));
+      this->registerObserver(api::enable, boost::bind(resolve_cast0(&Controller::apiEnable), this));
+      this->registerObserver(api::disable, boost::bind(resolve_cast0(&Controller::apiDisable), this));
+      this->registerObserver(api::isIgnored, boost::bind(resolve_cast0(&Controller::apiIgnored), this));
+      this->registerObserver(api::isAutoAway, boost::bind(resolve_cast0(&Controller::apiAutoAway), this));
+      this->registerObserver(api::ignore, boost::bind(resolve_cast0(&Controller::apiIgnore), this));
+      this->registerObserver(api::showAwayWnd, boost::bind(resolve_cast0(&Controller::apiShowAwayWnd), this));
     }
 
   public:
     /* IMessage events */
-    void onPrepare(Controller* self);
-    void onSetCols(Controller* self);
-    void onAction(Controller* self);
-    void onMsgRcv(Controller* self);
-    void onEnd(Controller* self);
+    void onPrepare();
+    void onSetCols();
+    void onAction();
+    void onMsgRcv();
+    void onEnd();
 
-    void inline onStatusChange(Controller* self) {
+    void inline onStatusChange() {
       if (this->isEnabled() && !this->isAutoAway()) {
         statusCtrl->actionHandle(this->getIM());
       }
     }
 
-    void inline onPluginsLoaded(Controller* self) {
+    void inline onPluginsLoaded() {
       if (int oldId = Helpers::pluginExists(plugsNET::kaway)) {
         Ctrl->IMessage(&sIMessage_plugOut(oldId, "kAway2 jest nastêpc¹ wtyczki K.Away :)",
           sIMessage_plugOut::erNo, sIMessage_plugOut::euNowAndOnNextStart));
@@ -116,14 +115,14 @@ namespace kAway2 {
       this->setSuccess();
     }
 
-    void inline onAway(Controller* self) {
+    void inline onAway() {
       if (!this->isEnabled() && GETINT(cfg::autoAwaySync)) {
         this->setAutoAway(true);
         this->enable(GETSTRA(cfg::tpl::autoAway), GETINT(cfg::status::onAutoAwaySt), true);
       }
     }
 
-    void inline onBack(Controller* self) {
+    void inline onBack() {
       if (this->isEnabled() && this->isAutoAway()) {
         this->disable("", true);
         this->setAutoAway(false);
@@ -132,11 +131,11 @@ namespace kAway2 {
 
     /* API */
 
-    void inline apiEnabled(Controller* self) {
+    void inline apiEnabled() {
       this->setReturnCode(this->isEnabled());
     }
 
-    void inline apiEnable(Controller* self) {
+    void inline apiEnable() {
       sIMessage_2params* msg = this->getIM();
 
       logDebug("Remote API Call [enable]: from = %s, msg = %s, status = %i", 
@@ -144,7 +143,7 @@ namespace kAway2 {
       this->setReturnCode(this->enable((char*)msg->p1, msg->p2));
     }
 
-    void inline apiDisable(Controller* self) {
+    void inline apiDisable() {
       sIMessage_2params* msg = this->getIM();
 
       logDebug("Remote API Call [disable]: from = %s, msg = %s", 
@@ -152,15 +151,15 @@ namespace kAway2 {
       this->setReturnCode(this->disable((char*)msg->p1));
     }
 
-    void inline apiIgnored(Controller* self) {
+    void inline apiIgnored() {
       this->setReturnCode(this->cntProp(this->getIM()->p1)->ignored);
     }
 
-    void inline apiAutoAway(Controller* self) {
+    void inline apiAutoAway() {
       this->setReturnCode(this->isAutoAway());
     }
 
-    void inline apiIgnore(Controller* self) {
+    void inline apiIgnore() {
       sIMessage_2params* msg = this->getIM();
 
       logDebug("Remote API Call [ignore]: from = %s, cnt = %i, ignore = %s", 
@@ -170,7 +169,7 @@ namespace kAway2 {
       }
     }
 
-    void inline apiShowAwayWnd(Controller* self) {
+    void inline apiShowAwayWnd() {
       logDebug("Remote API Call [showAwayWnd]: from = %s",
         Helpers::getPlugName(this->getIM()->sender));
       wnd->show();
