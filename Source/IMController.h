@@ -46,8 +46,10 @@ namespace Konnekt {
     typedef signal<void(CC*)> sigOnIMessage;
 
   public:
+    typedef std::map<String, signals::connection> tConnections;
+
     struct sObserver {
-      std::map<String, signals::connection> connections;
+      tConnections connections;
       sigOnIMessage signal;
     };
 
@@ -110,12 +112,24 @@ namespace Konnekt {
       return this->isReturnCodeSet();
     }
 
-    inline bool registerObserver(int id, fOnIMessage f, int priority = 0, signals::connect_position pos = signals::at_back) {
-      return this->_registerObserver<observers>(id, f, priority, pos);
+    /*
+      for (tObservers::iterator it = this->observers.begin(); it != this->observers.end(); it++) {
+        for (tConnections::iterator it2 = it->second->connections.begin(); it2 != it->second->connections.end(); it2++) {
+          IMLOG("Observer[%i].connection: %s", it->first, it2->first.c_str());
+        }
+      }
+    */
+
+    inline bool registerObserver(int id, fOnIMessage f, int priority = 0, signals::connect_position pos = signals::at_back, 
+      const StringRef& name = "", bool overwrite = true) 
+    {
+      return this->_registerObserver(id, f, priority, pos, name, overwrite, this->observers);
     }
 
-    inline bool registerActionObserver(int id, fOnIMessage f, int priority = 0, signals::connect_position pos = signals::at_back) {
-      return this->_registerObserver<actionObservers>(id, f, priority, pos);
+    inline bool registerActionObserver(int id, fOnIMessage f, int priority = 0, signals::connect_position pos = signals::at_back, 
+      const StringRef& name = "", bool overwrite = true) 
+    {
+      return this->_registerObserver(id, f, priority, pos, name, overwrite, this->actionObservers);
     }
 
     inline void notifyObservers(sIMessage_2params* msg) {
@@ -192,25 +206,27 @@ namespace Konnekt {
     }
 
   protected:
-    template <tObservers& O>
-    inline bool _registerObserver(int id, fOnIMessage f, int priority, signals::connect_position pos, tObservers& list = O) {
-      if (!f.empty()) {
-        // temp
-        bool overwrite = true;
-        String name = "xxx";
-
-        if (list.find(id) == list.end()) {
-          list[id] = new sObserver;
-        } else if (list[id]->connections.find(name) != list[id]->connections.end()) {
-          if (overwrite) {
-            list[id]->connections[name].disconnect();
-          } else {
-            return false;
-          }
-        }
-        return (list[id]->connections[name] = list[id]->signal.connect(priority, f, pos)).connected();
+    inline bool _registerObserver(
+      int id, fOnIMessage f, int priority, signals::connect_position pos, 
+      StringRef name, bool overwrite, tObservers& list) 
+    {
+      if (f.empty()) {
+        return false;
       }
-      return false;
+      if (list.find(id) == list.end()) {
+        list[id] = new sObserver;
+      }
+      if (!name.length()) {
+        name = "unnamed[" + itos(list[id]->connections.size()) + "]";
+      }
+      if (list[id]->connections.find(name) != list[id]->connections.end()) {
+        if (overwrite) {
+          list[id]->connections[name].disconnect();
+        } else {
+          return false;
+        }
+      }
+      return (list[id]->connections[name] = list[id]->signal.connect(priority, f, pos)).connected();
     }
 
     static SharedPtr<CC> instance;
