@@ -67,6 +67,7 @@ namespace kAway2 {
     void onEnd();
     void onStatusChange();
     void onPluginsLoaded();
+    void onExtAutoAway();
     void onAutoAway();
     void onBack();
 
@@ -145,6 +146,7 @@ namespace kAway2 {
     bool isFromWnd;
     int pluginsGroup;
 
+    shared_ptr<TimerDynamic> extAutoAwayTimer;
     tCnts cntProps;
     String awayMsg;
     Date64 awayTime;

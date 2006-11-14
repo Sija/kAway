@@ -77,6 +77,7 @@
 #include <stamina/string.h>
 #include <stamina/time64.h>
 #include <stamina/regex.h>
+#include <stamina/timer.h>
 
 using namespace Stamina;
 using namespace std;

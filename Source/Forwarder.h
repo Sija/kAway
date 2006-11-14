@@ -18,9 +18,6 @@
 #ifndef __FORWARDER_H__
 #define __FORWARDER_H__
 
-#include <boost/bind.hpp>
-#include <stamina/timer.h>
-
 #include "kAway2.h"
 #include "Helpers.h"
 #include "Controller.h"

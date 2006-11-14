@@ -29,8 +29,8 @@ namespace kAway2 {
   };
 
   const char poweredBy[] = "planet boelex";
-  const char sig[] = "KAWAY2";
   const unsigned int net = 667;
+  const char sig[] = "KAWAY2";
 
   namespace api {
     const unsigned int api = net * 1000 + IM_USER;
@@ -221,6 +221,13 @@ namespace kAway2 {
       const unsigned int onAutoAwaySt = status + 6;
       const unsigned int dotsAppend = status + 7;
       const unsigned int onAutoAwayChgOnlyIfOnline = status + 8;
+    }
+
+    namespace extAutoAway {
+      const unsigned int extAutoAway = cfg + 650;
+
+      const unsigned int status = extAutoAway + 1;
+      const unsigned int time = extAutoAway + 2;
     }
   }
 }
