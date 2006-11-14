@@ -85,7 +85,7 @@ namespace kAway2 {
             x, 30, 40, 20, hWnd, (HMENU) it->id, Ctrl->hInst(), NULL);
           x += 40;
           ti.hwnd = hWndTmp;
-          ti.lpszText = (LPSTR) it->name.a_str();
+          ti.lpszText = (LPSTR) it->name;
           SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM) &ti);
           Controller::getInstance()->wnd->prepareButtonImage(it->img, hWnd, net, it->id);
         }
@@ -224,7 +224,7 @@ namespace kAway2 {
     return DefWindowProc(hWnd, iMsg, wParam, lParam);
   }
 
-  void AwayWnd::classRegister() {
+  AwayWnd::AwayWnd() {
     WNDCLASSEX awayWnd;
     ZeroMemory(&awayWnd, sizeof(WNDCLASSEX));
     awayWnd.cbSize = sizeof(awayWnd);
@@ -242,7 +242,7 @@ namespace kAway2 {
     RegisterClassEx(&awayWnd);
   }
 
-  void AwayWnd::classUnRegister() {
+  AwayWnd::~AwayWnd() {
     UnregisterClass("kAway2AwayWnd", Ctrl->hInst());
   }
 

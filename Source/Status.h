@@ -85,7 +85,7 @@ public:
   // "..." przy obcinanym opisie
   String getDots();
   // zwraca limit znaków opisu dla danej sieci
-  int getInfoCharLimit(int net = 0);
+  int getInfoCharLimit(int net);
 
   // Formatuje status
   virtual String parseInfo(StringRef info, int net, int st = -1);

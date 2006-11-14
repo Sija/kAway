@@ -216,11 +216,9 @@ int Status::getInfoCharLimit(int net) {
   }
 
   int limit = 0;
-  if (net) {
-    Ctrl->IMessage(IM::infoCharLimit, net, limit);
-    if (Ctrl->getError() != IMERROR_NORESULT) {
-      return limit;
-    }
+  Ctrl->IMessage(IM::infoCharLimit, net, limit);
+  if (Ctrl->getError() != IMERROR_NORESULT) {
+    return limit;
   }
   return 0;
 }

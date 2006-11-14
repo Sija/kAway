@@ -60,41 +60,11 @@ namespace kAway2 {
     typedef std::map<tCntId, sCnt> tCnts;
 
   protected:
-    inline Controller() : isOn(false), muteStateSwitched(false), autoAway(false), pluginsGroup(0) {
-      this->addStaticValue(IM_PLUG_NET, net);
-      this->addStaticValue(IM_PLUG_TYPE, IMT_UI | IMT_CONFIG | IMT_ALLMESSAGES);
-      this->addStaticValue(IM_PLUG_VERSION, 0);
-      this->addStaticValue(IM_PLUG_SIG, (int) sig);
-      this->addStaticValue(IM_PLUG_CORE_V, (int) "W98");
-      this->addStaticValue(IM_PLUG_UI_V, 0);
-      this->addStaticValue(IM_PLUG_NAME, (int) "kAway2");
-      this->addStaticValue(IM_PLUG_NETNAME, 0);
-      this->addStaticValue(IM_PLUG_PRIORITY, PLUGP_HIGHEST);
-
-      this->registerObserver(IM_UI_PREPARE, bind(resolve_cast0(&Controller::onPrepare), this));
-      this->registerObserver(IM_SETCOLS, bind(resolve_cast0(&Controller::onSetCols), this));
-      this->registerObserver(IM_UIACTION, bind(resolve_cast0(&Controller::onAction), this));
-      this->registerObserver(IM_MSG_RCV, bind(resolve_cast0(&Controller::onMsgRcv), this));
-      this->registerObserver(IM_BEFOREEND, bind(resolve_cast0(&Controller::onEnd), this));
-      this->registerObserver(IM_STATUSCHANGE, bind(resolve_cast0(&Controller::onStatusChange), this));
-      this->registerObserver(IM_ALLPLUGINSINITIALIZED, bind(resolve_cast0(&Controller::onPluginsLoaded), this));
-      this->registerObserver(IM_AWAY, bind(resolve_cast0(&Controller::onAutoAway), this));
-      this->registerObserver(IM_BACK, bind(resolve_cast0(&Controller::onBack), this));
-
-      /* API */
-      this->registerObserver(api::isEnabled, bind(resolve_cast0(&Controller::apiEnabled), this));
-      this->registerObserver(api::enable, bind(resolve_cast0(&Controller::apiEnable), this));
-      this->registerObserver(api::disable, bind(resolve_cast0(&Controller::apiDisable), this));
-      this->registerObserver(api::isIgnored, bind(resolve_cast0(&Controller::apiIgnored), this));
-      this->registerObserver(api::isAutoAway, bind(resolve_cast0(&Controller::apiAutoAway), this));
-      this->registerObserver(api::ignore, bind(resolve_cast0(&Controller::apiIgnore), this));
-      this->registerObserver(api::showAwayWnd, bind(resolve_cast0(&Controller::apiShowAwayWnd), this));
-    }
+    Controller();
 
   public:
     /* IMessage callback methods */
     void onPrepare();
-    void onSetCols();
     void onAction();
     void onMsgRcv();
     void onEnd();

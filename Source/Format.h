@@ -32,11 +32,10 @@ public:
 
 class Format : public SharedObject<iSharedObject> {
 public:
-  /*
-   * Class version
-   */
+  /* Class version */
 	STAMINA_OBJECT_CLASS_VERSION(Format, iSharedObject, Version(0,1,0,0));
 
+  /* Callback and signal definitions for Modifiers */
   typedef function<void(StringRef& value, StringRef& prefix, StringRef& suffix, 
     RegEx& pRegEx, RegEx& sRegEx)> ModifierCallback;
   typedef signal<void(StringRef& value, StringRef& prefix, StringRef& suffix, 
@@ -45,11 +44,13 @@ public:
   typedef function<String(Format* fCtrl)> VarProcessCallback;
   typedef signal<String(Format* fCtrl)> VarProcessSig;
 
+  /* Modifier matching operator */
   enum enOperator {
     opAnd,
     opOr
   };
 
+  /* Variable type */
   enum enType {
     typeCallback,
     typeString
@@ -74,6 +75,7 @@ public:
     }
   };
 
+  /* Help variable structure */
   struct sHelpVar {
     String name;
     String desc;
@@ -81,6 +83,7 @@ public:
     sHelpVar(const StringRef& _name, const StringRef& _desc) : name(_name), desc(_desc) { }
   };
 
+  /* Variable structure */
   struct sVar {
     VarProcessSig callback;
     enType type;

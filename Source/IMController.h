@@ -47,6 +47,7 @@ namespace Konnekt {
 
   public:
     typedef std::map<String, signals::connection> tConnections;
+    typedef std::vector<sIMessage_setColumn*> tCfgCols;
 
     struct sObserver {
       tConnections connections;
@@ -58,8 +59,10 @@ namespace Konnekt {
 
   protected:
     inline IMController() : returnCodeSet(false), returnCode(0) { 
-      this->registerObserver(IM_PLUG_INIT, bind(resolve_cast0(&IMController::onInit), this));
-      this->registerObserver(IM_PLUG_DEINIT, bind(resolve_cast0(&IMController::onDeInit), this));
+      this->registerObserver(IM_SETCOLS, bind(resolve_cast0(&IMController::_setCfgCols), this));
+      this->registerObserver(IM_PLUG_INIT, bind(resolve_cast0(&IMController::_plugInit), this));
+      this->registerObserver(IM_PLUG_DEINIT, bind(resolve_cast0(&IMController::_plugDeInit), this));
+
       this->addStaticValue(IM_PLUG_SDKVERSION, KONNEKT_SDK_V);
     }
 
@@ -75,6 +78,9 @@ namespace Konnekt {
       for (tObservers::iterator it = this->actionObservers.begin(); it != this->actionObservers.end(); it++) {
         delete it->second;
       }
+      for (tCfgCols::iterator it = this->cfgCols.begin(); it != this->cfgCols.end(); it++) {
+        delete *it;
+      }
     }
 
   public:
@@ -83,16 +89,6 @@ namespace Konnekt {
         instance = new CC;
       }
       return instance;
-    }
-
-    void inline onInit() {
-      Plug_Init(this->getIM()->p1, this->getIM()->p2);
-      return this->setSuccess();
-    }
-
-    void inline onDeInit() {
-      Plug_Deinit(this->getIM()->p1, this->getIM()->p2);
-      return this->setSuccess();
     }
 
     inline bool handle(sIMessage_base* msgBase) {
@@ -205,6 +201,13 @@ namespace Konnekt {
       return false;
     }
 
+    inline void setColumn(tTable table, int id, int type, const char* def, const char* name) {
+      this->cfgCols.push_back(new sIMessage_setColumn(table, id, type, def, name));
+    }
+    inline void setColumn(tTable table, int id, int type, int def, const char* name) {
+      this->cfgCols.push_back(new sIMessage_setColumn(table, id, type, def, name));
+    }
+
   protected:
     inline bool _registerObserver(
       int id, fOnIMessage f, int priority, signals::connect_position pos, 
@@ -229,11 +232,29 @@ namespace Konnekt {
       return (list[id]->connections[name] = list[id]->signal.connect(priority, f, pos)).connected();
     }
 
+    void inline _setCfgCols() {
+      for (tCfgCols::iterator it = this->cfgCols.begin(); it != this->cfgCols.end(); it++) {
+        Ctrl->IMessage(*it);
+      }
+      return this->setSuccess();
+    }
+
+    void inline _plugInit() {
+      Plug_Init(this->getIM()->p1, this->getIM()->p2);
+      return this->setSuccess();
+    }
+
+    void inline _plugDeInit() {
+      Plug_Deinit(this->getIM()->p1, this->getIM()->p2);
+      return this->setSuccess();
+    }
+
     static SharedPtr<CC> instance;
     tStaticValues staticValues;
     tObservers actionObservers;
     tObservers observers;
     sIMessage_2params* im;
+    tCfgCols cfgCols;
 
     bool returnCodeSet;
     int returnCode;

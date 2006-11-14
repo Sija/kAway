@@ -59,21 +59,17 @@ namespace kAway2 {
 
     struct sStatus {
       unsigned int id;
-      String name;
+      const char* name;
       HIMAGELIST img;
 
-      sStatus(int _id, const StringRef& _name, HIMAGELIST _img) : id(_id), name(_name), img(_img) { }
+      sStatus(int _id, const char* _name, HIMAGELIST _img) : id(_id), name(_name), img(_img) { }
     };
 
     typedef std::list<sStatus> tStats;
 
   public:
-    AwayWnd() {
-      this->classRegister();
-    }
-    ~AwayWnd() {
-      this->classUnRegister();
-    }
+    AwayWnd();
+    ~AwayWnd();
 
     void prepareButtonImage(HIMAGELIST &hIml, HWND hWnd, int net, int status);
 
@@ -93,8 +89,6 @@ namespace kAway2 {
       this->instances.erase(key);
     }
 
-    void classRegister();
-    void classUnRegister();
     void show();
 
   protected:
