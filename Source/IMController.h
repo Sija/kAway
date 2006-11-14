@@ -22,6 +22,9 @@
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 
+using namespace Stamina;
+using namespace std;
+
 namespace Konnekt {
   template<typename TC, typename TR>
   TR (TC::* resolve_cast0(TR (TC::* pFunc)(void)))(void) {
@@ -36,9 +39,7 @@ namespace Konnekt {
   template <class CC /* Controller Class */> 
   class IMController : public SharedObject<iSharedObject> {
   public:
-    /*
-     * Class version
-     */
+    /* Class version */
 	  STAMINA_OBJECT_CLASS_VERSION(IMController<CC>, iSharedObject, Version(0,1,0,0));
 
   public:
@@ -236,7 +237,7 @@ namespace Konnekt {
         list[id] = new sObserver;
       }
       if (!name.length()) {
-        name = "unnamed." + itos(list[id]->connections.size());
+        name = "unnamed." + list[id]->connections.size();
       }
       if (list[id]->connections.find(name) != list[id]->connections.end()) {
         if (overwrite) {
