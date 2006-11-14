@@ -59,11 +59,19 @@ namespace Konnekt {
 
   protected:
     inline IMController() : returnCodeSet(false), returnCode(0) { 
+      // automagical registration of configuration columns (set via setColumn())
       this->registerObserver(IM_SETCOLS, bind(resolve_cast0(&IMController::_setCfgCols), this));
+      // setting/unsetting Ctrl global pointer
       this->registerObserver(IM_PLUG_INIT, bind(resolve_cast0(&IMController::_plugInit), this));
       this->registerObserver(IM_PLUG_DEINIT, bind(resolve_cast0(&IMController::_plugDeInit), this));
 
+      // default values for common messages, may be overriden
+      this->addStaticValue(IM_PLUG_NETNAME, 0);
+      this->addStaticValue(IM_PLUG_PRIORITY, 0);
       this->addStaticValue(IM_PLUG_SDKVERSION, KONNEKT_SDK_V);
+      this->addStaticValue(IM_PLUG_VERSION, 0);
+      this->addStaticValue(IM_PLUG_CORE_V, (int) "W98");
+      this->addStaticValue(IM_PLUG_UI_V, 0);
     }
 
     inline IMController(CC const&) { }
@@ -84,6 +92,7 @@ namespace Konnekt {
     }
 
   public:
+    // returns pointer do CC class
     inline static CC* getInstance() {
       if (!instance.isValid()) {
         instance = new CC;
@@ -91,17 +100,22 @@ namespace Konnekt {
       return instance;
     }
 
-    inline bool handle(sIMessage_base* msgBase) {
+    // proccess incoming IMessage
+    inline bool process(sIMessage_base* msgBase) {
       sIMessage_2params* msg = static_cast<sIMessage_2params*>(msgBase);
 
-      IMLOG("[IMController<%i>::handle()]: id = %i", this, msg->id);
+      // log IMessage and clear residues
+      IMLOG("[IMController<%i>::process()]: id = %i", this, msg->id);
       this->clear();
 
+      // first, we're looking for static values
       if (this->staticValues.find(msg->id) != this->staticValues.end()) {
         this->setReturnCode(this->staticValues[msg->id]);
       }
+      // then, we notify global observers
       this->notifyObservers(msg);
 
+      // in the end we're notifying action observers if it's action message
       if (msg->id == IM_UIACTION) {
         this->notifyActionObservers(msg);
       }
@@ -109,11 +123,13 @@ namespace Konnekt {
     }
 
     /*
+    inline void dbgObservers() {
       for (tObservers::iterator it = this->observers.begin(); it != this->observers.end(); it++) {
         for (tConnections::iterator it2 = it->second->connections.begin(); it2 != it->second->connections.end(); it2++) {
           IMLOG("Observer[%i].connection: %s", it->first, it2->first.c_str());
         }
       }
+    }
     */
 
     inline bool registerObserver(int id, fOnIMessage f, int priority = 0, signals::connect_position pos = signals::at_back, 

@@ -23,7 +23,7 @@ int __stdcall DllMain(void* hinstDLL, unsigned long fdwReason, void* lpvReserved
 }
 
 int __stdcall IMessageProc(sIMessage_base* msgBase) {
-  if (Controller::getInstance()->handle(msgBase)) {
+  if (Controller::getInstance()->process(msgBase)) {
     return Controller::getInstance()->getReturnCode();
   } else {
     if (Ctrl) Ctrl->setError(IMERROR_NORESULT);

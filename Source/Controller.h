@@ -31,9 +31,6 @@
 
 //#include "FwdController.h"
 
-//#include "Forwarders/CntForwarder.h"
-//#include "Forwarders/SMSForwarder.h"
-
 namespace kAway2 {
   class Controller : public IMController<Controller>, signals::trackable {
   public:
