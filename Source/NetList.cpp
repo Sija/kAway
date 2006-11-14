@@ -230,14 +230,7 @@ bool NetList::isIgnored(int net) {
   for (tIgnoredNets::iterator it = this->ignoredNets.begin(); it != this->ignoredNets.end(); it++) {
     if ((*it) == net) return true;
   }
-
-  int ignored = 0;
-  Ctrl->IMessage(IM::hidePresence, net, ignored);
-
-  if (Ctrl->getError() != IMERROR_NORESULT) {
-    return ignored;
-  }
-  return false;
+  return Ctrl->IMessage(IM::hidePresence, net);
 }
 
 void NetList::addIgnored(int net) {

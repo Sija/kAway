@@ -270,9 +270,9 @@ namespace Konnekt {
     tStaticValues staticValues;
     tObservers actionObservers;
     tObservers observers;
-    sIMessage_2params* im;
     tCfgCols cfgCols;
 
+    sIMessage_2params* im;
     bool returnCodeSet;
     int returnCode;
   };

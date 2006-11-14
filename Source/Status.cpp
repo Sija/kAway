@@ -214,13 +214,7 @@ int Status::getInfoCharLimit(int net) {
   for (tInfoCharLimits::iterator it = this->infoCharLimits.begin(); it != this->infoCharLimits.end(); it++) {
     if (it->net == net) return it->length;
   }
-
-  int limit = 0;
-  Ctrl->IMessage(IM::infoCharLimit, net, limit);
-  if (Ctrl->getError() != IMERROR_NORESULT) {
-    return limit;
-  }
-  return 0;
+  return Ctrl->IMessage(IM::infoCharLimit, net);
 }
 
 String Status::limitChars(StringRef status, int net) {

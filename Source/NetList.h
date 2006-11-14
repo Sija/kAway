@@ -23,7 +23,7 @@
 class NetList : public SharedObject<iSharedObject> {
 public:
   static const struct IM {
-    static const unsigned int key = IM_USER + (668 * 1000) + 50;
+    static const unsigned int key = IM_USER + (900 * 1000) + 50;
     static const unsigned int hidePresence = key + 1;
   };
 
