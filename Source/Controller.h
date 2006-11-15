@@ -43,6 +43,12 @@ namespace kAway2 {
       tplReply = cfg::tpl::reply
     };
 
+    enum enAutoAwaySync {
+      syncNone,
+      syncBasic,
+      syncExtended
+    };
+
     struct sCnt {
       bool ignored;
       int historySess;
@@ -152,6 +158,7 @@ namespace kAway2 {
     Date64 awayTime;
 
     void switchBtns(bool state);
+    void changeStatus(int status, int tplCol = 0, bool onlyIfOnline = false);
 
   public:
     oNetList autoReplyList;

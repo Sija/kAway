@@ -48,7 +48,7 @@ namespace kAway2 {
     this->registerObserver(api::showAwayWnd, bind(resolve_cast0(&Controller::apiShowAwayWnd), this));
 
     /* Configuration columns */
-    this->setColumn(DTCFG, cfg::autoAwaySync, DT_CT_INT, 0, "kAway2/autoAwaySync");
+    this->setColumn(DTCFG, cfg::autoAwaySync, DT_CT_INT, syncExtended, "kAway2/autoAwaySync");
     this->setColumn(DTCFG, cfg::useKNotify, DT_CT_INT, 1, "kAway2/useKNotify");
     this->setColumn(DTCFG, cfg::ircCmds, DT_CT_INT, 1, "kAway2/ircCmds");
     this->setColumn(DTCFG, cfg::disableOnMsgSend, DT_CT_INT, 0, "kAway2/disableOnMsgSend");
@@ -248,11 +248,43 @@ namespace kAway2 {
     UIActionCfgAddPluginInfoBox2(ui::cfgGroup, desc, header, Helpers::icon16(ico::logoSmall).a_str(), -4);
     UIActionCfgAddPluginInfoBox2(ui::cntCfgGroup, desc, header, Helpers::icon16(ico::logoSmall).a_str(), -4);
 
+    /* User tab */
+    ifINT {
+      UIActionCfgAdd(43, 0, ACTT_GROUP, "Tryb auto-away (podstawowy)");
+      UIActionCfgAdd(43, 0, ACTT_SEPARATOR, "Zmieniaj status na:");
+      UIActionCfgAdd(43, 0, ACTT_CHECK, "Tylko przy statusach 'dostêpny' i 'pogadam'", cfg::status::onAutoAwayChgOnlyIfOnline);
+      UIActionCfgAdd(43, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(UIIcon(IT_STATUS, 0, ST_AWAY, 0)).a_str());
+      UIActionCfgAdd(43, 0, ACTT_RADIO | ACTSC_INLINE, "Zaraz wracam" AP_VALUE "65", cfg::status::onAutoAwaySt);
+      UIActionCfgAdd(43, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(UIIcon(IT_STATUS, 0, ST_NA, 0)).a_str());
+      UIActionCfgAdd(43, 0, ACTT_RADIO | ACTSC_INLINE, "Nieosi¹galny" AP_VALUE "33", cfg::status::onAutoAwaySt);
+      UIActionCfgAdd(43, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(UIIcon(IT_STATUS, 0, ST_DND, 0)).a_str());
+      UIActionCfgAdd(43, 0, ACTT_RADIO | ACTSC_INLINE, "Nie przeszkadzaæ" AP_VALUE "34", cfg::status::onAutoAwaySt);
+      UIActionCfgAdd(43, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(UIIcon(IT_STATUS, 0, ST_HIDDEN, 0)).a_str());
+      UIActionCfgAdd(43, 0, ACTT_RADIO | ACTSRADIO_LAST, "Ukryty" AP_VALUE "66", cfg::status::onAutoAwaySt);
+      UIActionCfgAdd(43, 0, ACTT_GROUPEND);
+
+      UIActionCfgAdd(43, 0, ACTT_GROUP, "Tryb auto-away (rozszerzony)");
+      UIActionCfgAdd(43, 0, ACTT_SEPARATOR, "Po jakim czasie zmieniaæ status:");
+      UIActionCfgAdd(43, 0, ACTT_SLIDER, "15m, 1s\n45m" AP_STEP "60" AP_MINIMUM "901" AP_MAXIMUM "2700"
+        AP_TIP "Czas w sekundach po jakim zostanie ustawiony wybrany poni¿ej status", cfg::extAutoAway::time);
+      UIActionCfgAdd(43, 0, ACTT_SEPARATOR, "Zmieniaj status na:");
+      UIActionCfgAdd(43, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(UIIcon(IT_STATUS, 0, ST_AWAY, 0)).a_str());
+      UIActionCfgAdd(43, 0, ACTT_RADIO | ACTSC_INLINE, "Zaraz wracam" AP_VALUE "65", cfg::extAutoAway::status);
+      UIActionCfgAdd(43, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(UIIcon(IT_STATUS, 0, ST_NA, 0)).a_str());
+      UIActionCfgAdd(43, 0, ACTT_RADIO | ACTSC_INLINE, "Nieosi¹galny" AP_VALUE "33", cfg::extAutoAway::status);
+      UIActionCfgAdd(43, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(UIIcon(IT_STATUS, 0, ST_DND, 0)).a_str());
+      UIActionCfgAdd(43, 0, ACTT_RADIO | ACTSC_INLINE, "Nie przeszkadzaæ" AP_VALUE "34", cfg::extAutoAway::status);
+      UIActionCfgAdd(43, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(UIIcon(IT_STATUS, 0, ST_HIDDEN, 0)).a_str());
+      UIActionCfgAdd(43, 0, ACTT_RADIO, "Ukryty" AP_VALUE "66", cfg::extAutoAway::status);
+      UIActionCfgAdd(43, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(46).a_str());
+      UIActionCfgAdd(43, 0, ACTT_RADIO | ACTSC_BOLD | ACTSRADIO_LAST, "Nie zmieniaj" AP_VALUE "-1", cfg::extAutoAway::status);
+      UIActionCfgAdd(43, 0, ACTT_GROUPEND);
+    }
+
     /* Main tab */
     /* |-> General settings group */
     ifINT {
       UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUP, "Ustawienia");
-      UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Synchronizuj z trybem auto-away", cfg::autoAwaySync);
       UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Wycisz przy w³¹czeniu trybu away", cfg::muteOnEnable);
       ifADV UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Wy³¹czaj w momencie wys³ania wiadomoœci", cfg::disableOnMsgSend);
       ifADV UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Zapisuj wiadomoœci w osobnej historii", cfg::saveToHistory);
@@ -273,6 +305,17 @@ namespace kAway2 {
       UIActionCfgAdd(ui::cfgGroup, 0, ACTT_COMMENT, "Format daty");
       UIActionCfgAdd(ui::cfgGroup, 0, ACTT_EDIT | ACTSC_INLINE, timeFormat, cfg::timeFormat);
       UIActionCfgAdd(ui::cfgGroup, 0, ACTT_COMMENT, "Format godziny");
+      UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
+    }
+
+    ifINT {
+      UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUP, "Ustawienia auto-away'a");
+      UIActionCfgAdd(ui::cfgGroup, 0, ACTT_SEPARATOR, "Synchronizuj z trybem auto-away:");
+      UIActionCfgAdd(ui::cfgGroup, 0, ACTT_RADIO | ACTSC_INLINE, "podstawowym" AP_VALUE "1", cfg::autoAwaySync);
+      UIActionCfgAdd(ui::cfgGroup, 0, ACTT_RADIO, "rozszerzonym" AP_VALUE "2", cfg::autoAwaySync);
+      UIActionCfgAdd(ui::cfgGroup, 0, ACTT_RADIO | ACTSC_BOLD | ACTSRADIO_LAST, "nie synchronizuj" AP_VALUE "0", cfg::autoAwaySync);
+      UIActionCfgAdd(ui::cfgGroup, 0, ACTT_SEPARATOR, "Powód nieobecnoœci:");
+      UIActionCfgAdd(ui::cfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::autoAway);
       UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
     }
 
@@ -358,39 +401,6 @@ namespace kAway2 {
     /* |-> Net selection group */
     statusList->UIDraw(3, "Wybierz sieci, na których chcesz zmieniaæ status:");
 
-    ifINT {
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_GROUP, "Ustawienia auto-away'a");
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_SEPARATOR, "Powód nieobecnoœci:");
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_TEXT, 0, cfg::tpl::autoAway);
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_SEPARATOR, "Zmieniaj status na:");
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_CHECK, "Tylko przy statusach 'dostêpny' i 'pogadam'", cfg::status::onAutoAwayChgOnlyIfOnline);
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(UIIcon(IT_STATUS, 0, ST_AWAY, 0)).a_str());
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_RADIO | ACTSC_INLINE, "Zaraz wracam" AP_VALUE "65", cfg::status::onAutoAwaySt);
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(UIIcon(IT_STATUS, 0, ST_NA, 0)).a_str());
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_RADIO | ACTSC_INLINE, "Nieosi¹galny" AP_VALUE "33", cfg::status::onAutoAwaySt);
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(UIIcon(IT_STATUS, 0, ST_DND, 0)).a_str());
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_RADIO | ACTSC_INLINE, "Nie przeszkadzaæ" AP_VALUE "34", cfg::status::onAutoAwaySt);
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(UIIcon(IT_STATUS, 0, ST_HIDDEN, 0)).a_str());
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_RADIO | ACTSRADIO_LAST, "Ukryty" AP_VALUE "66", cfg::status::onAutoAwaySt);
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_GROUPEND);
-
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_GROUP, "Rozszerzony auto-away");
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_SEPARATOR, "Po jakim czasie zmieniaæ status:");
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_SLIDER, "15m, 1s\n45m" AP_STEP "60" AP_MINIMUM "901" AP_MAXIMUM "2700", cfg::extAutoAway::time);
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_SEPARATOR, "Zmieniaj status na:");
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(UIIcon(IT_STATUS, 0, ST_AWAY, 0)).a_str());
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_RADIO | ACTSC_INLINE, "Zaraz wracam" AP_VALUE "65", cfg::extAutoAway::status);
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(UIIcon(IT_STATUS, 0, ST_NA, 0)).a_str());
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_RADIO | ACTSC_INLINE, "Nieosi¹galny" AP_VALUE "33", cfg::extAutoAway::status);
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(UIIcon(IT_STATUS, 0, ST_DND, 0)).a_str());
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_RADIO | ACTSC_INLINE, "Nie przeszkadzaæ" AP_VALUE "34", cfg::extAutoAway::status);
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(UIIcon(IT_STATUS, 0, ST_HIDDEN, 0)).a_str());
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_RADIO, "Ukryty" AP_VALUE "66", cfg::extAutoAway::status);
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(46).a_str());
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_RADIO | ACTSRADIO_LAST, "Nie zmieniaj" AP_VALUE "-1", cfg::extAutoAway::status);
-      UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_GROUPEND);
-    }
-
     /* Autoresponder tab */
     /* |-> Minimal reply interval group */
     ifPRO {
@@ -471,7 +481,7 @@ namespace kAway2 {
       UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_RADIO | ACTSC_INLINE, "wys³anej i otrzymanej wiadomoœci" 
         AP_VALUE "2", cfg::reply::minIntervalType);
       UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(27).a_str());
-      UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_RADIO | ACTSRADIO_LAST, "domyœlnie" AP_VALUE "-1", cfg::reply::minIntervalType);
+      UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_RADIO | ACTSC_BOLD | ACTSRADIO_LAST, "domyœlnie" AP_VALUE "-1", cfg::reply::minIntervalType);
       UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_GROUPEND);
     }
 
@@ -782,26 +792,44 @@ namespace kAway2 {
   }
 
   void Controller::onExtAutoAway() {
-    statusCtrl->changeStatus(GETINT(cfg::extAutoAway::status));
+    if (GETINT(cfg::autoAwaySync) == syncExtended && !this->isEnabled()) {
+      this->enable(GETSTRA(cfg::tpl::autoAway), GETINT(cfg::extAutoAway::status), true);
+    } else {
+      this->changeStatus(GETINT(cfg::extAutoAway::status), cfg::tpl::autoAway);
+    }
     this->extAutoAwayTimer->stop();
   }
 
+  // TODO: dorobic szablon opisu dla trybu auto-away
   void Controller::onAutoAway() {
-    if (!this->isEnabled() && GETINT(cfg::autoAwaySync)) {
-      if (GETINT(cfg::extAutoAway::status) != -1) {
-        this->extAutoAwayTimer->start((GETINT(cfg::extAutoAway::time) - GETINT(CFG_AUTOAWAY)) * 1000);
-      }
-      this->setAutoAway(true);
-      this->enable(GETSTRA(cfg::tpl::autoAway), GETINT(cfg::status::onAutoAwaySt), true);
+    if (this->isEnabled()) return;
+
+    int status = GETINT(cfg::status::onAutoAwaySt);
+    int syncType = GETINT(cfg::autoAwaySync);
+
+    statusCtrl->rememberInfo();
+    this->setAutoAway(true);
+
+    if (syncType == syncExtended || GETINT(cfg::extAutoAway::status) != -1) {
+      this->extAutoAwayTimer->start((GETINT(cfg::extAutoAway::time) - GETINT(CFG_AUTOAWAY)) * 1000);
+    }
+    if (syncType == syncBasic) {
+      this->enable(GETSTRA(cfg::tpl::autoAway), status, true);
+    } else {
+      this->changeStatus(status, cfg::tpl::autoAway, GETINT(cfg::status::onAutoAwayChgOnlyIfOnline));
     }
   }
 
   void Controller::onBack() {
-    if (this->isEnabled() && this->isAutoAway()) {
+    if (!this->isAutoAway()) return;
+
+    if (this->isEnabled()) {
       this->extAutoAwayTimer->stop();
       this->disable("", true);
-      this->setAutoAway(false);
+    } else {
+      statusCtrl->restoreInfo();
     }
+    this->setAutoAway(false);
   }
 
   /* API callback methods */
@@ -873,23 +901,12 @@ namespace kAway2 {
     }
 
     if (chgStatus || chgInfo) {
+      int defStatus = GETINT(this->isFromWnd ? cfg::wnd::onEnableSt : cfg::status::onEnableSt);
+      int tplCol = !chgInfo ? 0 : cfg::tpl::status;
+      status = !chgStatus ? -1 : (status ? status : defStatus);
+
       statusCtrl->rememberInfo();
-
-      NetList::tNets nets = statusList->getNets();
-      int actSt, chgOnlyIfOnline = this->autoAway && GETINT(cfg::status::onAutoAwayChgOnlyIfOnline);
-      int st = this->isFromWnd ? cfg::wnd::onEnableSt : cfg::status::onEnableSt;
-
-      for (NetList::tNets::iterator it = nets.begin(); it != nets.end(); it++) {
-        actSt = statusCtrl->getActualStatus(it->net);
-        if (!statusCtrl->isNetValid(it->net) || (chgOnlyIfOnline && (actSt != ST_ONLINE && actSt != ST_CHAT))) {
-          continue;
-        }
-        if (chgInfo) {
-          statusCtrl->changeStatus(it->net, GETSTRA(cfg::tpl::status), chgStatus ? (status ? status : GETINT(st)) : -1);
-        } else if (chgStatus) {
-          statusCtrl->changeStatus(it->net, status ? status : GETINT(st));
-        }
-      }
+      this->changeStatus(status, tplCol);
     }
 
     if (GETINT(this->isFromWnd ? cfg::wnd::muteOnEnable : cfg::muteOnEnable) && !GETINT(kSound::Cfg::mute)) {
@@ -980,6 +997,23 @@ namespace kAway2 {
       }
     }
     delete [] name;
+  }
+
+  void Controller::changeStatus(int status, int tplCol, bool onlyIfOnline) {
+    int actSt, chgOnlyIfOnline = this->autoAway && onlyIfOnline;
+    NetList::tNets nets = statusList->getNets();
+
+    for (NetList::tNets::iterator it = nets.begin(); it != nets.end(); it++) {
+      actSt = statusCtrl->getActualStatus(it->net);
+      if (!statusCtrl->isNetValid(it->net) || (chgOnlyIfOnline && (actSt != ST_ONLINE && actSt != ST_CHAT))) {
+        continue;
+      }
+      if (tplCol) {
+        statusCtrl->changeStatus(it->net, GETSTRA(tplCol), status);
+      } else if (status != -1) {
+        statusCtrl->changeStatus(it->net, status);
+      }
+    }
   }
 
   void Controller::sendMsgTpl(int cnt, enAutoMsgTpl tpl, const StringRef& msgVal) {
