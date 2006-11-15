@@ -43,6 +43,12 @@ namespace kAway2 {
       tplReply = cfg::tpl::reply
     };
 
+    enum enAutoAwayType {
+      typeDisabled,
+      typeBasic,
+      typeExtended
+    };
+
     enum enAutoAwaySync {
       syncNone,
       syncBasic,
@@ -110,10 +116,10 @@ namespace kAway2 {
     }
 
     inline bool isAutoAway() {
-      return this->autoAway;
+      return this->autoAway != typeDisabled;
     }
 
-    inline void setAutoAway(bool state) {
+    inline void setAutoAway(enAutoAwayType state) {
       this->autoAway = state;
     }
 
@@ -148,7 +154,7 @@ namespace kAway2 {
   protected:
     bool isOn;
     bool muteStateSwitched;
-    bool autoAway;
+    enAutoAwayType autoAway;
     bool isFromWnd;
     int pluginsGroup;
 
@@ -158,7 +164,7 @@ namespace kAway2 {
     Date64 awayTime;
 
     void switchBtns(bool state);
-    void changeStatus(int status, int tplCol = 0, bool onlyIfOnline = false);
+    void changeStatus(int status, int tplCol = 0);
 
   public:
     oNetList autoReplyList;

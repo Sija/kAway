@@ -20,7 +20,7 @@
 //#include "Forwarders/SMSForwarder.h"
 
 namespace kAway2 {
-  Controller::Controller() : isOn(false), muteStateSwitched(false), autoAway(false), pluginsGroup(0) {
+  Controller::Controller() : isOn(false), muteStateSwitched(false), autoAway(typeDisabled), pluginsGroup(0) {
     /* Static values like net, type or version */
     this->addStaticValue(IM_PLUG_TYPE, IMT_UI | IMT_CONFIG | IMT_ALLMESSAGES);
     this->addStaticValue(IM_PLUG_PRIORITY, PLUGP_HIGHEST);
@@ -100,7 +100,7 @@ namespace kAway2 {
     this->setColumn(DTCFG, cfg::status::changeInfoOnEnable, DT_CT_INT, 1, "kAway2/status/changeInfoOnEnable");
     this->setColumn(DTCFG, cfg::status::netChange, DT_CT_STR, "", "kAway2/status/netChange");
     this->setColumn(DTCFG, cfg::status::dotsAppend, DT_CT_INT, 1, "kAway2/status/dotsAppend");
-    this->setColumn(DTCFG, cfg::status::onAutoAwayChgOnlyIfOnline, DT_CT_INT, 1, "kAway2/status/onAutoAwayChgOnlyIfOnline");
+    this->setColumn(DTCFG, cfg::status::chgOnlyIfOnline, DT_CT_INT, 1, "kAway2/status/chgOnlyIfOnline");
 
     this->setColumn(DTCFG, cfg::extAutoAway::status, DT_CT_INT, ST_NA, "kAway2/extAutoAway/status");
     this->setColumn(DTCFG, cfg::extAutoAway::time, DT_CT_INT, 1800, "kAway2/extAutoAway/time");
@@ -252,7 +252,7 @@ namespace kAway2 {
     ifINT {
       UIActionCfgAdd(43, 0, ACTT_GROUP, "Tryb auto-away (podstawowy)");
       UIActionCfgAdd(43, 0, ACTT_SEPARATOR, "Zmieniaj status na:");
-      UIActionCfgAdd(43, 0, ACTT_CHECK, "Tylko przy statusach 'dostêpny' i 'pogadam'", cfg::status::onAutoAwayChgOnlyIfOnline);
+      UIActionCfgAdd(43, 0, ACTT_CHECK, "Tylko przy statusach 'dostêpny' i 'pogadam'", cfg::status::chgOnlyIfOnline);
       UIActionCfgAdd(43, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(UIIcon(IT_STATUS, 0, ST_AWAY, 0)).a_str());
       UIActionCfgAdd(43, 0, ACTT_RADIO | ACTSC_INLINE, "Zaraz wracam" AP_VALUE "65", cfg::status::onAutoAwaySt);
       UIActionCfgAdd(43, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(UIIcon(IT_STATUS, 0, ST_NA, 0)).a_str());
@@ -792,15 +792,16 @@ namespace kAway2 {
   }
 
   void Controller::onExtAutoAway() {
+    this->setAutoAway(typeExtended);
+
     if (GETINT(cfg::autoAwaySync) == syncExtended && !this->isEnabled()) {
       this->enable(GETSTRA(cfg::tpl::autoAway), GETINT(cfg::extAutoAway::status), true);
     } else {
-      this->changeStatus(GETINT(cfg::extAutoAway::status), cfg::tpl::autoAway);
+      this->changeStatus(GETINT(cfg::extAutoAway::status));
     }
     this->extAutoAwayTimer->stop();
   }
 
-  // TODO: dorobic szablon opisu dla trybu auto-away
   void Controller::onAutoAway() {
     if (this->isEnabled()) return;
 
@@ -808,7 +809,7 @@ namespace kAway2 {
     int syncType = GETINT(cfg::autoAwaySync);
 
     statusCtrl->rememberInfo();
-    this->setAutoAway(true);
+    this->setAutoAway(typeBasic);
 
     if (syncType == syncExtended || GETINT(cfg::extAutoAway::status) != -1) {
       this->extAutoAwayTimer->start((GETINT(cfg::extAutoAway::time) - GETINT(CFG_AUTOAWAY)) * 1000);
@@ -816,7 +817,7 @@ namespace kAway2 {
     if (syncType == syncBasic) {
       this->enable(GETSTRA(cfg::tpl::autoAway), status, true);
     } else {
-      this->changeStatus(status, cfg::tpl::autoAway, GETINT(cfg::status::onAutoAwayChgOnlyIfOnline));
+      this->changeStatus(status);
     }
   }
 
@@ -829,7 +830,7 @@ namespace kAway2 {
     } else {
       statusCtrl->restoreInfo();
     }
-    this->setAutoAway(false);
+    this->setAutoAway(typeDisabled);
   }
 
   /* API callback methods */
@@ -903,7 +904,7 @@ namespace kAway2 {
     if (chgStatus || chgInfo) {
       int defStatus = GETINT(this->isFromWnd ? cfg::wnd::onEnableSt : cfg::status::onEnableSt);
       int tplCol = !chgInfo ? 0 : cfg::tpl::status;
-      status = !chgStatus ? -1 : (status ? status : defStatus);
+      status = !chgStatus ? (this->autoAway ? status : -1) : (status ? status : defStatus);
 
       statusCtrl->rememberInfo();
       this->changeStatus(status, tplCol);
@@ -999,8 +1000,8 @@ namespace kAway2 {
     delete [] name;
   }
 
-  void Controller::changeStatus(int status, int tplCol, bool onlyIfOnline) {
-    int actSt, chgOnlyIfOnline = this->autoAway && onlyIfOnline;
+  void Controller::changeStatus(int status, int tplCol) {
+    int actSt, chgOnlyIfOnline = (this->autoAway == typeBasic) && GETINT(cfg::status::chgOnlyIfOnline);
     NetList::tNets nets = statusList->getNets();
 
     for (NetList::tNets::iterator it = nets.begin(); it != nets.end(); it++) {

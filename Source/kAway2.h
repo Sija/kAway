@@ -220,7 +220,7 @@ namespace kAway2 {
       const unsigned int onEnableSt = status + 5;
       const unsigned int onAutoAwaySt = status + 6;
       const unsigned int dotsAppend = status + 7;
-      const unsigned int onAutoAwayChgOnlyIfOnline = status + 8;
+      const unsigned int chgOnlyIfOnline = status + 8;
     }
 
     namespace extAutoAway {
