@@ -49,12 +49,6 @@ namespace kAway2 {
       typeExtended
     };
 
-    enum enAutoAwaySync {
-      syncNone,
-      syncBasic,
-      syncExtended
-    };
-
     struct sCnt {
       bool ignored;
       int historySess;
@@ -164,7 +158,7 @@ namespace kAway2 {
     Date64 awayTime;
 
     void switchBtns(bool state);
-    void changeStatus(int status, int tplCol = 0);
+    void changeStatus(int status, bool changeInfo = false);
 
   public:
     oNetList autoReplyList;

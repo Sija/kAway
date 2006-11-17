@@ -1,5 +1,5 @@
 /**
-  *  kAway2 Header
+  *  kAway2 header file
   *
   *  Licensed under The GNU Lesser General Public License
   *  Redistributions of files must retain the above copyright notice.
@@ -22,10 +22,19 @@ namespace kAway2 {
   /*
    *  Values for {cfg::reply::minIntervalType} col
    */
-  enum enMinIntType {
-    intervalTypeRcvTime,
-    intervalTypeSendTime,
-    intervalTypeBoth
+  enum enIntervalType {
+    typeRcvTime,
+    typeSendTime,
+    typeBoth
+  };
+
+  /*
+   *  Values for {cfg::autoAwaySync} col
+   */
+  enum enAutoAwaySync {
+    syncNone,
+    syncBasic,
+    syncExtended
   };
 
   const char poweredBy[] = "planet boelex";
@@ -43,10 +52,15 @@ namespace kAway2 {
     const unsigned int ignore = api + 5;
 
     const unsigned int showAwayWnd = api + 6;
+    const unsigned int isAutoAway = api + 7;
+  }
 
-    const unsigned int isAway = api + 7;
-    const unsigned int isBack = api + 8;
-    const unsigned int isAutoAway = api + 9;
+  namespace im {
+    const unsigned int im = net * 1000 + IM_USER + 100;
+
+    const unsigned int away = im + 1;
+    const unsigned int back = im + 2;
+    const unsigned int extendedAutoAway = im + 3;
   }
 
   namespace ui {
@@ -130,6 +144,7 @@ namespace kAway2 {
     const unsigned int mruSize = cfg + 11;
     const unsigned int muteOnEnable = cfg + 12;
     const unsigned int disableConfirmation = cfg + 13;
+    const unsigned int autoAwayMsg = cfg + 14;
 
     const char extParamName[] = "kA2AutoMsgTpl";
     const char historyFolder[] = "kAway2";
@@ -165,10 +180,8 @@ namespace kAway2 {
       const unsigned int disable = tpl + 2;
 
       const unsigned int reply = tpl + 3;
-      const unsigned int email = tpl + 6;
-
+      // const unsigned int email = tpl + 6;
       const unsigned int status = tpl + 7;
-      const unsigned int autoAway = tpl + 8;
     }
 
     namespace reply {
@@ -182,14 +195,15 @@ namespace kAway2 {
       const unsigned int minInterval = reply + 5;
       const unsigned int useHtml = reply + 6;
 
-      const unsigned int magicKey = reply + 7;
-      const unsigned int magicKeyNotifyMethod = reply + 8;
+      // const unsigned int magicKey = reply + 7;
+      // const unsigned int magicKeyNotifyMethod = reply + 8;
 
       const unsigned int netChange = reply + 9;
       const unsigned int showInWnd = reply + 10;
       const unsigned int minIntervalType = reply + 11;
     }
 
+    /* just a prototype
     namespace email {
       const unsigned int email = cfg + 400;
 
@@ -207,6 +221,7 @@ namespace kAway2 {
         const unsigned int password = smtp + 4;
       }
     }
+    */
 
     namespace status {
       const unsigned int status = cfg + 600;

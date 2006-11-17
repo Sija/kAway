@@ -122,10 +122,10 @@ public:
   }
 
   String buildVarsList();
-  String buildVarsList(const tHelpVars& vars);
+  static String buildVarsList(const tHelpVars& vars);
 
   void UIDrawHelpBtn(int cfgGroup, int ico = 0);
-  void UIDrawHelpBtn(const tHelpVars& vars, int cfgGroup, int ico = 0);
+  static void UIDrawHelpBtn(const tHelpVars& vars, int cfgGroup, int ico = 0);
 
   void clearModifiers();
   void clearVars();

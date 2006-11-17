@@ -53,10 +53,10 @@ void Status::changeStatus(int st) {
   }
 }
 
-void Status::changeStatus(const StringRef& info, int st) {
+void Status::changeStatusInfo(const StringRef& info, int st) {
   NetList::tNets nets = this->netList->getNets();
   for (NetList::tNets::iterator it = nets.begin(); it != nets.end(); it++) {
-    if (this->isNetValid(it->net)) this->changeStatus(it->net, info, st);
+    if (this->isNetValid(it->net)) this->changeStatusInfo(it->net, info, st);
   }
 }
 
@@ -65,7 +65,7 @@ void Status::changeStatus(int net, int st) {
 
   st = this->applyReplacementSt(net, st);
   if (this->isRemembered()) {
-    this->lastSt[net] = sInfo(net, st);
+    this->omittedSt[net].push_back(sInfo(net, st));
   }
 
   Ctrl->IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, 0);
@@ -74,7 +74,7 @@ void Status::changeStatus(int net, int st) {
     this, net, st);
 }
 
-void Status::changeStatus(int net, const StringRef& info, int st) {
+void Status::changeStatusInfo(int net, const StringRef& info, int st) {
   if (info == this->getActualInfo(net) && st != ST_OFFLINE) {
     return this->changeStatus(net, st);
   }
@@ -89,7 +89,7 @@ void Status::changeStatus(int net, const StringRef& info, int st) {
     st = this->applyReplacementSt(net, st);
   }
   if (this->isRemembered()) {
-    this->lastSt[net] = sInfo(net, st, new_info);
+    this->omittedSt[net].push_back(sInfo(net, st, new_info));
   }
 
   Ctrl->IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, (int) new_info.c_str());
@@ -145,7 +145,7 @@ void Status::rememberInfo(int net) {
 
 void Status::rememberInfo() {
   this->remember = true;
-  this->lastSt.clear();
+  this->omittedSt.clear();
   this->rememberedSt.clear();
 
   NetList::tNets nets = this->netList->getNets();
@@ -173,25 +173,35 @@ void Status::restoreInfo() {
 }
 
 void Status::actionHandle(sIMessage_base *msgBase) {
-  if (!this->isRemembered()) return;
-
   sIMessage_StatusChange *st = static_cast<sIMessage_StatusChange*>(msgBase);
   int net = Ctrl->IMessageDirect(IM_PLUG_NET, st->plugID);
 
-  if ((this->getStatus(net) != -1) && (st->status != ST_CONNECTING) && (st->status != ST_OFFLINE)) {
-    for (tInfos::iterator it = this->rememberedSt.begin(); it != this->rememberedSt.end(); it++) {
-      if (it->net == net) {
-        if (st->status != this->lastSt[net].st) it->st = st->status;
-        if ((String) st->info != this->lastSt[net].info) it->info = st->info;
-        break;
+  if (!this->isRemembered(net) || this->omittedSt.find(net) == this->omittedSt.end()) {
+    return;
+  }
+
+  if (st->status != ST_CONNECTING && st->status != ST_OFFLINE) {
+    bool r = false, r2 = false;
+    for (std::list<sInfo>::iterator it = this->omittedSt[net].begin(); it != this->omittedSt[net].end(); it++) {
+      if (it->st == st->status) r = true;
+      if (it->info == st->info) r2 = true;
+    }
+
+    if (!r || !r2) {
+      for (tInfos::iterator it = this->rememberedSt.begin(); it != this->rememberedSt.end(); it++) {
+        if (it->net != net) continue;
+
+        if (!r) it->st = st->status;
+        if (!r2) it->info = st->info;
       }
     }
+
     logDebug("[Status<%i>::actionHandle()]: net = %i, status = %i, info = %s", 
       this, net, st->status, nullChk(st->info));
   }
 }
 
-bool Status::chgOnHidden() {
+bool Status::changeOnHidden() {
   return this->onHiddenCfgCol ? GETINT(this->onHiddenCfgCol) : true;
 }
 
@@ -239,7 +249,7 @@ String Status::getDots() {
 
 bool Status::isNetValid(int net) {
   if (this->netList->getNetState(net) && this->netList->isConnected(net)) {
-    if (!this->chgOnHidden() && (ST_HIDDEN == this->getActualStatus(net))) {
+    if (!this->changeOnHidden() && (ST_HIDDEN == this->getActualStatus(net))) {
       return false;
     } else {
       return true;

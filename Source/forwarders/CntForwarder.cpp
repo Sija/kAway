@@ -24,8 +24,8 @@ namespace kAway2 {
     pCtrl->registerObserver(IM_UI_PREPARE, bind(resolve_cast0(&CntForwarder::onIPrepare), this));
     pCtrl->registerObserver(IM_UIACTION, bind(&CntForwarder::onAction, this, _1));
     pCtrl->registerObserver(IM_MSG_RCV, bind(&CntForwarder::onNewMsg, this, _1)); // baaad
-    pCtrl->registerObserver(api::isAway, bind(resolve_cast0(&CntForwarder::onEnable), this));
-    pCtrl->registerObserver(api::isBack, bind(resolve_cast0(&CntForwarder::onDisable), this));
+    pCtrl->registerObserver(im::away, bind(resolve_cast0(&CntForwarder::onEnable), this));
+    pCtrl->registerObserver(im::back, bind(resolve_cast0(&CntForwarder::onDisable), this));
   }
 
   void CntForwarder::send(const StringRef& msg) {

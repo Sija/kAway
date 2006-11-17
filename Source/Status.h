@@ -63,7 +63,7 @@ public:
   };
 
   typedef std::list<sInfo> tInfos;
-  typedef std::map<int, sInfo> tLastInfos;
+  typedef std::map<int, std::list<sInfo>> tOmittedInfos;
   typedef std::list<sStReplacement> tStReplacements;
   typedef std::list<sInfoCharLimit> tInfoCharLimits;
 
@@ -76,9 +76,9 @@ public:
   // Sprawdza czy sieæ 'nadaje siê do u¿ytku'
   bool isNetValid(int net);
   // Czy zmieniaæ przy statusie 'ukryty' ?
-  bool chgOnHidden();
+  bool changeOnHidden();
   // obs³uga akcji
-  void actionHandle(sIMessage_base *msgBase);
+  void actionHandle(sIMessage_base* msgBase);
 
   // tekstowa nazwa statusu
   String labelById(int st);
@@ -91,10 +91,10 @@ public:
   virtual String parseInfo(StringRef info, int net, int st = -1);
 
   // Zmienia status, txt - opis, st - id statusu
-  void changeStatus(const StringRef& info, int st = -1);
+  void changeStatusInfo(const StringRef& info, int st = -1);
   void changeStatus(int st);
   // Zmienia status na wybranej sieci
-  void changeStatus(int net, const StringRef& info, int st = -1);
+  void changeStatusInfo(int net, const StringRef& info, int st = -1);
   void changeStatus(int net, int st);
 
   bool isRemembered(int net = 0);
@@ -131,7 +131,7 @@ protected:
   unsigned int dotsCfgCol;
   bool remember;
 
-  tLastInfos lastSt;
+  tOmittedInfos omittedSt;
   // zapamietane statusy i ich opisy
   tInfos rememberedSt;
   // zamienniki nieobs³ugiwanych statusów

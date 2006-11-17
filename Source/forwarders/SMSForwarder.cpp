@@ -23,8 +23,8 @@ namespace kAway2 {
     pCtrl->registerObserver(IM_SETCOLS, bind(resolve_cast0(&SMSForwarder::onISetCols), this));
     pCtrl->registerObserver(IM_UI_PREPARE, bind(resolve_cast0(&SMSForwarder::onIPrepare), this));
     pCtrl->registerObserver(IM_MSG_RCV, bind(&SMSForwarder::onNewMsg, this, _1)); // baaad
-    pCtrl->registerObserver(api::isAway, bind(resolve_cast0(&SMSForwarder::onEnable), this));
-    pCtrl->registerObserver(api::isBack, bind(resolve_cast0(&SMSForwarder::onDisable), this));
+    pCtrl->registerObserver(im::away, bind(resolve_cast0(&SMSForwarder::onEnable), this));
+    pCtrl->registerObserver(im::back, bind(resolve_cast0(&SMSForwarder::onDisable), this));
     pCtrl->registerActionObserver(ui::sms::number, bind(&SMSForwarder::refreshCombo, this, _1));
   }
 

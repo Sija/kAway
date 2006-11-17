@@ -35,14 +35,17 @@ public:
   }
 
   inline String parseInfo(StringRef info, int net, int st = -1) {
-    bool dynSt = this->infoVar.length() && 
-      this->stringFormatter->addVar(this->infoVar, this->getInfo(net), false);
+    bool dynSt = false;
+    
+    if (this->infoVar.length()) {
+      dynSt = stringFormatter->addVar(infoVar, isRemembered(net) ? getInfo(net) : getActualInfo(net), false);
+    }
 
-    info = this->stringFormatter->parse(info);
+    info = stringFormatter->parse(info);
     info = Status::parseInfo(info, net, st);
 
     if (dynSt) {
-      this->stringFormatter->removeVar(this->infoVar);
+      stringFormatter->removeVar(this->infoVar);
     }
     return PassStringRef(info);
   }

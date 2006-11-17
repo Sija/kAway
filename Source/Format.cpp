@@ -107,7 +107,7 @@ void Format::UIDrawHelpBtn(int cfgGroup, int ico) {
 }
 
 void Format::UIDrawHelpBtn(const tHelpVars& vars, int cfgGroup, int ico) {
-  String val = this->buildVarsList(vars);
+  String val = Format::buildVarsList(vars);
   if (ico) val += AP_ICO + itos(ico);
   UIActionCfgAdd(cfgGroup, 0, ACTT_TIPBUTTON | ACTSBUTTON_ALIGNRIGHT | ACTSC_INLINE, val.a_str());
 }
