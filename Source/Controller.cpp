@@ -575,7 +575,7 @@ namespace kAway2 {
   }
 
   void Controller::onMsgRcv() {
-    cMessage *m = (cMessage*) this->getIM()->p1;
+    cMessage* m = (cMessage*) this->getIM()->p1;
 
     // hmmm, i have to remove it some sunny day...
     if ((m->type != MT_MESSAGE) || (m->flag & MF_AUTOMATED)) {
@@ -591,7 +591,7 @@ namespace kAway2 {
       std::string body(m->body); 
       body = body.substr(1, body.length());
 
-      split(body, " ", params);
+      Stamina::split(body, " ", params);
       String cmd = params[0];
       String awayMsg = (params.size() > 1) ? body.substr(params[0].length() + 1, body.length()) : "";
 

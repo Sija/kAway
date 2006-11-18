@@ -16,39 +16,6 @@
 #include "stdafx.h"
 #include "Format.h"
 
-std::string __stdcall fCallback(RegEx* reg, void* param) {
-  Format* fCtrl = static_cast<Format*>(param);
-
-  String value, prefix, suffix;
-  String result, buff;
-
-  if (fCtrl->getVar(reg->getSub(fCtrl->partsPos["var"]), buff)) {
-    if (!buff.length() && reg->getSub(fCtrl->partsPos["altVar"]).length()) {
-      buff = reg->getSub(fCtrl->partsPos["altVar"]);
-      buff = (buff.substr(0, 1) == "(") ? buff.substr(2, buff.length() - 4) : fCtrl->getVar(buff);
-    }
-
-    if (buff.length()) {
-      prefix = reg->getSub(fCtrl->partsPos["prefixString"]);
-      prefix = prefix.length() ? prefix.substr(2, prefix.length() - 4) : reg->getSub(fCtrl->partsPos["prefix"]);
-
-      suffix = reg->getSub(fCtrl->partsPos["suffixString"]);
-      suffix = suffix.length() ? suffix.substr(2, suffix.length() - 4) : reg->getSub(fCtrl->partsPos["suffix"]);
-
-      value = buff;
-      int modsApplied = fCtrl->applyModifiers(value, prefix, suffix);
-
-      logDebug("[Format<%i>::fCallback()]: prefix = %s, value = %s, suffix = %s, modifiers applied = %i",
-        fCtrl, nullChk(prefix), nullChk(value), nullChk(suffix), modsApplied);
-
-      result = prefix + value + suffix;
-    }
-  } else {
-    result = reg->getSub(0);
-  }
-  return result;
-}
-
 Format::Format(const StringRef& ldelim, const StringRef& rdelim) {
   this->pattern = 
     "/\\" + ldelim + "([^a-z0-9]*|(\\((?:\"[^\"]+\"|'[^']+')\\)))"
@@ -92,11 +59,44 @@ String Format::parse(const StringRef& txt) {
   reg.setPattern(this->pattern);
   reg.setSubject(txt);
 
-  String result = reg.replace(fCallback, NULL, this);
+  String result = reg.replace(&Format::parseCallback, NULL, this);
 
   logDebug("[Format<%i>::parse()]: before = %s, after = %s",
     this, txt.c_str(), nullChk(result));
 
+  return result;
+}
+
+std::string __stdcall Format::parseCallback(RegEx* reg, void* param) {
+  Format* fCtrl = static_cast<Format*>(param);
+
+  String value, prefix, suffix;
+  String result, buff;
+
+  if (fCtrl->getVar(reg->getSub(fCtrl->partsPos["var"]), buff)) {
+    if (!buff.length() && reg->getSub(fCtrl->partsPos["altVar"]).length()) {
+      buff = reg->getSub(fCtrl->partsPos["altVar"]);
+      buff = (buff.substr(0, 1) == "(") ? buff.substr(2, buff.length() - 4) : fCtrl->getVar(buff);
+    }
+
+    if (buff.length()) {
+      prefix = reg->getSub(fCtrl->partsPos["prefixString"]);
+      prefix = prefix.length() ? prefix.substr(2, prefix.length() - 4) : reg->getSub(fCtrl->partsPos["prefix"]);
+
+      suffix = reg->getSub(fCtrl->partsPos["suffixString"]);
+      suffix = suffix.length() ? suffix.substr(2, suffix.length() - 4) : reg->getSub(fCtrl->partsPos["suffix"]);
+
+      value = buff;
+      int modsApplied = fCtrl->applyModifiers(value, prefix, suffix);
+
+      logDebug("[Format<%i>::fCallback()]: prefix = %s, value = %s, suffix = %s, modifiers applied = %i",
+        fCtrl, nullChk(prefix), nullChk(value), nullChk(suffix), modsApplied);
+
+      result = prefix + value + suffix;
+    }
+  } else {
+    result = reg->getSub(0);
+  }
   return result;
 }
 

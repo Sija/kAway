@@ -116,6 +116,7 @@ public:
 
 public:
   String parse(const StringRef& txt);
+  static std::string __stdcall parseCallback(RegEx* reg, void* param);
 
   inline void setPattern(const StringRef& pattern) {
     this->pattern = pattern;

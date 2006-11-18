@@ -30,7 +30,41 @@
 #define MUTE                0x2006
 
 namespace kAway2 {
-  LRESULT CALLBACK awayWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
+  AwayWnd::AwayWnd() {
+    WNDCLASSEX awayWnd;
+    ZeroMemory(&awayWnd, sizeof(WNDCLASSEX));
+    awayWnd.cbSize = sizeof(awayWnd);
+    awayWnd.style = CS_HREDRAW | CS_VREDRAW;
+    awayWnd.lpfnWndProc = &AwayWnd::wndProc;
+    awayWnd.cbClsExtra = 0;
+    awayWnd.cbWndExtra = 0;
+    awayWnd.hInstance = Ctrl->hInst();
+    awayWnd.hCursor = LoadCursor(NULL, IDC_ARROW);
+    awayWnd.lpszMenuName = NULL;
+    awayWnd.lpszClassName = "kAway2AwayWnd";
+    awayWnd.hbrBackground = GetSysColorBrush(COLOR_BTNFACE);
+    awayWnd.hIcon = LoadIcon(Ctrl->hDll(), MAKEINTRESOURCE(179));
+    awayWnd.hIconSm = LoadIcon(Ctrl->hDll(), MAKEINTRESOURCE(179));
+    RegisterClassEx(&awayWnd);
+  }
+
+  AwayWnd::~AwayWnd() {
+    UnregisterClass("kAway2AwayWnd", Ctrl->hInst());
+  }
+
+  void AwayWnd::show() {
+    if (this->haveInstance(net)) {
+      SetActiveWindow((HWND) this->getInstance(net));
+    } else {
+      HWND hWnd = CreateWindowEx(NULL, "kAway2AwayWnd", "Podaj powód nieobecnoœci", WS_VISIBLE | WS_CAPTION | WS_SYSMENU,
+        (GetSystemMetrics(SM_CXSCREEN) / 2) - ((300 - (GetSystemMetrics(SM_CXFIXEDFRAME) * 2)) / 2),
+        (GetSystemMetrics(SM_CYSCREEN) / 2) - ((100 - (GetSystemMetrics(SM_CYFIXEDFRAME) * 2) + GetSystemMetrics(SM_CYCAPTION)) / 2),
+        300 + GetSystemMetrics(SM_CXFIXEDFRAME) * 2,220 + GetSystemMetrics(SM_CYFIXEDFRAME) * 2 + GetSystemMetrics(SM_CYCAPTION),
+        NULL, NULL, Ctrl->hInst(), (void*) net);
+    }
+  }
+
+  LRESULT CALLBACK AwayWnd::wndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
     switch(iMsg) {
       case WM_CREATE: {
         SendMessage(hWnd, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) ICMessage(IMI_ICONGET, ico::logoSmall, IML_16));
@@ -222,40 +256,6 @@ namespace kAway2 {
       }
     }
     return DefWindowProc(hWnd, iMsg, wParam, lParam);
-  }
-
-  AwayWnd::AwayWnd() {
-    WNDCLASSEX awayWnd;
-    ZeroMemory(&awayWnd, sizeof(WNDCLASSEX));
-    awayWnd.cbSize = sizeof(awayWnd);
-    awayWnd.style = CS_HREDRAW | CS_VREDRAW;
-    awayWnd.lpfnWndProc = awayWndProc;
-    awayWnd.cbClsExtra = 0;
-    awayWnd.cbWndExtra = 0;
-    awayWnd.hInstance = Ctrl->hInst();
-    awayWnd.hCursor = LoadCursor(NULL, IDC_ARROW);
-    awayWnd.lpszMenuName = NULL;
-    awayWnd.lpszClassName = "kAway2AwayWnd";
-    awayWnd.hbrBackground = GetSysColorBrush(COLOR_BTNFACE);
-    awayWnd.hIcon = LoadIcon(Ctrl->hDll(), MAKEINTRESOURCE(179));
-    awayWnd.hIconSm = LoadIcon(Ctrl->hDll(), MAKEINTRESOURCE(179));
-    RegisterClassEx(&awayWnd);
-  }
-
-  AwayWnd::~AwayWnd() {
-    UnregisterClass("kAway2AwayWnd", Ctrl->hInst());
-  }
-
-  void AwayWnd::show() {
-    if (this->haveInstance(net)) {
-      SetActiveWindow((HWND) this->getInstance(net));
-    } else {
-      HWND hWnd = CreateWindowEx(NULL, "kAway2AwayWnd", "Podaj powód nieobecnoœci", WS_VISIBLE | WS_CAPTION | WS_SYSMENU,
-        (GetSystemMetrics(SM_CXSCREEN) / 2) - ((300 - (GetSystemMetrics(SM_CXFIXEDFRAME) * 2)) / 2),
-        (GetSystemMetrics(SM_CYSCREEN) / 2) - ((100 - (GetSystemMetrics(SM_CYFIXEDFRAME) * 2) + GetSystemMetrics(SM_CYCAPTION)) / 2),
-        300 + GetSystemMetrics(SM_CXFIXEDFRAME) * 2,220 + GetSystemMetrics(SM_CYFIXEDFRAME) * 2 + GetSystemMetrics(SM_CYCAPTION),
-        NULL, NULL, Ctrl->hInst(), (void*) net);
-    }
   }
 
   void AwayWnd::prepareButtonImage(HIMAGELIST &hIml, HWND hWnd, int net, int status) {

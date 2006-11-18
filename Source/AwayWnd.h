@@ -71,6 +71,8 @@ namespace kAway2 {
     AwayWnd();
     ~AwayWnd();
 
+    static LRESULT CALLBACK wndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
+
     void prepareButtonImage(HIMAGELIST &hIml, HWND hWnd, int net, int status);
 
     inline bool haveInstance(int key) {

@@ -65,7 +65,7 @@ namespace kAway2 {
   protected:
     Controller();
 
-  public:
+  protected:
     /* IMessage callback methods */
     void onPrepare();
     void onAction();
@@ -86,6 +86,7 @@ namespace kAway2 {
     void apiIgnore();
     void apiShowAwayWnd();
 
+  public:
     /* strictly Controller methods */
     bool enable(const StringRef& msg = "", int status = 0, bool silent = false);
     bool disable(const StringRef& msg = "", bool silent = false);
