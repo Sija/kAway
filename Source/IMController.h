@@ -153,8 +153,7 @@ namespace Konnekt {
     }
 
     inline void notifyActionObservers(sIMessage_2params* msg) {
-      this->setIM(msg);
-      sUIActionNotify_2params* an = this->getAN();
+      sUIActionNotify_2params* an = this->setIM(msg)->getAN();
 
       if (!this->isActionObserved(an->act.id)) return;
       this->actionObservers[an->act.id]->signal(CC::getInstance());
@@ -174,6 +173,19 @@ namespace Konnekt {
     inline void setReturnCode(int code) {
       this->returnCodeSet = true;
       this->returnCode = code;
+    }
+
+    inline void setReturnCode(const StringRef& value) {
+      // tworzymy tymczasowy buffor
+      char* buff = (char*) Ctrl->GetTempBuffer(value.size() + 1);
+
+      // czyszczenie pamieci
+      memset(buff, 0, value.size() + 1);
+
+      //kopiujemy opis
+      memcpy(buff, value.a_str(), value.size());
+
+      this->setReturnCode((int) buff);
     }
 
     inline void setSuccess() {
@@ -196,8 +208,10 @@ namespace Konnekt {
       return static_cast<sUIActionNotify_2params*>((sUIActionNotify_base*) this->getIM()->p1);
     }
 
-    inline void setIM(sIMessage_2params* im) { 
+    inline CC* setIM(sIMessage_2params* im) { 
       this->im = im;
+
+      return CC::getInstance();
     }
 
     inline void addStaticValue(int id, int value) {
