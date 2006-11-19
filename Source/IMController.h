@@ -175,14 +175,14 @@ namespace Konnekt {
       this->returnCode = code;
     }
 
-    inline void setReturnCode(const StringRef& value) {
-      // tworzymy tymczasowy buffor
+    inline void setReturnValue(const StringRef& value) {
+      // tworzymy tymczasowy bufor
       char* buff = (char*) Ctrl->GetTempBuffer(value.size() + 1);
 
-      // czyszczenie pamieci
+      // czyszczenie pamiêci
       memset(buff, 0, value.size() + 1);
 
-      //kopiujemy opis
+      // kopiujemy dane
       memcpy(buff, value.a_str(), value.size());
 
       this->setReturnCode((int) buff);
