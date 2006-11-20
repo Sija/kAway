@@ -115,6 +115,7 @@ namespace kAway2 {
 
     const unsigned int clearMru = act + 5;
     const unsigned int resetCntSettings = act + 6;
+    const unsigned int resetSettings = act + 7;
   }
 
   // dynamiczne akcje
@@ -143,7 +144,7 @@ namespace kAway2 {
 
     const unsigned int mruSize = cfg + 11;
     const unsigned int muteOnEnable = cfg + 12;
-    const unsigned int disableConfirmation = cfg + 13;
+    const unsigned int confirmation = cfg + 13;
     const unsigned int autoAwayMsg = cfg + 14;
 
     const char extParamName[] = "kA2AutoMsgTpl";

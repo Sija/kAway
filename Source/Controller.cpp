@@ -55,7 +55,7 @@ namespace kAway2 {
     this->setColumn(DTCFG, cfg::saveToHistory, DT_CT_INT, 1, "kAway2/saveToHistory");
     this->setColumn(DTCFG, cfg::mruSize, DT_CT_INT, 20, "kAway2/mruSize");
     this->setColumn(DTCFG, cfg::muteOnEnable, DT_CT_INT, 0, "kAway2/muteOnEnable");
-    this->setColumn(DTCFG, cfg::disableConfirmation, DT_CT_INT, 1, "kAway2/disableConfirmation");
+    this->setColumn(DTCFG, cfg::confirmation, DT_CT_INT, 0, "kAway2/confirmation");
     this->setColumn(DTCFG, cfg::autoAwayMsg, DT_CT_STR, "auto-away", "kAway2/autoAwayMsg");
 
     this->setColumn(DTCFG, cfg::btnInMainWindow, DT_CT_INT, 1, "kAway2/btnInMainWindow");
@@ -301,7 +301,7 @@ namespace kAway2 {
         "/<b>re</b> [...] - j.w. + nie wysy³a powiadomieñ o wy³." AP_TIP_WIDTH "240", cfg::ircCmds);
       if (Helpers::pluginExists(plugsNET::knotify))
         UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Pokazuj powiadomienia K.Notify", cfg::useKNotify);
-      ifADV UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Pytaj przed wyjœciem z trybu away", cfg::disableConfirmation);
+      ifADV UIActionCfgAdd(ui::cfgGroup, 0, ACTT_CHECK, "Pytaj przed wyjœciem z trybu away", cfg::confirmation);
       UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
     }
 
@@ -338,6 +338,13 @@ namespace kAway2 {
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_SEPARATOR);
     UIActionCfgAdd(ui::cfgGroup, act::clearMru, ACTT_BUTTON, "wyczyœæ" AP_ICO "667112", 0, 0, 0, 80, 30);
     UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
+
+    ifPRO {
+      UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUP);
+      UIActionCfgAdd(ui::cfgGroup, act::resetSettings, ACTT_BUTTON | ACTSC_INLINE, "resetuj ustawienia" AP_ICO "27", 0, 0, 0, 140, 30);
+      UIActionCfgAdd(ui::cfgGroup, act::resetCntSettings, ACTT_BUTTON, "resetuj ustawienia kontaktów" AP_ICO "27", 0, 0, 0, 180, 30);
+      UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
+    }
 
     /*
     ifPRO {
@@ -702,20 +709,19 @@ namespace kAway2 {
       case ui::powerInMainWnd:
       case ui::powerInCntWnd:
       case ui::powerInTrayMenu: {
-        if ((an->act.id == ui::msgTbGrp) && (an->code == ACTN_CREATEGROUP)) {
+        if (an->act.id == ui::msgTbGrp && an->code == ACTN_CREATEGROUP) {
           bool isIgnored = this->cntProp(cnt)->ignored;
-          bool isEnabled = this->isEnabled();
 
           Helpers::chgBtn(ui::msgTbGrp, ui::ignoreBtn, AC_CURRENT, 
-            (isIgnored) ? "Wy³¹cz ignorowanie" : "W³¹cz ignorowanie", (isIgnored) ? ico::unIgnore : ico::ignore,
-            (isEnabled) ? 0 : ACTS_DISABLED);
+            isIgnored ? "Wy³¹cz ignorowanie" : "W³¹cz ignorowanie", isIgnored ? ico::unIgnore : ico::ignore,
+            isEnabled() ? 0 : ACTS_DISABLED);
           Helpers::chgBtn(ui::msgTbGrp, ui::powerInCntWnd, AC_CURRENT, 
-            (isEnabled) ? "Wy³¹cz tryb away" : "W³¹cz tryb away", (isEnabled) ? ico::disable : ico::enable);
+            isEnabled() ? "Wy³¹cz tryb away" : "W³¹cz tryb away", isEnabled() ? ico::disable : ico::enable);
           break;
         } else if (an->code != ACTN_ACTION) break;
 
-        if (this->isEnabled()) {
-          if (!GETINT(cfg::disableConfirmation) || Ctrl->ICMessage(IMI_CONFIRM, (int) "Na pewno chcesz wy³¹czyæ tryb away?")) 
+        if (isEnabled()) {
+          if (!GETINT(cfg::confirmation) || Ctrl->ICMessage(IMI_CONFIRM, (int) "Na pewno chcesz wy³¹czyæ tryb away?")) 
             this->disable();
         } else {
           wnd->show();
@@ -724,14 +730,14 @@ namespace kAway2 {
       }
 
       case ui::cntCfgGroup: {
-        if ((an->code == ACTN_CREATE)) {
+        if (an->code == ACTN_CREATE) {
           UIActionSetStatus(an->act, !Ctrl->DTgetPos(DTCNT, cnt) ? -1 : 0, ACTS_HIDDEN);
         }
         break;
       }
 
       case ui::ignoreBtn: {
-        if ((an->code == ACTN_ACTION) && this->isEnabled()) {
+        if (an->code == ACTN_ACTION && this->isEnabled()) {
           this->cntProp(cnt)->ignored = !this->cntProp(cnt)->ignored;
         }
         break;
@@ -739,32 +745,15 @@ namespace kAway2 {
 
       case act::clearMru: {
         if (an->code == ACTN_ACTION) {
-          MRU::clear(cfg::mruName);
+          mruList->clear();
         }
         break;
       }
 
-      case act::resetCntSettings: {
-        if (an->code != ACTN_ACTION) break;
-
-        int count = Ctrl->IMessage(IMC_CNT_COUNT);
-        for (int i = 0; i < count; i++) {
-          SETCNTI(i, cfg::saveToHistory, 0);
-          SETCNTI(i, cfg::disableOnMsgSend, 0);
-          SETCNTI(i, cfg::ircCmds, 0);
-
-          SETCNTI(i, cfg::reply::onEnable, 0);
-          SETCNTI(i, cfg::reply::onDisable, 0);
-          SETCNTI(i, cfg::reply::onMsg, 0);
-          SETCNTI(i, cfg::reply::whenInvisible, 0);
-          SETCNTI(i, cfg::reply::minInterval, -1);
-          SETCNTI(i, cfg::reply::minIntervalType, -1);
-          SETCNTI(i, cfg::reply::useHtml, 0);
-          SETCNTI(i, cfg::reply::showInWnd, 0);
-
-          SETCNTC(i, cfg::tpl::enable, "");
-          SETCNTC(i, cfg::tpl::disable, "");
-          SETCNTC(i, cfg::tpl::reply, "");
+      case act::resetCntSettings:
+      case act::resetSettings: {
+        if (an->code == ACTN_ACTION) {
+          this->resetColumns(an->act.id == act::resetSettings ? DTCFG : DTCNT);
         }
         break;
       }
@@ -988,8 +977,8 @@ namespace kAway2 {
   }
 
   void Controller::switchBtns(bool state) {
+    char* name = (state) ? "Wy³¹cz tryb away" : "W³¹cz tryb away";
     int ico = (state) ? ico::disable : ico::enable;
-    char * name = (state) ? "Wy³¹cz tryb away" : "W³¹cz tryb away";
 
     Helpers::chgBtn(IMIG_TRAY, ui::powerInTrayMenu, name, ico);
     Helpers::chgBtn(this->pluginsGroup, ui::powerInMainWnd, name, ico, 

@@ -23,7 +23,7 @@
 #include <boost/bind.hpp>
 
 using namespace Stamina;
-using namespace std;
+using namespace boost;
 
 namespace Konnekt {
   template<typename TC, typename TR>
@@ -93,7 +93,10 @@ namespace Konnekt {
     }
 
   public:
-    // returns pointer do CC class
+    /*
+     * Returns pointer to CC class
+     * \return CC class ptr
+     */
     inline static CC* getInstance() {
       if (!instance.isValid()) {
         instance = new CC;
@@ -101,7 +104,11 @@ namespace Konnekt {
       return instance;
     }
 
-    // proccess incoming IMessage
+    /*
+     * Process incoming IMessage
+     * \return logical true if return code was set
+     * \see registerObserver
+     */
     inline bool process(sIMessage_base* msgBase) {
       sIMessage_2params* msg = static_cast<sIMessage_2params*>(msgBase);
 
@@ -123,16 +130,24 @@ namespace Konnekt {
       return this->isReturnCodeSet();
     }
 
-    /*
-    inline void dbgObservers() {
+    /* inline void dbgObservers() {
       for (tObservers::iterator it = this->observers.begin(); it != this->observers.end(); it++) {
         for (tConnections::iterator it2 = it->second->connections.begin(); it2 != it->second->connections.end(); it2++) {
           IMLOG("Observer[%i].connection: %s", it->first, it2->first.c_str());
         }
       }
-    }
-    */
+    } */
 
+    /*
+     * Attach observer to specific IMessage
+     * \param id IMessage id
+     * \param f function which should be fired on \a id IMessage
+     * \param priority callback priority (group)
+     * \param pos callback position in group (signals::at_back, signals::at_front)
+     * \param name callback name
+     * \param overwrite overrides callback with the same \a name if any exists
+     * \return logical true if observer was attached
+     */
     inline bool registerObserver(int id, fOnIMessage f, int priority = 0, signals::connect_position pos = signals::at_back, 
       const StringRef& name = "", bool overwrite = true) 
     {
@@ -159,6 +174,7 @@ namespace Konnekt {
       this->actionObservers[an->act.id]->signal(CC::getInstance());
     }
 
+    // Cleanin' variables
     inline void clear() {
       this->returnCodeSet = false;
       this->returnCode = NULL;
@@ -175,6 +191,11 @@ namespace Konnekt {
       this->returnCode = code;
     }
 
+    /*
+     * Set string as return value
+     * \warning { this method uses internal buffer which can be overridden by
+     * commonly used functions like GETSTR in all flavors. }
+     */
     inline void setReturnValue(const StringRef& value) {
       // tworzymy tymczasowy bufor
       char* buff = (char*) Ctrl->GetTempBuffer(value.size() + 1);
@@ -239,6 +260,53 @@ namespace Konnekt {
       this->cfgCols.push_back(new sIMessage_setColumn(table, id, type, def, name));
     }
 
+    inline void resetColumns(tTable table = Tables::tableNotFound) {
+      if (!this->cfgCols.size()) return;
+
+      bool resetCnt = table == Tables::tableContacts;
+      bool resetCfg = table == Tables::tableConfig;
+
+      if (table == Tables::tableNotFound) {
+        resetCfg = resetCnt = true;
+      }
+
+      if (!resetCnt && !resetCfg) {
+        return;
+      }
+
+      int count = Ctrl->IMessage(IMC_CNT_COUNT);
+      tCfgCols dtCnt;
+
+      for (tCfgCols::iterator it = this->cfgCols.begin(); it != this->cfgCols.end(); it++) {
+        if ((*it)->_table == Tables::tableConfig && resetCfg) {
+          this->_resetColumn(*it);
+        }
+        if ((*it)->_table == Tables::tableContacts && resetCnt) {
+          dtCnt.push_back(*it);
+        }
+      }
+
+      if (dtCnt.size()) {
+        for (int i = 1; i < count; i++) {
+          for (tCfgCols::iterator it = dtCnt.begin(); it != dtCnt.end(); it++) {
+            this->_resetColumn(*it, i);
+          }
+        }
+      }
+    }
+
+    inline void resetColumn(int id, int cnt = 0) {
+      if (!this->cfgCols.size()) return;
+
+      tTable table = !cnt ? Tables::tableConfig : Tables::tableContacts;
+      for (tCfgCols::iterator it = this->cfgCols.begin(); it != this->cfgCols.end(); it++) {
+        if ((*it)->_id == id && (*it)->_table == table) {
+          this->_resetColumn(*it, cnt); break;
+        }
+      }
+    }
+
+
   protected:
     inline bool _registerObserver(
       int id, fOnIMessage f, int priority, signals::connect_position pos, 
@@ -261,6 +329,45 @@ namespace Konnekt {
         }
       }
       return (list[id]->connections[name] = list[id]->signal.connect(priority, f, pos)).connected();
+    }
+
+    inline void _resetColumn(sIMessage_setColumn* it, int cnt = 0) {
+      bool isCnt = it->_table == Tables::tableContacts && cnt;
+      bool isConfig = it->_table == Tables::tableConfig;
+
+      if (!isCnt && !isConfig) {
+        return;
+      }
+
+      switch (it->_type) {
+        case Tables::ctypeInt: {
+          if (isConfig) {
+            SETINT(it->_id, it->_def);
+          }
+          if (isCnt) {
+            SETCNTI(cnt, it->_id, it->_def);
+          }
+          break;
+        }
+        case Tables::ctypeInt64: {
+          if (isConfig) {
+            // SETINT(it->_id, *it->_def_p64);
+          }
+          if (isCnt) {
+            SETCNTI64(cnt, it->_id, *it->_def_p64);
+          }
+          break;
+        }
+        case Tables::ctypeString: {
+          if (isConfig) {
+            SETSTR(it->_id, it->_def_ch);
+          }
+          if (isCnt) {
+            SETCNTC(cnt, it->_id, it->_def_ch);
+          }
+          break;
+        }
+      }
     }
 
     void inline _setCfgCols() {
