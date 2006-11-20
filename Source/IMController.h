@@ -61,7 +61,7 @@ namespace Konnekt {
   protected:
     inline IMController() : returnCodeSet(false), returnCode(0) { 
       // automagical registration of configuration columns (set via setColumn())
-      this->registerObserver(IM_SETCOLS, bind(resolve_cast0(&IMController::_setCfgCols), this));
+      this->registerObserver(IM_SETCOLS, bind(resolve_cast0(&IMController::_setColumns), this));
       // setting/unsetting Ctrl global pointer
       this->registerObserver(IM_PLUG_INIT, bind(resolve_cast0(&IMController::_plugInit), this));
       this->registerObserver(IM_PLUG_DEINIT, bind(resolve_cast0(&IMController::_plugDeInit), this));
@@ -75,8 +75,8 @@ namespace Konnekt {
       this->addStaticValue(IM_PLUG_UI_V, 0);
     }
 
-    inline IMController(CC const&) { }
-    inline IMController& operator=(CC const&) { 
+    inline IMController(IMController const&) { }
+    inline IMController& operator=(IMController const&) { 
       return *this; 
     }
 
@@ -229,10 +229,10 @@ namespace Konnekt {
       return static_cast<sUIActionNotify_2params*>((sUIActionNotify_base*) this->getIM()->p1);
     }
 
-    inline CC* setIM(sIMessage_2params* im) { 
+    inline IMController<CC>* setIM(sIMessage_2params* im) { 
       this->im = im;
 
-      return CC::getInstance();
+      return this;
     }
 
     inline void addStaticValue(int id, int value) {
@@ -274,9 +274,7 @@ namespace Konnekt {
         return;
       }
 
-      int count = Ctrl->IMessage(IMC_CNT_COUNT);
       tCfgCols dtCnt;
-
       for (tCfgCols::iterator it = this->cfgCols.begin(); it != this->cfgCols.end(); it++) {
         if ((*it)->_table == Tables::tableConfig && resetCfg) {
           this->_resetColumn(*it);
@@ -287,6 +285,7 @@ namespace Konnekt {
       }
 
       if (dtCnt.size()) {
+        int count = Ctrl->IMessage(IMC_CNT_COUNT);
         for (int i = 1; i < count; i++) {
           for (tCfgCols::iterator it = dtCnt.begin(); it != dtCnt.end(); it++) {
             this->_resetColumn(*it, i);
@@ -370,7 +369,7 @@ namespace Konnekt {
       }
     }
 
-    void inline _setCfgCols() {
+    void inline _setColumns() {
       for (tCfgCols::iterator it = this->cfgCols.begin(); it != this->cfgCols.end(); it++) {
         Ctrl->IMessage(*it);
       }

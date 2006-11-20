@@ -696,20 +696,20 @@ namespace kAway2 {
 
   void Controller::onAction() {
     sUIActionNotify_2params* an = this->getAN();
-    int cnt = an->act.cnt;
+    int id = an->act.id, cnt = an->act.cnt;
 
     logDebug("[Controller<%i>::onAction()]: an->act.id = %i, an->act.cnt = %i, an->code = %i", 
       this, an->act.id, an->act.cnt, an->code);
 
-    statusList->actionHandle(an->act.id, an->code);
-    autoReplyList->actionHandle(an->act.id, an->code);
+    statusList->actionHandle(id, an->code);
+    autoReplyList->actionHandle(id, an->code);
 
-    switch (an->act.id) {
+    switch (id) {
       case ui::msgTbGrp:
       case ui::powerInMainWnd:
       case ui::powerInCntWnd:
       case ui::powerInTrayMenu: {
-        if (an->act.id == ui::msgTbGrp && an->code == ACTN_CREATEGROUP) {
+        if (id == ui::msgTbGrp && an->code == ACTN_CREATEGROUP) {
           bool isIgnored = this->cntProp(cnt)->ignored;
 
           Helpers::chgBtn(ui::msgTbGrp, ui::ignoreBtn, AC_CURRENT, 
@@ -753,7 +753,7 @@ namespace kAway2 {
       case act::resetCntSettings:
       case act::resetSettings: {
         if (an->code == ACTN_ACTION) {
-          this->resetColumns(an->act.id == act::resetSettings ? DTCFG : DTCNT);
+          this->resetColumns(id == act::resetSettings ? DTCFG : DTCNT);
         }
         break;
       }
