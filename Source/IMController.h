@@ -106,14 +106,12 @@ namespace Konnekt {
 
     /*
      * Process incoming IMessage
-     * \return logical true if return code was set
      * \see registerObserver
      */
-    inline bool process(sIMessage_base* msgBase) {
+    inline int process(sIMessage_base* msgBase) {
       sIMessage_2params* msg = static_cast<sIMessage_2params*>(msgBase);
 
       // log IMessage and clear residues
-      IMLOG("[IMController<%i>::process()]: id = %i", this, msg->id);
       this->clear();
 
       // first, we're looking for static values
@@ -127,7 +125,17 @@ namespace Konnekt {
       if (msg->id == IM_UIACTION) {
         this->notifyActionObservers(msg);
       }
-      return this->isReturnCodeSet();
+
+      if (this->isReturnCodeSet()) {
+        IMLOG("[IMController<%i>::process()]: id = %i, returnCode = %i", this, msg->id, 
+          this->getReturnCode());
+      } else {
+        if (Ctrl) {
+          Ctrl->setError(IMERROR_NORESULT);
+        }
+        IMLOG("[IMController<%i>::process()]: id = %i", this, msg->id);
+      }
+      return this->getReturnCode();
     }
 
     /* inline void dbgObservers() {
@@ -182,7 +190,6 @@ namespace Konnekt {
     }
 
     inline int getReturnCode() {
-      this->returnCodeSet = false;
       return this->returnCode;
     }
 
