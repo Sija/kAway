@@ -20,6 +20,8 @@
 //#include "Forwarders/SMSForwarder.h"
 
 namespace kAway2 {
+  SharedPtr<Controller> Controller::instance = 0;
+
   Controller::Controller() : isOn(false), muteStateSwitched(false), autoAway(typeDisabled), pluginsGroup(0) {
     /* Static values like net, type or version */
     this->addStaticValue(IM_PLUG_TYPE, IMT_UI | IMT_CONFIG | IMT_ALLMESSAGES);

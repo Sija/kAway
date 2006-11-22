@@ -36,15 +36,17 @@ namespace Konnekt {
     return pFunc;
   }
 
-  template <class CC /* Controller Class */> 
-  class IMController : public SharedObject<iSharedObject> {
+  class IMController : public SharedObject<iSharedObject>, signals::trackable {
   public:
     /* Class version */
-	  STAMINA_OBJECT_CLASS_VERSION(IMController<CC>, iSharedObject, Version(0,1,0,0));
+	  STAMINA_OBJECT_CLASS_VERSION(IMController, iSharedObject, Version(0,1,0,0));
 
   public:
-    typedef function<void(CC*)> fOnIMessage;
-    typedef signal<void(CC*)> sigOnIMessage;
+    typedef void tIMCallback;
+
+  public:
+    typedef function<tIMCallback(IMController*)> fOnIMessage;
+    typedef signal<tIMCallback(IMController*)> sigOnIMessage;
 
   public:
     typedef std::map<String, signals::connection> tConnections;
@@ -80,7 +82,7 @@ namespace Konnekt {
       return *this; 
     }
 
-    inline ~IMController() { 
+    inline virtual ~IMController() { 
       for (tObservers::iterator it = this->observers.begin(); it != this->observers.end(); it++) {
         delete it->second;
       }
@@ -93,17 +95,6 @@ namespace Konnekt {
     }
 
   public:
-    /*
-     * Returns pointer to CC class
-     * \return CC class ptr
-     */
-    inline static CC* getInstance() {
-      if (!instance.isValid()) {
-        instance = new CC;
-      }
-      return instance;
-    }
-
     /*
      * Process incoming IMessage
      * \see registerObserver
@@ -138,14 +129,6 @@ namespace Konnekt {
       return this->getReturnCode();
     }
 
-    /* inline void dbgObservers() {
-      for (tObservers::iterator it = this->observers.begin(); it != this->observers.end(); it++) {
-        for (tConnections::iterator it2 = it->second->connections.begin(); it2 != it->second->connections.end(); it2++) {
-          IMLOG("Observer[%i].connection: %s", it->first, it2->first.c_str());
-        }
-      }
-    } */
-
     /*
      * Attach observer to specific IMessage
      * \param id IMessage id
@@ -172,14 +155,14 @@ namespace Konnekt {
       if (!this->isObserved(msg->id)) return;
 
       this->setIM(msg);
-      this->observers[msg->id]->signal(CC::getInstance());
+      this->observers[msg->id]->signal(this);
     }
 
     inline void notifyActionObservers(sIMessage_2params* msg) {
-      sUIActionNotify_2params* an = this->setIM(msg)->getAN();
+      int id = this->setIM(msg)->getAN()->act.id;
 
-      if (!this->isActionObserved(an->act.id)) return;
-      this->actionObservers[an->act.id]->signal(CC::getInstance());
+      if (!this->isActionObserved(id)) return;
+      this->actionObservers[id]->signal(this);
     }
 
     // Cleanin' variables
@@ -201,7 +184,7 @@ namespace Konnekt {
     /*
      * Set string as return value
      * \warning { this method uses internal buffer which can be overridden by
-     * commonly used functions like GETSTR in all flavors. }
+     * commonly used functions like \c GETSTR in all flavors. }
      */
     inline void setReturnValue(const StringRef& value) {
       // tworzymy tymczasowy bufor
@@ -236,7 +219,7 @@ namespace Konnekt {
       return static_cast<sUIActionNotify_2params*>((sUIActionNotify_base*) this->getIM()->p1);
     }
 
-    inline IMController<CC>* setIM(sIMessage_2params* im) { 
+    inline IMController* setIM(sIMessage_2params* im) { 
       this->im = im;
 
       return this;
@@ -314,6 +297,14 @@ namespace Konnekt {
 
 
   protected:
+    /* inline void dbgObservers() {
+      for (tObservers::iterator it = this->observers.begin(); it != this->observers.end(); it++) {
+        for (tConnections::iterator it2 = it->second->connections.begin(); it2 != it->second->connections.end(); it2++) {
+          IMLOG("Observer[%i].connection: %s", it->first, it2->first.c_str());
+        }
+      }
+    } */
+
     inline bool _registerObserver(
       int id, fOnIMessage f, int priority, signals::connect_position pos, 
       StringRef name, bool overwrite, tObservers& list) 
@@ -376,24 +367,24 @@ namespace Konnekt {
       }
     }
 
-    void inline _setColumns() {
+    tIMCallback inline _setColumns() {
       for (tCfgCols::iterator it = this->cfgCols.begin(); it != this->cfgCols.end(); it++) {
         Ctrl->IMessage(*it);
       }
       return this->setSuccess();
     }
 
-    void inline _plugInit() {
+    tIMCallback inline _plugInit() {
       Plug_Init(this->getIM()->p1, this->getIM()->p2);
       return this->setSuccess();
     }
 
-    void inline _plugDeInit() {
+    tIMCallback inline _plugDeInit() {
       Plug_Deinit(this->getIM()->p1, this->getIM()->p2);
       return this->setSuccess();
     }
 
-    static SharedPtr<CC> instance;
+  protected:
     tStaticValues staticValues;
     tObservers actionObservers;
     tObservers observers;
@@ -403,9 +394,6 @@ namespace Konnekt {
     bool returnCodeSet;
     int returnCode;
   };
-
-  template <typename CC> 
-  SharedPtr<CC> IMController<CC>::instance = 0;
 }
 
 #endif // __IMESSAGECTRL_H__

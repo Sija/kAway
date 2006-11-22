@@ -32,9 +32,12 @@
 //#include "FwdController.h"
 
 namespace kAway2 {
-  class Controller : public IMController<Controller>, signals::trackable {
+  class Controller : public IMController {
   public:
-    friend class IMController<Controller>;
+    /* Class version */
+	  STAMINA_OBJECT_CLASS_VERSION(Controller, IMController, Version(1,2,0,0));
+
+  public:
     typedef std::deque<cMessage*> tMsgQueue;
 
     enum enAutoMsgTpl {
@@ -64,6 +67,14 @@ namespace kAway2 {
 
   protected:
     Controller();
+
+  public:
+    inline static Controller* getInstance() {
+      if (!instance.isValid()) {
+        instance = new Controller;
+      }
+      return instance;
+    }
 
   protected:
     /* IMessage callback methods */
@@ -153,6 +164,7 @@ namespace kAway2 {
     bool isFromWnd;
     int pluginsGroup;
 
+    static SharedPtr<Controller> instance;
     shared_ptr<TimerDynamic> extAutoAwayTimer;
     tCnts cntProps;
     String awayMsg;
