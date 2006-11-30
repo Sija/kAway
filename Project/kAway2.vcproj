@@ -189,6 +189,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Source\CfgActions.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\Source\forwarders\CntForwarder.cpp"
 				>
 				<FileConfiguration
@@ -316,6 +320,14 @@
 			>
 			<File
 				RelativePath="..\Source\AwayWnd.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Source\CfgActions.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Source\CfgController.h"
 				>
 			</File>
 			<File

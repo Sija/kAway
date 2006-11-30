@@ -22,6 +22,7 @@
 
 #include "Helpers.h"
 #include "IMController.h"
+#include "CfgController.h"
 #include "MRU.h"
 #include "NetList.h"
 #include "Format.h"
@@ -177,6 +178,7 @@ namespace kAway2 {
     oNetList autoReplyList;
     oNetList statusList;
     oFormattedStatus statusCtrl;
+    oCfgCtrl config;
     //oFwdController fwdCtrl;
     oAwayWnd wnd;
     oMRU mruList;

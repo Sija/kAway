@@ -37,7 +37,7 @@ namespace kAway2 {
     syncExtended
   };
 
-  const char poweredBy[] = "planet boelex";
+  const char poweredBy[] = "Astrobotnia";
   const unsigned int net = 667;
   const char sig[] = "KAWAY2";
 

@@ -31,7 +31,7 @@ public:
 
 public:
   MRU(const StringRef& _name, int _count = 100, bool _dtbCount = false) : 
-    SharedObject<iSharedObject>(), name(_name), count(_count), dtbCount(_dtbCount) { }
+    name(_name), count(_count), dtbCount(_dtbCount) { }
 
 public:
   tMRUlist get(bool rev = true, const char * buff = 0, int buffSize = 1024);

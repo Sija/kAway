@@ -26,6 +26,8 @@ using namespace Stamina;
 using namespace boost;
 
 namespace Konnekt {
+  typedef void tIMCallback;
+
   template<typename TC, typename TR>
   TR (TC::* resolve_cast0(TR (TC::* pFunc)(void)))(void) {
     return pFunc;
@@ -39,10 +41,7 @@ namespace Konnekt {
   class IMController : public SharedObject<iSharedObject>, signals::trackable {
   public:
     /* Class version */
-	  STAMINA_OBJECT_CLASS_VERSION(IMController, iSharedObject, Version(0,1,0,0));
-
-  public:
-    typedef void tIMCallback;
+	  STAMINA_OBJECT_CLASS_VERSION(IMController, iSharedObject, Version(0,2,0,0));
 
   public:
     typedef function<tIMCallback(IMController*)> fOnIMessage;
@@ -50,7 +49,6 @@ namespace Konnekt {
 
   public:
     typedef std::map<String, signals::connection> tConnections;
-    typedef std::vector<sIMessage_setColumn*> tCfgCols;
 
     struct sObserver {
       tConnections connections;
@@ -60,10 +58,8 @@ namespace Konnekt {
     typedef std::map<int, sObserver*> tObservers;
     typedef std::map<int, int> tStaticValues;
 
-  protected:
+  public:
     inline IMController() : returnCodeSet(false), returnCode(0) { 
-      // automagical registration of configuration columns (set via setColumn())
-      this->registerObserver(IM_SETCOLS, bind(resolve_cast0(&IMController::_setColumns), this));
       // setting/unsetting Ctrl global pointer
       this->registerObserver(IM_PLUG_INIT, bind(resolve_cast0(&IMController::_plugInit), this));
       this->registerObserver(IM_PLUG_DEINIT, bind(resolve_cast0(&IMController::_plugDeInit), this));
@@ -77,20 +73,12 @@ namespace Konnekt {
       this->addStaticValue(IM_PLUG_UI_V, 0);
     }
 
-    inline IMController(IMController const&) { }
-    inline IMController& operator=(IMController const&) { 
-      return *this; 
-    }
-
     inline virtual ~IMController() { 
       for (tObservers::iterator it = this->observers.begin(); it != this->observers.end(); it++) {
         delete it->second;
       }
       for (tObservers::iterator it = this->actionObservers.begin(); it != this->actionObservers.end(); it++) {
         delete it->second;
-      }
-      for (tCfgCols::iterator it = this->cfgCols.begin(); it != this->cfgCols.end(); it++) {
-        delete *it;
       }
     }
 
@@ -152,17 +140,11 @@ namespace Konnekt {
     }
 
     inline void notifyObservers(sIMessage_2params* msg) {
-      if (!this->isObserved(msg->id)) return;
-
-      this->setIM(msg);
-      this->observers[msg->id]->signal(this);
+      return this->_notifyObservers(this->setIM(msg)->im->id, this->observers);
     }
 
     inline void notifyActionObservers(sIMessage_2params* msg) {
-      int id = this->setIM(msg)->getAN()->act.id;
-
-      if (!this->isActionObserved(id)) return;
-      this->actionObservers[id]->signal(this);
+      return this->_notifyObservers(this->setIM(msg)->getAN()->act.id, this->actionObservers);
     }
 
     // Cleanin' variables
@@ -221,7 +203,6 @@ namespace Konnekt {
 
     inline IMController* setIM(sIMessage_2params* im) { 
       this->im = im;
-
       return this;
     }
 
@@ -230,71 +211,12 @@ namespace Konnekt {
     }
 
     inline bool isObserved(int id) {
-      if (this->observers.find(id) != this->observers.end()) {
-        return !this->observers[id]->signal.empty();
-      }
-      return false;
+      return this->_isObserved(id, this->observers);
     }
 
     inline bool isActionObserved(int id) {
-      if (this->actionObservers.find(id) != this->actionObservers.end()) {
-        return !this->actionObservers[id]->signal.empty();
-      }
-      return false;
+      return this->_isObserved(id, this->actionObservers);
     }
-
-    inline void setColumn(tTable table, int id, int type, const char* def, const char* name) {
-      this->cfgCols.push_back(new sIMessage_setColumn(table, id, type, def, name));
-    }
-    inline void setColumn(tTable table, int id, int type, int def, const char* name) {
-      this->cfgCols.push_back(new sIMessage_setColumn(table, id, type, def, name));
-    }
-
-    inline void resetColumns(tTable table = Tables::tableNotFound) {
-      if (!this->cfgCols.size()) return;
-
-      bool resetCnt = table == Tables::tableContacts;
-      bool resetCfg = table == Tables::tableConfig;
-
-      if (table == Tables::tableNotFound) {
-        resetCfg = resetCnt = true;
-      }
-
-      if (!resetCnt && !resetCfg) {
-        return;
-      }
-
-      tCfgCols dtCnt;
-      for (tCfgCols::iterator it = this->cfgCols.begin(); it != this->cfgCols.end(); it++) {
-        if ((*it)->_table == Tables::tableConfig && resetCfg) {
-          this->_resetColumn(*it);
-        }
-        if ((*it)->_table == Tables::tableContacts && resetCnt) {
-          dtCnt.push_back(*it);
-        }
-      }
-
-      if (dtCnt.size()) {
-        int count = Ctrl->IMessage(IMC_CNT_COUNT);
-        for (int i = 1; i < count; i++) {
-          for (tCfgCols::iterator it = dtCnt.begin(); it != dtCnt.end(); it++) {
-            this->_resetColumn(*it, i);
-          }
-        }
-      }
-    }
-
-    inline void resetColumn(int id, int cnt = 0) {
-      if (!this->cfgCols.size()) return;
-
-      tTable table = !cnt ? Tables::tableConfig : Tables::tableContacts;
-      for (tCfgCols::iterator it = this->cfgCols.begin(); it != this->cfgCols.end(); it++) {
-        if ((*it)->_id == id && (*it)->_table == table) {
-          this->_resetColumn(*it, cnt); break;
-        }
-      }
-    }
-
 
   protected:
     /* inline void dbgObservers() {
@@ -305,6 +227,23 @@ namespace Konnekt {
       }
     } */
 
+    inline bool _isObserved(int id, tObservers& list) {
+      if (list.find(id) != list.end()) {
+        return !list[id]->signal.empty();
+      }
+      return false;
+    }
+
+    inline void _notifyObservers(int id, tObservers& list) {
+      if (!this->_isObserved(id, list)) {
+        return;
+      }
+      list[id]->signal(this);
+    }
+
+    /*
+     * \todo use \c itos
+     */
     inline bool _registerObserver(
       int id, fOnIMessage f, int priority, signals::connect_position pos, 
       StringRef name, bool overwrite, tObservers& list) 
@@ -328,58 +267,12 @@ namespace Konnekt {
       return (list[id]->connections[name] = list[id]->signal.connect(priority, f, pos)).connected();
     }
 
-    inline void _resetColumn(sIMessage_setColumn* it, int cnt = 0) {
-      bool isCnt = it->_table == Tables::tableContacts && cnt;
-      bool isConfig = it->_table == Tables::tableConfig;
-
-      if (!isCnt && !isConfig) {
-        return;
-      }
-
-      switch (it->_type) {
-        case Tables::ctypeInt: {
-          if (isConfig) {
-            SETINT(it->_id, it->_def);
-          }
-          if (isCnt) {
-            SETCNTI(cnt, it->_id, it->_def);
-          }
-          break;
-        }
-        case Tables::ctypeInt64: {
-          if (isConfig) {
-            // SETINT(it->_id, *it->_def_p64);
-          }
-          if (isCnt) {
-            SETCNTI64(cnt, it->_id, *it->_def_p64);
-          }
-          break;
-        }
-        case Tables::ctypeString: {
-          if (isConfig) {
-            SETSTR(it->_id, it->_def_ch);
-          }
-          if (isCnt) {
-            SETCNTC(cnt, it->_id, it->_def_ch);
-          }
-          break;
-        }
-      }
-    }
-
-    tIMCallback inline _setColumns() {
-      for (tCfgCols::iterator it = this->cfgCols.begin(); it != this->cfgCols.end(); it++) {
-        Ctrl->IMessage(*it);
-      }
-      return this->setSuccess();
-    }
-
-    tIMCallback inline _plugInit() {
+    inline tIMCallback _plugInit() {
       Plug_Init(this->getIM()->p1, this->getIM()->p2);
       return this->setSuccess();
     }
 
-    tIMCallback inline _plugDeInit() {
+    inline tIMCallback _plugDeInit() {
       Plug_Deinit(this->getIM()->p1, this->getIM()->p2);
       return this->setSuccess();
     }
@@ -388,7 +281,6 @@ namespace Konnekt {
     tStaticValues staticValues;
     tObservers actionObservers;
     tObservers observers;
-    tCfgCols cfgCols;
 
     sIMessage_2params* im;
     bool returnCodeSet;

@@ -55,7 +55,7 @@ public:
 
 public:
   NetList(int _cfgCol, int _cfgGroup, int _dynActGroup, int _actCreate, int _actDestroy, enSelectionType _selection = typeCheckboxes) :
-    SharedObject<iSharedObject>(), cfgCol(_cfgCol), cfgGroup(_cfgGroup), dynActGroup(_dynActGroup), actCreate(_actCreate), actDestroy(_actDestroy), 
+    cfgCol(_cfgCol), cfgGroup(_cfgGroup), dynActGroup(_dynActGroup), actCreate(_actCreate), actDestroy(_actDestroy), 
     defaultUse(true), netsDrawn(false), selection(_selection) { }
 
   void loadNets();

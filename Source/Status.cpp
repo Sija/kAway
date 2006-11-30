@@ -16,9 +16,8 @@
 #include "stdafx.h"
 #include "Status.h"
 
-Status::Status(NetList* _netList, int _onHiddenCfgCol, int _dotsCfgCol) :
-  SharedObject<iSharedObject>(), netList(_netList), onHiddenCfgCol(_onHiddenCfgCol), 
-  dotsCfgCol(_dotsCfgCol), remember(false) 
+Status::Status(NetList* _netList, int _onHiddenCfgCol, int _dotsCfgCol) : netList(_netList), 
+  onHiddenCfgCol(_onHiddenCfgCol), dotsCfgCol(_dotsCfgCol), remember(false) 
 {
   this->infoCharLimits.push_back(sInfoCharLimit(plugsNET::dwutlenek, 255));
   this->infoCharLimits.push_back(sInfoCharLimit(plugsNET::kaqq, 255));
