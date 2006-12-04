@@ -118,10 +118,10 @@ namespace Konnekt {
       // in the end we're notifying action observers if it's action message
       if (msg->id == IM_UIACTION) {
         this->notifyActionObservers(msg);
-      }
 
-      if (this->isSublassed() && this->isForwardable()) {
-        this->forwardAction();
+        if (this->isSublassed() && this->isForwardable()) {
+          this->forwardAction();
+        }
       }
 
       if (this->isReturnCodeSet()) {
