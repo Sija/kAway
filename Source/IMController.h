@@ -188,6 +188,7 @@ namespace Konnekt {
     }
 
     inline bool isSublassed() {
+      if (!getAN()) return false;
       return this->isSublassed(getAN()->act.id, getAN()->act.parent);
     }
 
@@ -199,13 +200,16 @@ namespace Konnekt {
     }
 
     inline bool isForwardable() {
+      if (!getAN()) return false;
       return this->isForwardable(getAN()->act.id, getAN()->act.parent);
     }
 
     inline void subclassAction(int id, int parent, bool forwardable = true, int mask = UIAIM_ALL) {
-      int prevOwner;
+      if (this->isSublassed(id, parent)) return;
 
+      int prevOwner;
       sUIActionInfo nfo(parent, id);
+
       nfo.mask = mask;
       nfo.txt = new char[100];
       nfo.txtSize = 99;
