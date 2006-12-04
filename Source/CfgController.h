@@ -23,7 +23,7 @@
 #include <boost/bind.hpp>
 
 #include "IMController.h"
-#include "CfgActions.h"
+// #include "CfgActions.h"
 
 using namespace Konnekt;
 using namespace Stamina;
@@ -43,7 +43,7 @@ namespace Konnekt {
       // automagical registration of configuration columns (set via setColumn())
       IMCtrl->registerObserver(IM_SETCOLS, bind(resolve_cast0(&CfgController::_setColumns), this));
       // drawing configuration UI
-      IMCtrl->registerObserver(IM_UI_PREPARE, bind(resolve_cast0(&CfgController::_drawUI), this));
+      // IMCtrl->registerObserver(IM_UI_PREPARE, bind(resolve_cast0(&CfgController::_drawUI), this));
     }
 
     inline virtual ~CfgController() { 
@@ -105,6 +105,7 @@ namespace Konnekt {
       }
     }
 
+    /*
     inline void addPage(const CfgPage& page) {
       this->_pages.push_back(page);
     }
@@ -112,6 +113,7 @@ namespace Konnekt {
     inline void operator += (CfgPage& page) {
       return addPage(page);
     }
+    */
 
   protected:
     inline void _resetColumn(sIMessage_setColumn* it, int cnt = 0) {
@@ -153,11 +155,13 @@ namespace Konnekt {
       }
     }
 
+    /*
     inline tIMCallback _drawUI() {
       for (tCfgPages::iterator it = this->_pages.begin(); it != this->_pages.end(); it++) {
         it->draw();
       }
     }
+    */
 
     inline tIMCallback _setColumns() {
       for (tCfgCols::iterator it = this->_cols.begin(); it != this->_cols.end(); it++) {
@@ -168,7 +172,7 @@ namespace Konnekt {
 
   protected:
     IMController* IMCtrl;
-    tCfgPages _pages;
+    // tCfgPages _pages;
     tCfgCols _cols;
   };
 
