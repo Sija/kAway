@@ -55,6 +55,19 @@ namespace Konnekt {
       sigOnIMessage signal;
     };
 
+    struct sSubclassedAction {
+      static const int notFound = -1;
+
+      int prevOwner;
+      int parent;
+      int id;
+
+      sSubclassedAction(): id(0), parent(0), prevOwner(0) { }
+      sSubclassedAction(int _id, int _parent, int _prevOwner):
+        id(_id), parent(_parent), prevOwner(_prevOwner) { }
+    };
+
+    typedef std::deque<sSubclassedAction> tSubclassedActions;
     typedef std::map<int, sObserver*> tObservers;
     typedef std::map<int, int> tStaticValues;
 
@@ -127,7 +140,7 @@ namespace Konnekt {
      * \param overwrite overrides callback with the same \a name if any exists
      * \return logical true if observer was attached
      */
-    inline bool registerObserver(int id, fOnIMessage f, int priority = 0, signals::connect_position pos = signals::at_back, 
+    inline bool registerObserver(tIMid id, fOnIMessage f, int priority = 0, signals::connect_position pos = signals::at_back, 
       const StringRef& name = "", bool overwrite = true) 
     {
       return this->_registerObserver(id, f, priority, pos, name, overwrite, this->observers);
@@ -145,6 +158,40 @@ namespace Konnekt {
 
     inline void notifyActionObservers(sIMessage_2params* msg) {
       return this->_notifyObservers(this->setIM(msg)->getAN()->act.id, this->actionObservers);
+    }
+
+    inline bool isSublassed(int id, int parent) {
+      for (tSubclassedActions::iterator it = subclassedActions.begin(); it != subclassedActions.end(); it++) {
+        if (it->id == id && it->parent == parent) return true;
+      }
+      return false;
+    }
+
+    inline void subclassAction(int id, int parent, int mask = UIAIM_ALL) {
+      int prevOwner;
+
+      sUIActionInfo nfo(parent, id);
+      nfo.mask = mask;
+      nfo.txt = new char[100];
+      nfo.txtSize = 99;
+
+      UIActionGet(nfo);
+      if (!(prevOwner = Ctrl->ICMessage(IMI_ACTION_GETOWNER, (int)&nfo.act))) {
+        prevOwner = Ctrl->ICMessage(IMC_PLUG_ID, 0);
+      }
+
+      Ctrl->ICMessage(IMI_ACTION_REMOVE, (int)&nfo.act);
+      Ctrl->ICMessage(IMI_ACTION, (int)&nfo);
+      delete [] nfo.txt;
+
+      this->subclassedActions.push_back(sSubclassedAction(id, parent, prevOwner));
+    }
+
+    inline int getPrevOwner() {
+      for (tSubclassedActions::iterator it = subclassedActions.begin(); it != subclassedActions.end(); it++) {
+        if (getAN()->act.id == it->id && getAN()->act.parent == it->parent) return it->prevOwner;
+      }
+      return sSubclassedAction::notFound;
     }
 
     // Cleanin' variables
@@ -241,9 +288,6 @@ namespace Konnekt {
       list[id]->signal(this);
     }
 
-    /*
-     * \todo use \c itos
-     */
     inline bool _registerObserver(
       int id, fOnIMessage f, int priority, signals::connect_position pos, 
       StringRef name, bool overwrite, tObservers& list) 
@@ -255,7 +299,7 @@ namespace Konnekt {
         list[id] = new sObserver;
       }
       if (!name.length()) {
-        name = "unnamed." + list[id]->connections.size();
+        name = "unnamed." + inttostr(list[id]->connections.size());
       }
       if (list[id]->connections.find(name) != list[id]->connections.end()) {
         if (overwrite) {
@@ -278,6 +322,7 @@ namespace Konnekt {
     }
 
   protected:
+    tSubclassedActions subclassedActions;
     tStaticValues staticValues;
     tObservers actionObservers;
     tObservers observers;
