@@ -58,13 +58,15 @@ namespace Konnekt {
     struct sSubclassedAction {
       static const int notFound = -1;
 
+      bool forwardable;
       int prevOwner;
+
       int parent;
       int id;
 
-      sSubclassedAction(): id(0), parent(0), prevOwner(0) { }
-      sSubclassedAction(int _id, int _parent, int _prevOwner):
-        id(_id), parent(_parent), prevOwner(_prevOwner) { }
+      sSubclassedAction(): id(0), parent(0), prevOwner(0), forwardable(true) { }
+      sSubclassedAction(int _id, int _parent, int _prevOwner, bool _forwardable = true):
+        id(_id), parent(_parent), prevOwner(_prevOwner), forwardable(_forwardable) { }
     };
 
     typedef std::deque<sSubclassedAction> tSubclassedActions;
@@ -118,6 +120,10 @@ namespace Konnekt {
         this->notifyActionObservers(msg);
       }
 
+      if (this->isSublassed() && this->isForwardable()) {
+        this->forwardAction();
+      }
+
       if (this->isReturnCodeSet()) {
         IMLOG("[IMController<%i>::process()]: id = %i, returnCode = %i", this, msg->id, 
           this->getReturnCode());
@@ -146,6 +152,16 @@ namespace Konnekt {
       return this->_registerObserver(id, f, priority, pos, name, overwrite, this->observers);
     }
 
+    inline bool registerActionObserver(const sSubclassedAction& an, fOnIMessage f, int mask = UIAIM_ALL, int priority = 0, 
+      signals::connect_position pos = signals::at_back, const StringRef& name = "", bool overwrite = true) 
+    {
+      if (this->_registerObserver(an.id, f, priority, pos, name, overwrite, this->actionObservers)) {
+        this->subclassAction(an.id, an.parent, an.forwardable, mask);
+        return true;
+      }
+      return false;
+    }
+
     inline bool registerActionObserver(int id, fOnIMessage f, int priority = 0, signals::connect_position pos = signals::at_back, 
       const StringRef& name = "", bool overwrite = true) 
     {
@@ -160,6 +176,10 @@ namespace Konnekt {
       return this->_notifyObservers(this->setIM(msg)->getAN()->act.id, this->actionObservers);
     }
 
+    inline void forwardAction() {
+      return this->setReturnCode(Ctrl->IMessageDirect(IM_UIACTION, this->getPrevOwner(), (int) this->getAN()));
+    }
+
     inline bool isSublassed(int id, int parent) {
       for (tSubclassedActions::iterator it = subclassedActions.begin(); it != subclassedActions.end(); it++) {
         if (it->id == id && it->parent == parent) return true;
@@ -167,7 +187,22 @@ namespace Konnekt {
       return false;
     }
 
-    inline void subclassAction(int id, int parent, int mask = UIAIM_ALL) {
+    inline bool isSublassed() {
+      return this->isSublassed(getAN()->act.id, getAN()->act.parent);
+    }
+
+    inline bool isForwardable(int id, int parent) {
+      for (tSubclassedActions::iterator it = subclassedActions.begin(); it != subclassedActions.end(); it++) {
+        if (it->id == id && it->parent == parent) return it->forwardable;
+      }
+      return false;
+    }
+
+    inline bool isForwardable() {
+      return this->isForwardable(getAN()->act.id, getAN()->act.parent);
+    }
+
+    inline void subclassAction(int id, int parent, bool forwardable = true, int mask = UIAIM_ALL) {
       int prevOwner;
 
       sUIActionInfo nfo(parent, id);
@@ -184,7 +219,7 @@ namespace Konnekt {
       Ctrl->ICMessage(IMI_ACTION, (int)&nfo);
       delete [] nfo.txt;
 
-      this->subclassedActions.push_back(sSubclassedAction(id, parent, prevOwner));
+      this->subclassedActions.push_back(sSubclassedAction(id, parent, prevOwner, forwardable));
     }
 
     inline int getPrevOwner() {

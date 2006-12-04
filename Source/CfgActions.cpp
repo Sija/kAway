@@ -23,8 +23,8 @@ void CfgGroup::draw(int parent) {
   if (!this->checkBits()) return;
 
   UIActionCfgAdd(parent, 0, ACTT_GROUP | status, txt);
-  for (tCfgActions::iterator it = this->_actions.begin(); it != this->_actions.end(); it++) {
-    it->draw(parent);
+  for (tActions::iterator it = _actions.begin(); it != _actions.end(); it++) {
+    (*it)->draw(parent);
   }
 	UIActionAdd(parent, 0, ACTT_GROUPEND);
 }
@@ -38,7 +38,7 @@ void CfgPage::draw() {
   UIGroupAdd(parent, id, status, txt, ico);
   _infoBox.draw(id);
 
-  for (tCfgGroups::iterator it = this->_actions.begin(); it != this->_actions.end(); it++) {
-    it->draw(id);
+  for (tActions::iterator it = _actions.begin(); it != _actions.end(); it++) {
+    (*it)->draw(id);
   }
 }
