@@ -249,8 +249,9 @@ namespace Konnekt {
 
     // Cleanin' variables
     inline void clear() {
-      returnCode = im = NULL;
       returnCodeSet = false;
+      returnCode = NULL;
+      im = NULL;
     }
 
     inline int getReturnCode() {
