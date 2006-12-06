@@ -28,16 +28,16 @@ namespace Konnekt {
   class CfgController : public SharedObject<iSharedObject>, public signals::trackable {
   public:
     /* Class version */
-	  STAMINA_OBJECT_CLASS_VERSION(CfgController, iSharedObject, Version(0,1,0,0));
+	  STAMINA_OBJECT_CLASS_VERSION(CfgController, iSharedObject, Version(0,1,1,0));
 
   public:
     typedef std::vector<sIMessage_setColumn*> tCfgCols;
 
   public:
-    inline CfgController(IMController* _IMCtrl): IMCtrl(_IMCtrl) {
-      // automagical registration of configuration columns (set via setColumn())
-      IMCtrl->registerObserver(IM_SETCOLS, bind(resolve_cast0(&CfgController::_setColumns), this));
+    inline CfgController(IMController* IMCtrl) {
+      this->attachObservers(IMCtrl);
     }
+    inline CfgController() { }
 
     inline virtual ~CfgController() { 
       for (tCfgCols::iterator it = _cols.begin(); it != _cols.end(); it++) {
@@ -46,6 +46,11 @@ namespace Konnekt {
     }
 
   public:
+    /* automagical registration of configuration columns (set via setColumn()) */
+    inline void attachObservers(IMController* IMCtrl) {
+      IMCtrl->registerObserver(IM_SETCOLS, bind(&CfgController::_setColumns, this, _1));
+    }
+
     inline void setColumn(tTable table, tColId id, int type, const char* def, const char* name) {
       _cols.push_back(new sIMessage_setColumn(table, id, type, def, name));
     }
@@ -153,15 +158,14 @@ namespace Konnekt {
       }
     }
 
-    inline tIMCallback _setColumns() {
+    inline tIMCallback _setColumns(IMController* IMCtrl) {
       for (tCfgCols::iterator it = _cols.begin(); it != _cols.end(); it++) {
         Ctrl->IMessage(*it);
       }
-      return IMCtrl->setSuccess();
+      IMCtrl->setSuccess();
     }
 
   protected:
-    IMController* IMCtrl;
     tCfgCols _cols;
   };
 
