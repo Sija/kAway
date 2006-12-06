@@ -125,7 +125,7 @@ namespace Konnekt {
       notifyObservers(msg);
 
       // ui action message
-      if (msg->id == IM_UIACTION) {
+      if (isAction()) {
         // notify action observers
         notifyActionObservers(msg);
 
@@ -198,7 +198,7 @@ namespace Konnekt {
     }
 
     inline bool isSublassed() {
-      if (!getAN()) return false;
+      if (!isAction()) return false;
       return isSublassed(getAN()->act.id, getAN()->act.parent);
     }
 
@@ -210,7 +210,7 @@ namespace Konnekt {
     }
 
     inline bool isForwardable() {
-      if (!getAN()) return false;
+      if (!isAction()) return false;
       return isForwardable(getAN()->act.id, getAN()->act.parent);
     }
 
@@ -222,7 +222,7 @@ namespace Konnekt {
     }
 
     inline int getPrevOwner() {
-      if (!getAN()) return sSubclassedAction::notFound;
+      if (!isAction()) return sSubclassedAction::notFound;
       return getPrevOwner(getAN()->act.id, getAN()->act.parent);
     }
 
@@ -233,7 +233,7 @@ namespace Konnekt {
     }
 
     inline void setForwardable(bool set) {
-      if (!getAN()) return;
+      if (!isAction()) return;
       return setForwardable(getAN()->act.id, getAN()->act.parent, set);
     }
 
@@ -248,7 +248,7 @@ namespace Konnekt {
     }
 
     inline IMController* forwardAction(bool _setReturnCode = true) {
-      if (isSublassed()) {
+      if (isAction() && isSublassed()) {
         int retValue = Ctrl->IMessageDirect(IM_UIACTION, getPrevOwner(), (int) getAN());
         if (_setReturnCode) setReturnCode(retValue);
       }
@@ -306,14 +306,18 @@ namespace Konnekt {
       return im;
     }
 
-    inline sUIActionNotify_2params* getAN() {
-      if (getIM()->id != IM_UIACTION) return NULL;
-      return static_cast<sUIActionNotify_2params*>((sUIActionNotify_base*) getIM()->p1);
-    }
-
     inline IMController* setIM(sIMessage_2params* im) { 
       this->im = im;
       return this;
+    }
+
+    inline bool isAction() {
+      return getIM()->id == IM_UIACTION;
+    }
+
+    inline sUIActionNotify_2params* getAN() {
+      if (!isAction()) return NULL;
+      return static_cast<sUIActionNotify_2params*>((sUIActionNotify_base*) getIM()->p1);
     }
 
     inline void setStaticValue(int id, int value) {
