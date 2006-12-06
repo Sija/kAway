@@ -38,7 +38,7 @@ namespace Konnekt {
     return pFunc;
   }
 
-  class IMController : public SharedObject<iSharedObject>, signals::trackable {
+  class IMController : public SharedObject<iSharedObject>, public signals::trackable {
   public:
     /* Class version */
 	  STAMINA_OBJECT_CLASS_VERSION(IMController, iSharedObject, Version(0,2,1,0));
