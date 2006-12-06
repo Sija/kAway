@@ -77,7 +77,7 @@ namespace Konnekt {
     typedef Action tInstance;
 
   public:
-    CfgActionBase(): id(0), status(0), neededNet(0), 
+    CfgActionBase(): id(0), parent(0), status(0), neededNet(0), 
       bitsLevel(ShowBits::levelBeginner) { }
     virtual ~CfgActionBase() { }
 
@@ -92,6 +92,11 @@ namespace Konnekt {
 
     inline tInstance& setID(int id) {
       this->id = id;
+      return instance();
+    }
+
+    inline tInstance& setParent(int parent) {
+      this->parent = parent;
       return instance();
     }
 
@@ -128,6 +133,8 @@ namespace Konnekt {
     ShowBits::enLevel bitsLevel;
     int neededNet;
     int status;
+
+    int parent;
     int id;
   };
 
@@ -139,6 +146,10 @@ namespace Konnekt {
   public:
     CfgAction(): col(0), type(0), x(0), y(0), width(0), height(0), 
       tipHtml(false), tipWidth(0) { };
+    
+    CfgAction(ChildAction& action) {
+      this = *action;
+    }
     virtual ~CfgAction() { }
 
   public:
@@ -212,11 +223,16 @@ namespace Konnekt {
   template <class Collection, class CollectionOf>
   class CfgActionsCollection : public CfgActionBase<Collection> {
   public:
-    typedef std::list<CollectionOf> tActions;
+    typedef std::list<CollectionOf*> tActions;
 
   public:
     CfgActionsCollection() { }
-    virtual ~CfgActionsCollection() { };
+
+    virtual ~CfgActionsCollection() {
+      for (tActions::iterator it = _actions.begin(); it != _actions.end(); it++) {
+        delete *it;
+      }
+    }
 
     template <class ChildAction>
     inline Collection& operator += (ChildAction& action) {
@@ -224,8 +240,15 @@ namespace Konnekt {
     }
 
     template <class ChildAction>
+    inline Collection& operator << (ChildAction& action) {
+      return addAction(action);
+    }
+
+    template <class ChildAction>
     inline Collection& addAction(ChildAction& action) {
-      this->_actions.push_back(*(action.castObject<CollectionOf>()));
+      ChildAction* _action = new ChildAction(action);
+
+      this->_actions.push_back((CollectionOf*) _action);
       return instance();
     }
 
@@ -240,7 +263,7 @@ namespace Konnekt {
       bool anyAlive = false;
 
       for (tActions::iterator it = this->_actions.begin(); it != this->_actions.end(); it++) {
-        if (it->checkBits()) {
+        if ((*it)->checkBits()) {
           anyAlive = true; break;
         }
       }
@@ -270,10 +293,11 @@ namespace Konnekt {
    */
   class CfgPage : public CfgActionsCollection<CfgPage, CfgGroup> {
   public:
-    CfgPage(int _id, int _parent, char* _txt, int _ico = 0): parent(_parent), txt(_txt), ico(_ico) {
+    CfgPage(int _id, int _parent, char* _txt, int _ico = 0): txt(_txt), ico(_ico) {
+      parent = _parent;
       id = _id;
     }
-    CfgPage(): parent(0), txt(0), ico(0) { };
+    CfgPage(): txt(0), ico(0) { };
 
     void draw();
 
@@ -293,7 +317,6 @@ namespace Konnekt {
   protected:
     CfgInfoBox _infoBox;
 
-    int parent;
     char* txt;
     int ico;
   };
@@ -374,7 +397,7 @@ namespace Konnekt {
     CfgActionFlagMethod(byPos, ACTSRADIO_BYPOS);
 
     inline tInstance& setValue(int value) {
-      return setValue((char*) itos(value).c_str());
+      return setValue((char*) inttostr(value).c_str());
     }
 
     inline tInstance& setValue(char* value) {
@@ -454,7 +477,7 @@ namespace Konnekt {
     }
     if (tipWidth) {
       result += AP_TIP_WIDTH;
-      result += itos(tipWidth);
+      result += inttostr(tipWidth);
     }
     return result;
   }
