@@ -114,6 +114,9 @@ namespace Konnekt {
       // clear residues
       clear();
 
+      // set im
+      setIM(msg);
+
       // looking for static values
       if (staticValues.find(msg->id) != staticValues.end()) {
         setReturnCode(staticValues[msg->id]);
@@ -179,11 +182,11 @@ namespace Konnekt {
     }
 
     inline void notifyObservers(sIMessage_2params* msg) {
-      return _notifyObservers(setIM(msg)->im->id, observers);
+      return _notifyObservers(im->id, observers);
     }
 
     inline void notifyActionObservers(sIMessage_2params* msg) {
-      return _notifyObservers(setIM(msg)->getAN()->act.id, actionObservers);
+      return _notifyObservers(getAN()->act.id, actionObservers);
     }
 
     /* Subclassing */
@@ -304,6 +307,7 @@ namespace Konnekt {
     }
 
     inline sUIActionNotify_2params* getAN() {
+      if (getIM()->id != IM_UIACTION) return NULL;
       return static_cast<sUIActionNotify_2params*>((sUIActionNotify_base*) getIM()->p1);
     }
 
