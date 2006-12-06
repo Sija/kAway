@@ -17,15 +17,6 @@
 #include "Helpers.h"
 
 /*
- *  Integer -> String conversion
- */
-
-String itos(int i, int radix) {
-  char buff[64]; _itoa(i, buff, radix);
-  return buff;
-}
-
-/*
  *  Bool -> Human readable string
  */
 
@@ -79,11 +70,11 @@ void logDebug(const char * format, ...) {
 
 namespace Helpers {
   String icon16(int ico) {
-    return "reg://IML16/" + itos(ico) + ".ico";
+    return "reg://IML16/" + inttostr(ico) + ".ico";
   }
 
   String icon32(int ico) {
-    return "reg://IML32/" + itos(ico) + ".ico";
+    return "reg://IML32/" + inttostr(ico) + ".ico";
   }
 
   String trunc(StringRef txt, int limit, const StringRef& suffix) {
@@ -102,19 +93,6 @@ namespace Helpers {
     buff = buff.Trim();
 
     return buff;
-  }
-
-  int altCfgVal(int cntId, int colId, bool isBool) {
-    if (isBool) {
-      return((GETINT(colId) && (GETCNTI(cntId, colId) < 2) || 
-        (!GETINT(colId) && (GETCNTI(cntId, colId) == 1))) ? true : false);
-    } else {
-      return (GETCNTI(cntId, colId) >= 0) ? GETCNTI(cntId, colId) : GETINT(colId);
-    }
-  }
-
-  const char * altCfgStrVal(int cntId, int colId) {
-    return strlen(GETCNTC(cntId, colId)) ? GETCNTC(cntId, colId) : GETSTRA(colId);
   }
 
   int getPluginsGroup() {
@@ -155,26 +133,6 @@ namespace Helpers {
 
   int findParentAction(int group, int id) {
     return Ctrl->ICMessage(IMI_ACTION_FINDPARENT, (int) &sUIAction(group, id));
-  }
-
-  int subclassAction(int group, int id, int mask) {
-    sUIActionInfo nfo(group, id);
-    int prevOwner;
-
-    nfo.mask = mask;
-    nfo.txt = new char[100];
-    nfo.txtSize = 99;
-
-    UIActionGet(nfo);
-    if (!(prevOwner = Ctrl->ICMessage(IMI_ACTION_GETOWNER, (int)&nfo.act))) {
-      prevOwner = Ctrl->ICMessage(IMC_PLUG_ID, 0);
-    }
-
-    Ctrl->ICMessage(IMI_ACTION_REMOVE, (int)&nfo.act);
-    Ctrl->ICMessage(IMI_ACTION, (int)&nfo);
-    delete [] nfo.txt;
-
-    return prevOwner;
   }
 
   void addItemToHistory(cMessage* msg, int cnt, const char * dir, const StringRef& name, int session) {

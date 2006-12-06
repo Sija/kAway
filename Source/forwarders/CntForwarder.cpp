@@ -30,7 +30,7 @@ namespace kAway2 {
 
   void CntForwarder::send(const StringRef& msg) {
     String ext;
-    ext = SetExtParam(ext, cfg::extParamName, itos(cfg::tpl::forward));
+    ext = SetExtParam(ext, cfg::extParamName, inttostr(cfg::tpl::forward));
     ext = SetExtParam(ext, MEX_ADDINFO, "kAway2");
     ext = SetExtParam(ext, MEX_NOSOUND, "1");
 
@@ -92,8 +92,8 @@ namespace kAway2 {
       for (int i = 0; i < count; i++) {
         if (i) {
           combo += strlen(GETCNTC(i, CNT_DISPLAY)) ? GETCNTC(i, CNT_DISPLAY) : GETCNTC(i, CNT_UID);
-          combo += AP_ICO + itos(UIIcon(IT_LOGO, GETCNTI(i, CNT_NET), 0, 0));
-          combo += AP_VALUE + itos(i) + "\n";
+          combo += AP_ICO + inttostr(UIIcon(IT_LOGO, GETCNTI(i, CNT_NET), 0, 0));
+          combo += AP_VALUE + inttostr(i) + "\n";
         } else {
           combo += "Wy³¹czone" AP_ICO "#2E" AP_VALUE "0\n";
         }
@@ -115,8 +115,8 @@ namespace kAway2 {
             name = (char*) Ctrl->IMessageDirect(IM_PLUG_NETNAME, id);
 
             if (name.length()) {
-              combo += name + AP_ICO + itos(UIIcon(IT_LOGO, net, 0, 0));
-              combo += AP_VALUE + itos(net) + "\n";
+              combo += name + AP_ICO + inttostr(UIIcon(IT_LOGO, net, 0, 0));
+              combo += AP_VALUE + inttostr(net) + "\n";
             }
           }
         } else {

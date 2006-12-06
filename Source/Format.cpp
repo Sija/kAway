@@ -102,13 +102,13 @@ std::string __stdcall Format::parseCallback(RegEx* reg, void* param) {
 
 void Format::UIDrawHelpBtn(int cfgGroup, int ico) {
   String val = this->buildVarsList();
-  if (ico) val += AP_ICO + itos(ico);
+  if (ico) val += AP_ICO + inttostr(ico);
   UIActionCfgAdd(cfgGroup, 0, ACTT_TIPBUTTON | ACTSBUTTON_ALIGNRIGHT | ACTSC_INLINE, val.a_str());
 }
 
 void Format::UIDrawHelpBtn(const tHelpVars& vars, int cfgGroup, int ico) {
   String val = Format::buildVarsList(vars);
-  if (ico) val += AP_ICO + itos(ico);
+  if (ico) val += AP_ICO + inttostr(ico);
   UIActionCfgAdd(cfgGroup, 0, ACTT_TIPBUTTON | ACTSBUTTON_ALIGNRIGHT | ACTSC_INLINE, val.a_str());
 }
 

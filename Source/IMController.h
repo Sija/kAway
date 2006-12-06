@@ -356,8 +356,7 @@ namespace Konnekt {
       list[id]->signal(this);
     }
 
-    inline bool _registerObserver(
-      int id, fOnIMessage f, int priority, signals::connect_position pos, 
+    inline bool _registerObserver(int id, fOnIMessage f, int priority, signals::connect_position pos, 
       StringRef name, bool overwrite, tObservers& list) 
     {
       if (f.empty()) {

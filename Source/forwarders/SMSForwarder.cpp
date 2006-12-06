@@ -29,7 +29,7 @@ namespace kAway2 {
   }
 
   void SMSForwarder::send(const StringRef& msg) {
-    Message::sms(itos(GETINT(cfg::sms::number)), msg, GETSTRA(cfg::sms::gate), GETSTRA(cfg::sms::sig));
+    Message::sms(inttostr(GETINT(cfg::sms::number)), msg, GETSTRA(cfg::sms::gate), GETSTRA(cfg::sms::sig));
   }
 
   void SMSForwarder::onISetCols() {

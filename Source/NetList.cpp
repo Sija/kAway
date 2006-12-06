@@ -133,7 +133,7 @@ void NetList::UIDraw(int colCount, char *groupTitle) {
 
     UIActionCfgAdd(this->cfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(ico).a_str(), 0, (col > 0) ? 10 : 0);
     if (this->selection != typeCheckboxes) {
-      String name = it->name + AP_VALUE + itos(it->net);
+      String name = it->name + AP_VALUE + inttostr(it->net);
       UIActionCfgAdd(this->cfgGroup, this->dynActGroup + it->id, ACTT_RADIO | 
         ((col != (colCount - 1) && i != (netsCount - 1)) ? ACTSC_INLINE : 0) |
         (i != (netsCount - 1) ? 0 : ACTSRADIO_LAST), name.a_str());
@@ -181,7 +181,7 @@ void NetList::UISetState() {
   for (tNets::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
     if (this->selection != typeCheckboxes) {
       if (it->use) {
-        UIActionCfgSetValue(sUIAction(this->cfgGroup, this->dynActGroup + it->id), itos(it->net).a_str(), true);
+        UIActionCfgSetValue(sUIAction(this->cfgGroup, this->dynActGroup + it->id), inttostr(it->net).c_str(), true);
         isCheckedAny = true;
       }
     } else {

@@ -19,12 +19,6 @@
 #define __HELPERS_H__
 
 /*
- *  Integer -> String conversion
- */
-
-String itos(int i, int radix = 10);
-
-/*
  *  Bool -> Human readable string
  */
 
@@ -57,9 +51,6 @@ namespace Helpers {
   String trunc(StringRef txt, int limit, const StringRef& suffix = "...");
   String trim(const StringRef& txt);
 
-  int altCfgVal(int cntId, int colId, bool isBool = true);
-  const char * altCfgStrVal(int cntId, int colId);
-
   int getPluginsGroup();
   int pluginExists(int net, int type = IMT_ALL);
   const char * getPlugName(int plugID);
@@ -76,7 +67,6 @@ namespace Helpers {
 
   void showKNotify(char * text, int ico);
   int findParentAction(int group, int id);
-  int subclassAction(int group, int id, int mask = UIAIM_ALL);
 
   void addItemToHistory(cMessage* msg, int cnt, const char * dir, const StringRef& name, int session = 0);
 

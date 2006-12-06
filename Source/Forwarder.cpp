@@ -103,8 +103,8 @@ namespace kAway2 {
 
   String Forwarder::Summary::getBody() {
     Format format;
-    format.addVar("msgCount", itos(this->receivedMsgCount));
-    format.addVar("userCount", itos(this->msgSenders.size()));
+    format.addVar("msgCount", inttostr(this->receivedMsgCount));
+    format.addVar("userCount", inttostr(this->msgSenders.size()));
     format.addVar("lastMsgFrom", this->lastMsgFrom);
     format.addVar("userList", this->getMsgSendersList());
 

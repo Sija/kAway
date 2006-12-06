@@ -23,6 +23,7 @@
 #include "Helpers.h"
 #include "IMController.h"
 #include "CfgController.h"
+#include "CfgActions.h"
 #include "MRU.h"
 #include "NetList.h"
 #include "Format.h"
