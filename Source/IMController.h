@@ -86,12 +86,12 @@ namespace Konnekt {
       registerObserver(IM_UI_PREPARE, bind(resolve_cast0(&IMController::_subclass), this));
 
       // default values for common messages, may be overriden
-      addStaticValue(IM_PLUG_NETNAME, 0);
-      addStaticValue(IM_PLUG_PRIORITY, 0);
-      addStaticValue(IM_PLUG_SDKVERSION, KONNEKT_SDK_V);
-      addStaticValue(IM_PLUG_VERSION, 0);
-      addStaticValue(IM_PLUG_CORE_V, (int) "W98");
-      addStaticValue(IM_PLUG_UI_V, 0);
+      setStaticValue(IM_PLUG_NETNAME, 0);
+      setStaticValue(IM_PLUG_PRIORITY, 0);
+      setStaticValue(IM_PLUG_SDKVERSION, KONNEKT_SDK_V);
+      setStaticValue(IM_PLUG_VERSION, 0);
+      setStaticValue(IM_PLUG_CORE_V, (int) "W98");
+      setStaticValue(IM_PLUG_UI_V, 0);
     }
 
     inline virtual ~IMController() { 
@@ -127,7 +127,7 @@ namespace Konnekt {
         notifyActionObservers(msg);
 
         // auto-forward action
-        if (isSublassed() && isForwardable()) {
+        if (isForwardable()) {
           forwardAction();
         }
       }
@@ -235,9 +235,7 @@ namespace Konnekt {
     inline IMController* forwardAction(bool _setReturnCode = true) {
       if (isSublassed()) {
         int retValue = Ctrl->IMessageDirect(IM_UIACTION, getPrevOwner(), (int) getAN());
-        if (_setReturnCode) {
-          setReturnCode(retValue);
-        }
+        if (_setReturnCode) setReturnCode(retValue);
       }
       return this;
     }
@@ -251,9 +249,8 @@ namespace Konnekt {
 
     // Cleanin' variables
     inline void clear() {
+      returnCode = im = NULL;
       returnCodeSet = false;
-      returnCode = NULL;
-      im = NULL;
     }
 
     inline int getReturnCode() {
@@ -271,15 +268,16 @@ namespace Konnekt {
      * commonly used functions like @c GETSTR in all flavors. }
      */
     inline void setReturnValue(const StringRef& value) {
-      // tworzymy tymczasowy bufor
+      // creating temp buffer
       char* buff = (char*) Ctrl->GetTempBuffer(value.size() + 1);
 
-      // czyszczenie pamiêci
+      // cleaning memory
       memset(buff, 0, value.size() + 1);
 
-      // kopiujemy dane
+      // copying data
       memcpy(buff, value.a_str(), value.size());
 
+      // setting return code to pointer to internal, temp buffer
       setReturnCode((int) buff);
     }
 
@@ -308,7 +306,7 @@ namespace Konnekt {
       return this;
     }
 
-    inline void addStaticValue(int id, int value) {
+    inline void setStaticValue(int id, int value) {
       staticValues[id] = value;
     }
 
@@ -321,14 +319,7 @@ namespace Konnekt {
     }
 
   protected:
-    /* inline void dbgObservers() {
-      for (tObservers::iterator it = observers.begin(); it != observers.end(); it++) {
-        for (tConnections::iterator it2 = it->second->connections.begin(); it2 != it->second->connections.end(); it2++) {
-          IMLOG("Observer[%i].connection: %s", it->first, it2->first.c_str());
-        }
-      }
-    } */
-
+    /* Actions subclassing */
     inline sSubclassedAction& _getSubclassedAction(int id, int parent) {
       for (tSubclassedActions::iterator it = subclassedActions.begin(); it != subclassedActions.end(); it++) {
         if (id == it->id && parent == it->parent) return *it;
@@ -336,12 +327,26 @@ namespace Konnekt {
       return sSubclassedAction();
     }
 
+    /* Observers related methods */
     inline bool _isObserved(int id, tObservers& list) {
       if (list.find(id) != list.end()) {
         return !list[id]->signal.empty();
       }
       return false;
     }
+
+    /* inline void _dbgObservers() {
+      for (tObservers::iterator it = observers.begin(); it != observers.end(); it++) {
+        for (tConnections::iterator it2 = it->second->connections.begin(); it2 != it->second->connections.end(); it2++) {
+          IMLOG("Observer[%i].connection: %s", it->first, it2->first.c_str());
+        }
+      }
+      for (tObservers::iterator it = actionObservers.begin(); it != actionObservers.end(); it++) {
+        for (tConnections::iterator it2 = it->second->connections.begin(); it2 != it->second->connections.end(); it2++) {
+          IMLOG("ActionObserver[%i].connection: %s", it->first, it2->first.c_str());
+        }
+      }
+    } */
 
     inline void _notifyObservers(int id, tObservers& list) {
       if (!_isObserved(id, list)) {
@@ -373,6 +378,7 @@ namespace Konnekt {
       return (list[id]->connections[name] = list[id]->signal.connect(priority, f, pos)).connected();
     }
 
+    /* Callbacks */
     inline tIMCallback _plugInit() {
       Plug_Init(getIM()->p1, getIM()->p2);
       return setSuccess();
@@ -394,6 +400,9 @@ namespace Konnekt {
         if (!(it->prevOwner = Ctrl->ICMessage(IMI_ACTION_GETOWNER, (int)&nfo.act))) {
           it->prevOwner = Ctrl->ICMessage(IMC_PLUG_ID, 0);
         }
+
+        IMLOG("[IMController<%i>::subclass()]: name = %s, id = %i, parent = %i, prevOwner = %i", this, nfo.txt, 
+          it->id, it->parent, it->prevOwner);
 
         Ctrl->ICMessage(IMI_ACTION_REMOVE, (int)&nfo.act);
         Ctrl->ICMessage(IMI_ACTION, (int)&nfo);
