@@ -211,6 +211,18 @@ namespace Konnekt {
       return isForwardable(getAN()->act.id, getAN()->act.parent);
     }
 
+    inline int getPrevOwner(int id, int parent) {
+      if (isSublassed(id, parent)) {
+        return _getSubclassedAction(id, parent).prevOwner;
+      }
+      return sSubclassedAction::notFound;
+    }
+
+    inline int getPrevOwner() {
+      if (!getAN()) return sSubclassedAction::notFound;
+      return getPrevOwner(getAN()->act.id, getAN()->act.parent);
+    }
+
     inline void setForwardable(int id, int parent, bool set) {
       if (isSublassed(id, parent)) {
         _getSubclassedAction(id, parent).autoForward = set;
@@ -238,13 +250,6 @@ namespace Konnekt {
         if (_setReturnCode) setReturnCode(retValue);
       }
       return this;
-    }
-
-    inline int getPrevOwner() {
-      if (isSublassed()) {
-        return _getSubclassedAction(getAN()->act.id, getAN()->act.parent).prevOwner;
-      }
-      return sSubclassedAction::notFound;
     }
 
     // Cleanin' variables
