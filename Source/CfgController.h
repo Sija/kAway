@@ -28,7 +28,7 @@ namespace Konnekt {
   class CfgController : public SharedObject<iSharedObject>, public signals::trackable {
   public:
     /* Class version */
-	  STAMINA_OBJECT_CLASS_VERSION(CfgController, iSharedObject, Version(0,1,1,0));
+    STAMINA_OBJECT_CLASS_VERSION(CfgController, iSharedObject, Version(0,1,1,0));
 
   public:
     typedef std::vector<sIMessage_setColumn*> tCfgCols;

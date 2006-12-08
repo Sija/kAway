@@ -126,6 +126,11 @@ namespace kAway2 {
     config->setColumn(DTCNT, cfg::reply::minIntervalType, DT_CT_INT, -1, "kAway2/reply/minIntervalType");
     config->setColumn(DTCNT, cfg::reply::useHtml, DT_CT_INT, 0, "kAway2/reply/useHtml");
 
+    // binding method for extended away
+    this->extAutoAwayTimer.reset(timerTmplCreate(bind(&Controller::onExtAutoAway, this)));
+  }
+
+  void Controller::testCfgActions() {
     /* Configuration UI */
     char header[400];
     sprintf(header, "<span class='note'>Powered by: <b>%s</b></span><br/>"
@@ -169,67 +174,67 @@ namespace kAway2 {
       "%<b>%</b> - Percent sign";
 
     CfgPage pTest(ui::ui + 10, IMIG_CFG_PLUGS, "SSaj mego bena", ico::logoSmall);
-    pTest += CfgInfoBox(header, desc, ico::logoSmall, 4);
+    pTest.setInfoBox(CfgInfoBox(header, desc, ico::logoSmall, 4)).setFlag(ACTR_SAVE);
 
     CfgGroup gGlobal("Ustawienia");
-    gGlobal += CfgCheckBox("Wycisz przy w³¹czeniu trybu away", cfg::muteOnEnable);
-    gGlobal += CfgCheckBox("Wy³¹czaj w momencie wys³ania wiadomoœci", cfg::disableOnMsgSend).setBits(ShowBits::levelAdvanced);
-    gGlobal += CfgCheckBox("Zapisuj wiadomoœci w osobnej historii", cfg::saveToHistory).setBits(ShowBits::levelAdvanced);
-    gGlobal += CfgCheckBox("Komendy z okna rozmów (a'la IRC)", cfg::ircCmds).setTip(
+    gGlobal << CfgCheckBox("Wycisz przy w³¹czeniu trybu away", cfg::muteOnEnable);
+    gGlobal << CfgCheckBox("Wy³¹czaj w momencie wys³ania wiadomoœci", cfg::disableOnMsgSend).setBits(ShowBits::levelAdvanced);
+    gGlobal << CfgCheckBox("Zapisuj wiadomoœci w osobnej historii", cfg::saveToHistory).setBits(ShowBits::levelAdvanced);
+    gGlobal << CfgCheckBox("Komendy z okna rozmów (a'la IRC)", cfg::ircCmds).setTip(
       "/<b>away</b> [...] - w³¹cza tryb away<br/>"
       "/<b>brb</b> [...] - j.w. + nie wysy³a powiadomieñ o w³.<br/>"
       "/<b>back</b> [...] - wy³¹cza tryb away<br/>"
       "/<b>re</b> [...] - j.w. + nie wysy³a powiadomieñ o wy³.", true, 240);
-    gGlobal += CfgCheckBox("Pokazuj powiadomienia K.Notify", cfg::useKNotify).needPlugin(plugsNET::knotify);
-    gGlobal += CfgCheckBox("Pytaj przed wyjœciem z trybu away", cfg::confirmation).setBits(ShowBits::levelAdvanced);
-    pTest += gGlobal.setBits(ShowBits::levelIntermediate);
+    gGlobal << CfgCheckBox("Pokazuj powiadomienia K.Notify", cfg::useKNotify).needPlugin(plugsNET::knotify);
+    gGlobal << CfgCheckBox("Pytaj przed wyjœciem z trybu away", cfg::confirmation).setBits(ShowBits::levelAdvanced);
+    pTest << gGlobal.setBits(ShowBits::levelIntermediate);
 
     CfgGroup gTimeFormat("Formatowanie czasu");
-    gTimeFormat += CfgEdit(cfg::dateFormat).isInline(true).setTip(dateFormat, true, 300);
-    gTimeFormat += CfgLabel("Format daty");
-    gTimeFormat += CfgEdit(cfg::timeFormat).isInline(true).setTip(timeFormat, true, 285);
-    gTimeFormat += CfgLabel("Format godziny");
-    pTest += gTimeFormat.setBits(ShowBits::levelAdvanced);
+    gTimeFormat << CfgEdit(cfg::dateFormat).isInline(true).setTip(dateFormat, true, 300);
+    gTimeFormat << CfgLabel("Format daty");
+    gTimeFormat << CfgEdit(cfg::timeFormat).isInline(true).setTip(timeFormat, true, 285);
+    gTimeFormat << CfgLabel("Format godziny");
+    pTest << gTimeFormat.setBits(ShowBits::levelAdvanced);
 
     CfgGroup gAutoAway("Ustawienia auto-away'a");
-    gAutoAway += CfgSeparator("Synchronizuj z trybem auto-away:");
-    gAutoAway += CfgRadio("podstawowym", cfg::autoAwaySync).setValue(1).isInline(true);
-    gAutoAway += CfgRadio("rozszerzonym", cfg::autoAwaySync).setValue(2);
-    gAutoAway += CfgRadio("nie synchronizuj", cfg::autoAwaySync).setValue(0).isBold(true).isLast(true);
-    gAutoAway += CfgSeparator("Powód nieobecnoœci:");
-    gAutoAway += CfgText(cfg::autoAwayMsg);
-    pTest += gAutoAway.setBits(ShowBits::levelIntermediate);
+    gAutoAway << CfgSeparator("Synchronizuj z trybem auto-away:");
+    gAutoAway << CfgRadio("podstawowym", cfg::autoAwaySync).setValue(1).isInline(true);
+    gAutoAway << CfgRadio("rozszerzonym", cfg::autoAwaySync).setValue(2);
+    gAutoAway << CfgRadio("nie synchronizuj", cfg::autoAwaySync).setValue(0).isBold(true).isLast(true);
+    gAutoAway << CfgSeparator("Powód nieobecnoœci:");
+    gAutoAway << CfgText(cfg::autoAwayMsg);
+    pTest << gAutoAway.setBits(ShowBits::levelIntermediate);
 
     /* |-> Interface group */
     CfgGroup gUI("Interfejs");
-    gUI += CfgCheckBox("Pokazuj przycisk w g³ównym oknie", cfg::btnInMainWindow).needRestart(true);
-    gUI += CfgCheckBox("Pokazuj przycisk w oknie rozmowy", cfg::btnInCntWindow).needRestart(true);
-    gUI += CfgCheckBox("Pokazuj przycisk w menu tray'a", cfg::btnInTrayMenu).needRestart(true);
-    pTest += gUI;
+    gUI << CfgCheckBox("Pokazuj przycisk w g³ównym oknie", cfg::btnInMainWindow).needRestart(true);
+    gUI << CfgCheckBox("Pokazuj przycisk w oknie rozmowy", cfg::btnInCntWindow).needRestart(true);
+    gUI << CfgCheckBox("Pokazuj przycisk w menu tray'a", cfg::btnInTrayMenu).needRestart(true);
+    pTest << gUI;
 
     /*
     CfgGroup gHistory("Historia powodów nieobecnoœci");
-    gHistory += CfgSeparator("Historia powodów nieobecnoœci");
-    gHistory += CfgSlider("Ma³o", "Du¿o", cfg::mruSize, 1, 30);
-    gHistory += CfgSeparator();
-    gHistory += CfgButton("wyczyœæ", act::clearMru, ico::trash).setWidth(80).setHeight(30);
-    pTest += gHistory;
+    gHistory << CfgSeparator("Historia powodów nieobecnoœci");
+    gHistory << CfgSlider("Ma³o", "Du¿o", cfg::mruSize, 1, 30);
+    gHistory << CfgSeparator();
+    gHistory << CfgButton("wyczyœæ", act::clearMru, ico::trash).setWidth(80).setHeight(30);
+    pTest << gHistory;
 
     CfgGroup gResetSettings;
-    gResetSettings += CfgButton("resetuj ustawienia", act::resetSettings, 27).isInline(true).setWidth(140).setHeight(30);
-    gResetSettings += CfgButton("resetuj ustawienia kontaktów", act::resetCntSettings, 27).setWidth(180).setHeight(30);
-    pTest += gResetSettings.setBits(ShowBits::levelAdvanced);
+    gResetSettings << CfgButton("resetuj ustawienia", act::resetSettings, 27).isInline(true).setWidth(140).setHeight(30);
+    gResetSettings << CfgButton("resetuj ustawienia kontaktów", act::resetCntSettings, 27).setWidth(180).setHeight(30);
+    pTest << gResetSettings.setBits(ShowBits::levelAdvanced);
     */
 
-    pTest.setFlag(ACTR_SAVE);
-
-    // binding method for extended away
-    this->extAutoAwayTimer.reset(timerTmplCreate(bind(&Controller::onExtAutoAway, this)));
+    pTest.draw();
   }
 
   /* IMessage callback methods */
 
   void Controller::onPrepare() {
+    // CfgAction testin'
+    testCfgActions();
+
     this->pluginsGroup = Helpers::getPluginsGroup();
 
     this->mruList = new MRU(cfg::mruName, cfg::mruSize, true);

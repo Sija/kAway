@@ -41,7 +41,7 @@ namespace Konnekt {
   class IMController : public SharedObject<iSharedObject>, public signals::trackable {
   public:
     /* Class version */
-	  STAMINA_OBJECT_CLASS_VERSION(IMController, iSharedObject, Version(0,2,1,0));
+    STAMINA_OBJECT_CLASS_VERSION(IMController, iSharedObject, Version(0,2,1,0));
 
   public:
     typedef function<tIMCallback(IMController*)> fOnIMessage;

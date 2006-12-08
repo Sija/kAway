@@ -78,6 +78,8 @@ namespace kAway2 {
       return instance;
     }
 
+    void testCfgActions(); // @debug
+
   protected:
     /* IMessage callback methods */
     void onPrepare();

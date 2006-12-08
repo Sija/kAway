@@ -24,7 +24,7 @@ void CfgGroup::draw(int parent) {
 
   UIActionCfgAdd(parent, 0, ACTT_GROUP | status, txt);
   for (tActions::iterator it = _actions.begin(); it != _actions.end(); it++) {
-    (*it)->draw(parent);
+    (*it)->castObject<CfgLabel>()->draw(parent);
   }
 	UIActionAdd(parent, 0, ACTT_GROUPEND);
 }
@@ -39,6 +39,6 @@ void CfgPage::draw() {
   _infoBox.draw(id);
 
   for (tActions::iterator it = _actions.begin(); it != _actions.end(); it++) {
-    (*it)->draw(id);
+    (*it)->castObject<CfgGroup>()->draw(parent);
   }
 }

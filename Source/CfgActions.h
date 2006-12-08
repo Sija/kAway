@@ -7,9 +7,9 @@
   *  @filesource
   *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
   *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
-  *  @version      $Revision: 77 $
-  *  @modifiedby   $LastChangedBy: sija $
-  *  @lastmodified $Date: 2006-11-20 17:42:35 +0100 (Pn, 20 lis 2006) $
+  *  @version      $Revision$
+  *  @modifiedby   $LastChangedBy$
+  *  @lastmodified $Date$
   *  @license      http://creativecommons.org/licenses/LGPL/2.1/
   */
 
@@ -33,11 +33,9 @@ using namespace boost;
   }
 
 namespace Konnekt {
-  class CfgDummyAction;
   class CfgGroup;
   class CfgPage;
 
-  typedef std::list<CfgDummyAction> tCfgActions;
   typedef std::list<CfgGroup> tCfgGroups;
   typedef std::list<CfgPage> tCfgPages;
 
@@ -56,6 +54,7 @@ namespace Konnekt {
       UIActionCfgAddPluginInfoBox2(parent, desc.c_str(), header.c_str(), 
         Helpers::icon16(ico).a_str(), - height, 0, frame);
     }
+
   public:
     String header;
     String desc;
@@ -82,21 +81,21 @@ namespace Konnekt {
     virtual ~CfgActionBase() { }
 
     inline tInstance& instance() {
-      return *this->castObject<tInstance>();
+      return *castObject<tInstance>();
     }
 
     inline tInstance& needPlugin(int net) {
-      this->neededNet = net;
+      neededNet = net;
       return instance();
     }
 
     inline tInstance& setID(int id) {
-      this->id = id;
+      id = id;
       return instance();
     }
 
     inline tInstance& setParent(int parent) {
-      this->parent = parent;
+      parent = parent;
       return instance();
     }
 
@@ -122,7 +121,7 @@ namespace Konnekt {
 
   public:
     inline tInstance& setBits(ShowBits::enLevel level) {
-      this->bitsLevel = level;
+      bitsLevel = level;
       return instance();
     }
     inline bool checkBits() {
@@ -141,15 +140,12 @@ namespace Konnekt {
   /*
    * Configuration action class
    */
-  template <class ChildAction = CfgDummyAction>
+  template <class ChildAction>
   class CfgAction : public CfgActionBase<ChildAction> {
   public:
     CfgAction(): col(0), type(0), x(0), y(0), width(0), height(0), 
       tipHtml(false), tipWidth(0) { };
-    
-    CfgAction(ChildAction& action) {
-      this = *action;
-    }
+
     virtual ~CfgAction() { }
 
   public:
@@ -157,19 +153,19 @@ namespace Konnekt {
 
   public:
     inline tInstance& setX(int x) {
-      this->x = x;
+      x = x;
       return instance();
     }
     inline tInstance& setY(int y) {
-      this->y = y;
+      y = y;
       return instance();
     }
     inline tInstance& setWidth(int width) {
-      this->width = width;
+      width = width;
       return instance();
     }
     inline tInstance& setHeight(int height) {
-      this->height = height;
+      height = height;
       return instance();
     }
 
@@ -178,18 +174,18 @@ namespace Konnekt {
     virtual String getText();
 
   public:
-    inline ChildAction& setTip(char* txt, bool html = false, int width = 0) {
-      this->tipWidth = width;
-      this->tipHtml = html;
-      this->tip = txt;
+    inline tInstance& setTip(char* txt, bool html = false, int width = 0) {
+      tipWidth = width;
+      tipHtml = html;
+      tip = txt;
       return instance();
     }
-    inline ChildAction& setTipHtml(bool html) {
-      this->tipHtml = html;
+    inline tInstance& setTipHtml(bool html) {
+      tipHtml = html;
       return instance();
     }
-    inline ChildAction& setTipWidth(int width) {
-      this->tipWidth = width;
+    inline tInstance& setTipWidth(int width) {
+      tipWidth = width;
       return instance();
     }
 
@@ -220,10 +216,10 @@ namespace Konnekt {
   /*
    * Configuration actions collection class
    */
-  template <class Collection, class CollectionOf>
+  template <class Collection>
   class CfgActionsCollection : public CfgActionBase<Collection> {
   public:
-    typedef std::list<CollectionOf*> tActions;
+    typedef std::list<iObject*> tActions;
 
   public:
     CfgActionsCollection() { }
@@ -235,20 +231,18 @@ namespace Konnekt {
     }
 
     template <class ChildAction>
-    inline Collection& operator += (ChildAction& action) {
+    inline tInstance& operator += (const ChildAction& action) {
       return addAction(action);
     }
 
     template <class ChildAction>
-    inline Collection& operator << (ChildAction& action) {
+    inline tInstance& operator << (const ChildAction& action) {
       return addAction(action);
     }
 
     template <class ChildAction>
-    inline Collection& addAction(ChildAction& action) {
-      ChildAction* _action = new ChildAction(action);
-
-      this->_actions.push_back((CollectionOf*) _action);
+    inline tInstance& addAction(const ChildAction& action) {
+      _actions.push_back((iObject*) &action);
       return instance();
     }
 
@@ -262,8 +256,8 @@ namespace Konnekt {
       }
       bool anyAlive = false;
 
-      for (tActions::iterator it = this->_actions.begin(); it != this->_actions.end(); it++) {
-        if ((*it)->checkBits()) {
+      for (tActions::iterator it = _actions.begin(); it != _actions.end(); it++) {
+        if ((*it)->castObject<CfgRadio>()->checkBits()) {
           anyAlive = true; break;
         }
       }
@@ -277,7 +271,7 @@ namespace Konnekt {
   /*
    * Configuration group class
    */
-  class CfgGroup : public CfgActionsCollection<CfgGroup, CfgDummyAction> {
+  class CfgGroup : public CfgActionsCollection<CfgGroup> {
   public:
     CfgGroup(char* _txt = 0): txt(_txt) { }
     CfgGroup(): txt(0) { };
@@ -291,7 +285,7 @@ namespace Konnekt {
   /*
    * Configuration page class
    */
-  class CfgPage : public CfgActionsCollection<CfgPage, CfgGroup> {
+  class CfgPage : public CfgActionsCollection<CfgPage> {
   public:
     CfgPage(int _id, int _parent, char* _txt, int _ico = 0): txt(_txt), ico(_ico) {
       parent = _parent;
@@ -301,17 +295,9 @@ namespace Konnekt {
 
     void draw();
 
-    inline CfgPage& addInfoBox(CfgInfoBox& infoBox) {
+    inline tInstance& setInfoBox(CfgInfoBox& infoBox) {
       _infoBox = infoBox;
       return *this;
-    }
-
-    inline CfgPage& operator += (CfgInfoBox& infoBox) {
-      return addInfoBox(infoBox);
-    }
-
-    inline CfgPage& operator += (CfgGroup& group) {
-      return CfgActionsCollection<CfgPage, CfgGroup>::operator +=(group);
     }
 
   protected:
@@ -324,9 +310,6 @@ namespace Konnekt {
   /*
    * Custom actions
    */
-  class CfgDummyAction: public CfgAction<CfgDummyAction> {
-  };
-
   class CfgLabel: public CfgAction<CfgLabel> {
   public:
     CfgLabel(char* _text = 0, bool wordwrap = false) {
@@ -401,7 +384,7 @@ namespace Konnekt {
     }
 
     inline tInstance& setValue(char* value) {
-      this->value = value;
+      value = value;
       return instance();
     }
 
@@ -457,7 +440,7 @@ namespace Konnekt {
    */
   template <class ChildAction>
   void CfgAction<ChildAction>::draw(int parent) {
-    if (!this->checkBits() || (neededNet && !Helpers::pluginExists(neededNet))) {
+    if (!checkBits() || (neededNet && !Helpers::pluginExists(neededNet))) {
       return;
     }
 
