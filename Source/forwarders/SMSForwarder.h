@@ -59,7 +59,7 @@ namespace kAway2 {
 
   public:
     inline bool preSummary() {
-      return strlen(GETSTRA(cfg::sms::number)) && strlen(GETSTRA(cfg::sms::gate));
+      return strlen(GETSTR(cfg::sms::number)) && strlen(GETSTR(cfg::sms::gate));
     }
 
     inline bool preForward(int cnt, cMessage *msg) {

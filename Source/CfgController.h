@@ -115,7 +115,7 @@ namespace Konnekt {
     }
 
     inline const char* getChar(tColId col) {
-      return GETSTRA(col);
+      return GETSTR(col);
     }
     inline const char* getChar(tColId col, tCntId cnt) {
       return GETCNTC(cnt, col);

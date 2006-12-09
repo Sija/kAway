@@ -72,7 +72,7 @@ namespace kAway2 {
       if (GETINT(cfg::forward::type) == toCnt) {
         return GETINT(cfg::forward::cnt);
       } else {
-        return GETINT(cfg::forward::net) && strlen(GETSTRA(cfg::forward::uid));
+        return GETINT(cfg::forward::net) && strlen(GETSTR(cfg::forward::uid));
       }
     }
 

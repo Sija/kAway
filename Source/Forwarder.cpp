@@ -108,7 +108,7 @@ namespace kAway2 {
     format.addVar("lastMsgFrom", this->lastMsgFrom);
     format.addVar("userList", this->getMsgSendersList());
 
-    return format.parse(GETSTRA(this->parent->cfgCols["tplSummary"]));
+    return format.parse(GETSTR(this->parent->cfgCols["tplSummary"]));
   }
 
   void Forwarder::Summary::cfgTplDraw() {
@@ -142,11 +142,11 @@ namespace kAway2 {
     Format format;
 
     format.addVar("msgFrom", !strlen(GETCNTC(cnt, CNT_DISPLAY)) ? msg->fromUid : GETCNTC(cnt, CNT_DISPLAY));
-    format.addVar("msgTime", date.strftime(GETSTRA(cfg::timeFormat)));
-    format.addVar("msgDate", Helpers::isToday(date) ? "" : date.strftime(GETSTRA(cfg::dateFormat)));
+    format.addVar("msgTime", date.strftime(GETSTR(cfg::timeFormat)));
+    format.addVar("msgDate", Helpers::isToday(date) ? "" : date.strftime(GETSTR(cfg::dateFormat)));
     format.addVar("msgBody", msg->body);
 
-    return format.parse(GETSTRA(this->parent->cfgCols["tplForward"]));
+    return format.parse(GETSTR(this->parent->cfgCols["tplForward"]));
   }
 
   void Forwarder::Forward::cfgTplDraw() {

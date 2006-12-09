@@ -37,7 +37,7 @@ namespace kAway2 {
     if (GETINT(cfg::forward::type) == toCnt) {
       Message::send(GETINT(cfg::forward::cnt), msg, MT_MESSAGE, ext, true);
     } else {
-      Message::send(GETSTRA(cfg::forward::uid), GETINT(cfg::forward::net), msg, MT_MESSAGE, ext, true);
+      Message::send(GETSTR(cfg::forward::uid), GETINT(cfg::forward::net), msg, MT_MESSAGE, ext, true);
     }
   }
 

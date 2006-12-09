@@ -241,7 +241,7 @@ String Status::getDots() {
   if (!this->dotsCfgCol) return "";
 
   if (Ctrl->DTgetType(DTCFG, this->dotsCfgCol) == DT_CT_STR) {
-    return GETSTRA(this->dotsCfgCol);
+    return GETSTR(this->dotsCfgCol);
   }
   return GETINT(this->dotsCfgCol) ? "…" : "";
 }

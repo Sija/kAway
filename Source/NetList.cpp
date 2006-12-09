@@ -17,7 +17,7 @@
 #include "NetList.h"
 
 void NetList::loadNets() {
-  String buff(GETSTRA(this->cfgCol));
+  String buff(GETSTR(this->cfgCol));
   tNets nets;
 
   if (!buff.empty()) {
