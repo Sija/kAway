@@ -20,11 +20,7 @@
 //#include "Forwarders/SMSForwarder.h"
 
 namespace kAway2 {
-  SharedPtr<Controller> Controller::instance = 0;
-
   Controller::Controller() : isOn(false), muteStateSwitched(false), autoAway(typeDisabled), pluginsGroup(0) {
-    this->config = new CfgController(this);
-
     /* Static values like net, type or version */
     this->setStaticValue(IM_PLUG_TYPE, IMT_UI | IMT_CONFIG | IMT_ALLMESSAGES);
     this->setStaticValue(IM_PLUG_PRIORITY, PLUGP_HIGHEST);
@@ -233,7 +229,7 @@ namespace kAway2 {
 
   void Controller::onPrepare() {
     // CfgAction testin'
-    testCfgActions();
+    // testCfgActions();
 
     this->pluginsGroup = Helpers::getPluginsGroup();
 
@@ -663,15 +659,15 @@ namespace kAway2 {
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_GROUPEND);
 
     /* Buttons */
-    if (GETINT(cfg::btnInMainWindow)) {
+    if (config->getInt(cfg::btnInMainWindow)) {
       UIActionAdd(this->pluginsGroup, ui::powerInMainWnd, 0, "W³¹cz tryb away", ico::enable);
     }
-    if (GETINT(cfg::btnInCntWindow)) {
+    if (config->getInt(cfg::btnInCntWindow)) {
       UIGroupAdd(IMIG_MSGTB, ui::msgTbGrp, ACTR_INIT, "kAway2", ico::logoSmall);
       UIActionAdd(ui::msgTbGrp, ui::powerInCntWnd, ACTSC_BOLD, "W³¹cz tryb away", ico::enable);
       UIActionAdd(ui::msgTbGrp, ui::ignoreBtn, ACTS_DISABLED, "W³¹cz ignorowanie", ico::ignore);
     }
-    if (GETINT(cfg::btnInTrayMenu)) {
+    if (config->getInt(cfg::btnInTrayMenu)) {
       UIActionInsert(IMIG_TRAY, 0, 0, ACTT_SEP);
       UIActionInsert(IMIG_TRAY, ui::powerInTrayMenu, 0, 0, "W³¹cz tryb away", ico::enable);
     }
@@ -827,7 +823,7 @@ namespace kAway2 {
         } else if (an->code != ACTN_ACTION) break;
 
         if (isEnabled()) {
-          if (!GETINT(cfg::confirmation) || Ctrl->ICMessage(IMI_CONFIRM, (int) "Na pewno chcesz wy³¹czyæ tryb away?")) 
+          if (!config->getInt(cfg::confirmation) || Ctrl->ICMessage(IMI_CONFIRM, (int) "Na pewno chcesz wy³¹czyæ tryb away?")) 
             this->disable();
         } else {
           wnd->show();
@@ -888,10 +884,10 @@ namespace kAway2 {
   void Controller::onExtAutoAway() {
     this->setAutoAway(typeExtended);
 
-    if (GETINT(cfg::autoAwaySync) == syncExtended && !this->isEnabled()) {
-      this->enable(GETSTRA(cfg::autoAwayMsg), GETINT(cfg::extAutoAway::status), true);
+    if (config->getInt(cfg::autoAwaySync) == syncExtended && !this->isEnabled()) {
+      this->enable(config->getChar(cfg::autoAwayMsg), config->getInt(cfg::extAutoAway::status), true);
     } else {
-      this->changeStatus(GETINT(cfg::extAutoAway::status), true);
+      this->changeStatus(config->getInt(cfg::extAutoAway::status), true);
     }
     Ctrl->IMessage(im::extendedAutoAway, NET_BROADCAST);
   }
@@ -899,19 +895,19 @@ namespace kAway2 {
   void Controller::onAutoAway() {
     if (this->isEnabled()) return;
 
-    int status = GETINT(cfg::status::onAutoAwaySt);
-    int syncType = GETINT(cfg::autoAwaySync);
+    int status = config->getInt(cfg::status::onAutoAwaySt);
+    int syncType = config->getInt(cfg::autoAwaySync);
 
     this->setAutoAway(typeBasic);
     this->awayTime.now();
 
-    if (syncType == syncExtended || GETINT(cfg::extAutoAway::status) != -1) {
-      this->extAutoAwayTimer->start((GETINT(cfg::extAutoAway::time) - GETINT(CFG_AUTOAWAY)) * 1000);
+    if (syncType == syncExtended || config->getInt(cfg::extAutoAway::status) != -1) {
+      this->extAutoAwayTimer->start((config->getInt(cfg::extAutoAway::time) - config->getInt(CFG_AUTOAWAY)) * 1000);
     }
     if (syncType == syncBasic) {
-      this->enable(GETSTRA(cfg::autoAwayMsg), status, true);
+      this->enable(config->getChar(cfg::autoAwayMsg), status, true);
     } else {
-      statusCtrl->stringFormatter->addVar("msg", GETSTRA(cfg::autoAwayMsg));
+      statusCtrl->stringFormatter->addVar("msg", config->getChar(cfg::autoAwayMsg));
       statusCtrl->rememberInfo();
       this->changeStatus(status, true);
     }
@@ -990,18 +986,18 @@ namespace kAway2 {
     this->isOn = true;
 
     if (this->autoAway) {
-      // this->awayTime = this->awayTime.getTime64() - GETINT(CFG_AUTOAWAY);
+      // this->awayTime = this->awayTime.getTime64() - config->getInt(CFG_AUTOAWAY);
     }
 
-    bool chgStatus = GETINT(this->isFromWnd ? cfg::wnd::changeOnEnable : cfg::status::changeOnEnable);
-    bool chgInfo = GETINT(this->isFromWnd ? cfg::wnd::changeInfoOnEnable : cfg::status::changeInfoOnEnable);
+    bool chgStatus = config->getInt(this->isFromWnd ? cfg::wnd::changeOnEnable : cfg::status::changeOnEnable);
+    bool chgInfo = config->getInt(this->isFromWnd ? cfg::wnd::changeInfoOnEnable : cfg::status::changeInfoOnEnable);
 
     if (chgInfo) {
       statusCtrl->stringFormatter->addVar("msg", msg);
     }
 
     if (chgStatus || chgInfo) {
-      int defStatus = GETINT(this->isFromWnd ? cfg::wnd::onEnableSt : cfg::status::onEnableSt);
+      int defStatus = config->getInt(this->isFromWnd ? cfg::wnd::onEnableSt : cfg::status::onEnableSt);
       status = !chgStatus ? (this->autoAway ? status : -1) : (status ? status : defStatus);
 
       if (!statusCtrl->isRemembered()) {
@@ -1010,7 +1006,7 @@ namespace kAway2 {
       this->changeStatus(status, chgInfo);
     }
 
-    if (GETINT(this->isFromWnd ? cfg::wnd::muteOnEnable : cfg::muteOnEnable) && !GETINT(kSound::Cfg::mute)) {
+    if (config->getInt(this->isFromWnd ? cfg::wnd::muteOnEnable : cfg::muteOnEnable) && !config->getInt(kSound::Cfg::mute)) {
       Helpers::UIActionCall(this->pluginsGroup, kSound::action::mute);
       this->muteStateSwitched = true;
     }
@@ -1040,7 +1036,7 @@ namespace kAway2 {
     statusCtrl->stringFormatter->clearVars();
     statusCtrl->restoreInfo();
 
-    if (this->muteStateSwitched && GETINT(kSound::Cfg::mute)) {
+    if (this->muteStateSwitched && config->getInt(kSound::Cfg::mute)) {
       Helpers::UIActionCall(this->pluginsGroup, kSound::action::mute);
     }
 
@@ -1078,7 +1074,7 @@ namespace kAway2 {
   }
 
   void Controller::showKNotify(const char * text, int ico) {
-    if (!GETINT(cfg::useKNotify) || !Helpers::pluginExists(plugsNET::knotify)) return;
+    if (!config->getInt(cfg::useKNotify) || !Helpers::pluginExists(plugsNET::knotify)) return;
     Helpers::showKNotify((char*) text, ico);
   }
 
@@ -1105,8 +1101,8 @@ namespace kAway2 {
     NetList::tNets nets = statusList->getNets();
 
     if (changeInfo) {
-      statusCtrl->stringFormatter->addVar("date", this->awayTime.strftime(GETSTRA(cfg::dateFormat)));
-      statusCtrl->stringFormatter->addVar("time", this->awayTime.strftime(GETSTRA(cfg::timeFormat)));
+      statusCtrl->stringFormatter->addVar("date", this->awayTime.strftime(config->getChar(cfg::dateFormat)));
+      statusCtrl->stringFormatter->addVar("time", this->awayTime.strftime(config->getChar(cfg::timeFormat)));
     }
 
     for (NetList::tNets::iterator it = nets.begin(); it != nets.end(); it++) {
@@ -1120,7 +1116,7 @@ namespace kAway2 {
         status = -1;
       }
       if (changeInfo) {
-        statusCtrl->changeStatusInfo(it->net, GETSTRA(cfg::tpl::status), status);
+        statusCtrl->changeStatusInfo(it->net, config->getChar(cfg::tpl::status), status);
       } else if (status != -1) {
         statusCtrl->changeStatus(it->net, status);
       }
@@ -1128,25 +1124,25 @@ namespace kAway2 {
   }
 
   void Controller::sendMsgTpl(int cnt, enAutoMsgTpl tpl, const StringRef& msgVal) {
-    int session, net = GETCNTI(cnt, CNT_NET);
+    int session, net = config->getInt(CNT_NET, cnt);
 
     if (((statusCtrl->getActualStatus(net) == ST_HIDDEN) && !config->getInheritedBValue(cfg::reply::whenInvisible, cnt)) || 
       !autoReplyList->getNetState(net) || !autoReplyList->isConnected(net))
       return;
 
-    String ext, uid(GETCNTC(cnt, CNT_UID));
+    String ext, uid(config->getChar(CNT_UID, cnt));
     ext = SetExtParam(ext, cfg::extParamName, inttostr(tpl));
     ext = SetExtParam(ext, MEX_ADDINFO, "kAway2");
     ext = SetExtParam(ext, MEX_NOSOUND, "1");
 
     Format format;
     format.addVar("uid", uid);
-    format.addVar("display", GETCNTC(cnt, CNT_DISPLAY));
-    format.addVar("name", GETCNTC(cnt, CNT_NAME));
-    format.addVar("nick", GETCNTC(cnt, CNT_NICK));
-    format.addVar("surname", GETCNTC(cnt, CNT_SURNAME));
-    format.addVar("date", Helpers::isToday(this->awayTime) ? "" : this->awayTime.strftime(GETSTRA(cfg::dateFormat)));
-    format.addVar("time", this->awayTime.strftime(GETSTRA(cfg::timeFormat)));
+    format.addVar("display", config->getChar(CNT_DISPLAY, cnt));
+    format.addVar("name", config->getChar(CNT_NAME, cnt));
+    format.addVar("nick", config->getChar(CNT_NICK, cnt));
+    format.addVar("surname", config->getChar(CNT_SURNAME, cnt));
+    format.addVar("date", Helpers::isToday(this->awayTime) ? "" : this->awayTime.strftime(config->getChar(cfg::dateFormat)));
+    format.addVar("time", this->awayTime.strftime(config->getChar(cfg::timeFormat)));
     format.addVar("msg", (tpl == tplDisable) ? msgVal : this->awayMsg);
 
     /*

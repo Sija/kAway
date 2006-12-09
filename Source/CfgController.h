@@ -103,40 +103,63 @@ namespace Konnekt {
       }
     }
 
-    /*
-     * @todo find some better way to handle it
-     */
-    inline int getInheritedIValue(tColId col, tCntId cnt) {
-      return GETCNTI(cnt, col) >= 0 ? GETCNTI(cnt, col) : GETINT(col);
-    }
-
-    inline bool getInheritedBValue(tColId col, tCntId cnt) {
-      return (GETINT(col) && (GETCNTI(cnt, col) < 2)) || (!GETINT(col) && (GETCNTI(cnt, col) == 1));
-    }
-
-    inline const char* getInheritedCValue(tColId col, tCntId cnt) {
-      return strlen(GETCNTC(cnt, col)) ? GETCNTC(cnt, col) : GETSTRA(col);
-    }
-
+    /* Helpers accessors */
     inline int getInt(tColId col) {
       return GETINT(col);
     }
-    inline String getString(tColId col) {
+    inline int getInt(tColId col, tCntId cnt) {
+      return GETCNTI(cnt, col);
+    }
+    inline __int64 getInt64(tColId col, tCntId cnt) {
+      return GETCNTI64(cnt, col);
+    }
+
+    inline const char* getChar(tColId col) {
       return GETSTRA(col);
+    }
+    inline const char* getChar(tColId col, tCntId cnt) {
+      return GETCNTC(cnt, col);
+    }
+
+    inline String getString(tColId col) {
+      return getChar(col);
+    }
+    inline String getString(tColId col, tCntId cnt) {
+      return getChar(col, cnt);
     }
 
     inline void set(tColId col, int val) {
       SETINT(col, val);
     }
-    inline void set(tColId col, const StringRef& val) {
-      SETSTR(col, val.a_str());
-    }
-
     inline void set(tColId col, tCntId cnt, int val) {
       SETCNTI(cnt, col, val);
     }
+    inline void set(tColId col, tCntId cnt, __int64 val) {
+      SETCNTI64(cnt, col, val);
+    }
+
+    inline void set(tColId col, const StringRef& val) {
+      SETSTR(col, val.a_str());
+    }
     inline void set(tColId col, tCntId cnt, const StringRef& val) {
       SETCNTC(cnt, col, val.a_str());
+    }
+
+    /*
+     * @todo find some better way to handle it
+     */
+    inline int getInheritedIValue(tColId col, tCntId cnt) {
+      return getInt(col, cnt) >= 0 ? getInt(col, cnt) : getInt(col);
+    }
+
+    inline bool getInheritedBValue(tColId col, tCntId cnt) {
+      return (getInt(col) && (getInt(col, cnt) < 2)) || (!getInt(col) && (getInt(col, cnt) == 1));
+    }
+
+    inline const char* getInheritedCValue(tColId col, tCntId cnt) {
+      const char* val = getChar(col, cnt);
+
+      return strlen(val) ? val : getChar(col);
     }
 
   protected:
@@ -151,28 +174,28 @@ namespace Konnekt {
       switch (it->_type) {
         case ctypeInt: {
           if (isConfig) {
-            SETINT(it->_id, it->_def);
+            set(it->_id, it->_def);
           }
           if (isCnt) {
-            SETCNTI(cnt, it->_id, it->_def);
+            set(it->_id, cnt, it->_def);
           }
           break;
         }
         case ctypeInt64: {
           if (isConfig) {
-            // SETINT(it->_id, *it->_def_p64);
+            // set(it->_id, *it->_def_p64);
           }
           if (isCnt) {
-            SETCNTI64(cnt, it->_id, *it->_def_p64);
+            set(it->_id, cnt, *it->_def_p64);
           }
           break;
         }
         case ctypeString: {
           if (isConfig) {
-            SETSTR(it->_id, it->_def_ch);
+            set(it->_id, it->_def_ch);
           }
           if (isCnt) {
-            SETCNTC(cnt, it->_id, it->_def_ch);
+            set(it->_id, cnt, it->_def_ch);
           }
           break;
         }

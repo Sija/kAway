@@ -21,8 +21,7 @@
 #include "kAway2.h"
 
 #include "Helpers.h"
-#include "IMController.h"
-#include "CfgController.h"
+#include "PlugController.h"
 #include "CfgActions.h"
 #include "MRU.h"
 #include "NetList.h"
@@ -34,10 +33,13 @@
 //#include "FwdController.h"
 
 namespace kAway2 {
-  class Controller : public IMController {
+  class Controller : public PlugController<Controller> {
+  public:
+    friend class PlugController<Controller>;
+
   public:
     /* Class version */
-	  STAMINA_OBJECT_CLASS_VERSION(Controller, IMController, Version(1,2,0,0));
+    STAMINA_OBJECT_CLASS_VERSION(Controller, PlugController, Version(1,2,0,0));
 
   public:
     typedef std::deque<cMessage*> tMsgQueue;
@@ -70,17 +72,9 @@ namespace kAway2 {
   protected:
     Controller();
 
-  public:
-    inline static Controller* getInstance() {
-      if (!instance.isValid()) {
-        instance = new Controller;
-      }
-      return instance;
-    }
-
+  protected:
     void testCfgActions(); // @debug
 
-  protected:
     /* IMessage callback methods */
     void onPrepare();
     void onAction();
@@ -168,7 +162,6 @@ namespace kAway2 {
     bool isFromWnd;
     int pluginsGroup;
 
-    static SharedPtr<Controller> instance;
     shared_ptr<TimerDynamic> extAutoAwayTimer;
     tCnts cntProps;
     String awayMsg;
@@ -181,7 +174,6 @@ namespace kAway2 {
     oNetList autoReplyList;
     oNetList statusList;
     oFormattedStatus statusCtrl;
-    oCfgCtrl config;
     //oFwdController fwdCtrl;
     oAwayWnd wnd;
     oMRU mruList;
