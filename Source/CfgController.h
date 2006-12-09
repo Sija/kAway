@@ -92,7 +92,7 @@ namespace Konnekt {
       }
     }
 
-    inline void resetColumn(int id, tCntId cnt = 0) {
+    inline void resetColumn(tColId id, tCntId cnt = 0) {
       if (!_cols.size()) return;
 
       tTable table = !cnt ? tableConfig : tableContacts;
@@ -106,16 +106,37 @@ namespace Konnekt {
     /*
      * @todo find some better way to handle it
      */
-    inline int getInheritedIValue(int col, tCntId cnt) {
+    inline int getInheritedIValue(tColId col, tCntId cnt) {
       return GETCNTI(cnt, col) >= 0 ? GETCNTI(cnt, col) : GETINT(col);
     }
 
-    inline bool getInheritedBValue(int col, tCntId cnt) {
+    inline bool getInheritedBValue(tColId col, tCntId cnt) {
       return (GETINT(col) && (GETCNTI(cnt, col) < 2)) || (!GETINT(col) && (GETCNTI(cnt, col) == 1));
     }
 
-    inline const char* getInheritedCValue(int col, tCntId cnt) {
+    inline const char* getInheritedCValue(tColId col, tCntId cnt) {
       return strlen(GETCNTC(cnt, col)) ? GETCNTC(cnt, col) : GETSTRA(col);
+    }
+
+    inline int getInt(tColId col) {
+      return GETINT(col);
+    }
+    inline String getString(tColId col) {
+      return GETSTRA(col);
+    }
+
+    inline void set(tColId col, int val) {
+      SETINT(col, val);
+    }
+    inline void set(tColId col, const StringRef& val) {
+      SETSTR(col, val.a_str());
+    }
+
+    inline void set(tColId col, tCntId cnt, int val) {
+      SETCNTI(cnt, col, val);
+    }
+    inline void set(tColId col, tCntId cnt, const StringRef& val) {
+      SETCNTC(cnt, col, val.a_str());
     }
 
   protected:
