@@ -109,13 +109,11 @@ namespace Konnekt {
      * @see registerObserver
      */
     inline int process(sIMessage_base* msgBase) {
-      sIMessage_2params* msg = static_cast<sIMessage_2params*>(msgBase);
-
       // clear residues
       clear();
 
       // set im
-      setIM(msg);
+      setIM(msgBase);
 
       // looking for static values
       if (staticValues.find(im->id) != staticValues.end()) {
@@ -329,8 +327,8 @@ namespace Konnekt {
     }
 
     // dumb setter
-    inline void setIM(sIMessage_2params* msg) { 
-      im = msg;
+    inline void setIM(sIMessage_base* msgBase) { 
+      im = static_cast<sIMessage_2params*>(msgBase);
     }
 
     /* Actions subclassing */
