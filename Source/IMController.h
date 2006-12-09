@@ -194,7 +194,7 @@ namespace Konnekt {
 
     inline bool isForwardable(int id, int parent) {
       if (isSublassed(id, parent)) {
-        return _getSubclassedAction(id, parent).autoForward;
+        return _getSubclassedAction(id, parent)->autoForward;
       }
       return false;
     }
@@ -206,7 +206,7 @@ namespace Konnekt {
 
     inline int getPrevOwner(int id, int parent) {
       if (isSublassed(id, parent)) {
-        return _getSubclassedAction(id, parent).prevOwner;
+        return _getSubclassedAction(id, parent)->prevOwner;
       }
       return sSubclassedAction::notFound;
     }
@@ -218,7 +218,7 @@ namespace Konnekt {
 
     inline void setForwardable(int id, int parent, bool set) {
       if (isSublassed(id, parent)) {
-        _getSubclassedAction(id, parent).autoForward = set;
+        _getSubclassedAction(id, parent)->autoForward = set;
       }
     }
 
@@ -332,11 +332,12 @@ namespace Konnekt {
     }
 
     /* Actions subclassing */
-    inline sSubclassedAction& _getSubclassedAction(int id, int parent) {
-      for (tSubclassedActions::iterator it = subclassedActions.begin(); it != subclassedActions.end(); it++) {
-        if (id == it->id && parent == it->parent) return *it;
+    inline sSubclassedAction* _getSubclassedAction(int id, int parent) {
+      int i = 0;
+      for (tSubclassedActions::iterator it = subclassedActions.begin(); it != subclassedActions.end(); it++, i++) {
+        if (id == it->id && parent == it->parent) return &subclassedActions.at(i);
       }
-      return sSubclassedAction();
+      return NULL;
     }
 
     /* Observers related methods */
