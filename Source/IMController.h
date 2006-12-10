@@ -55,6 +55,10 @@ namespace Konnekt {
       sigOnIMessage signal;
     };
 
+    /*
+     * @see registerObserver
+     * @see subclassAction
+     */
     struct sSubclassedAction {
       static const int notFound = -1;
 
@@ -95,7 +99,7 @@ namespace Konnekt {
     }
 
     inline virtual ~IMController() { 
-      for (tObservers::iterator it = observers.begin(); it != observers.end(); it++) {
+      for (tObservers::iterator it = globalObservers.begin(); it != globalObservers.end(); it++) {
         delete it->second;
       }
       for (tObservers::iterator it = actionObservers.begin(); it != actionObservers.end(); it++) {
@@ -120,7 +124,7 @@ namespace Konnekt {
         setReturnCode(staticValues[im->id]);
       }
       // notify global observers
-      notifyObservers();
+      notifyGlobalObservers();
 
       // ui action message
       if (isAction()) {
@@ -160,7 +164,7 @@ namespace Konnekt {
     inline bool registerObserver(tIMid id, fOnIMessage f, int priority = 0, signals::connect_position pos = signals::at_back, 
       const StringRef& name = "", bool overwrite = true) 
     {
-      return _registerObserver(id, f, priority, pos, name, overwrite, observers);
+      return _registerObserver(id, f, priority, pos, name, overwrite, globalObservers);
     }
 
     inline bool registerActionObserver(const sSubclassedAction& an, fOnIMessage f, int priority = 0, 
@@ -224,7 +228,7 @@ namespace Konnekt {
 
     inline void setForwardable(bool set) {
       if (!isAction()) return;
-      return setForwardable(getAN()->act.id, getAN()->act.parent, set);
+      setForwardable(getAN()->act.id, getAN()->act.parent, set);
     }
 
     inline void subclassAction(const sSubclassedAction& an) {
@@ -234,7 +238,7 @@ namespace Konnekt {
     }
 
     inline void subclassAction(int id, int parent, bool autoForward = false) {
-      return subclassAction(sSubclassedAction(id, parent, autoForward));
+      subclassAction(sSubclassedAction(id, parent, autoForward));
     }
 
     inline IMController* forwardAction(bool _setReturnCode = true) {
@@ -274,11 +278,11 @@ namespace Konnekt {
     }
 
     inline void setSuccess() {
-      return setReturnCode(1);
+      setReturnCode(1);
     }
 
     inline void setFailure() {
-      return setReturnCode(-1);
+      setReturnCode(-1);
     }
 
     inline bool isReturnCodeSet() {
@@ -303,7 +307,7 @@ namespace Konnekt {
     }
 
     inline bool isObserved(int id) {
-      return _isObserved(id, observers);
+      return _isObserved(id, globalObservers);
     }
 
     inline bool isActionObserved(int id) {
@@ -311,12 +315,12 @@ namespace Konnekt {
     }
 
   protected:
-    inline void notifyObservers() {
-      return _notifyObservers(im->id, observers);
+    inline void notifyGlobalObservers() {
+      _notifyObservers(im->id, globalObservers);
     }
 
     inline void notifyActionObservers() {
-      return _notifyObservers(getAN()->act.id, actionObservers);
+      _notifyObservers(getAN()->act.id, actionObservers);
     }
 
     // little housekeeping
@@ -349,7 +353,7 @@ namespace Konnekt {
     }
 
     /* inline void _dbgObservers() {
-      for (tObservers::iterator it = observers.begin(); it != observers.end(); it++) {
+      for (tObservers::iterator it = globalObservers.begin(); it != globalObservers.end(); it++) {
         for (tConnections::iterator it2 = it->second->connections.begin(); it2 != it->second->connections.end(); it2++) {
           IMLOG("Observer[%i].connection: %s", it->first, it2->first.c_str());
         }
@@ -426,7 +430,7 @@ namespace Konnekt {
     tSubclassedActions subclassedActions;
     tStaticValues staticValues;
     tObservers actionObservers;
-    tObservers observers;
+    tObservers globalObservers;
 
     sIMessage_2params* im;
     bool returnCodeSet;
