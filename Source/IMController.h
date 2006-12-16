@@ -307,7 +307,7 @@ namespace Konnekt {
     }
 
     inline sIMessage_2params* getIM() {
-      return static_cast<sIMessage_2params*>(im);
+      return static_cast<sIMessage_2params*>(_im);
     }
 
     inline bool isAction() {
@@ -366,7 +366,7 @@ namespace Konnekt {
 
     // dumb setter
     inline void setIM(sIMessage_base* msgBase) { 
-      im = msgBase;
+      _im = msgBase;
     }
 
     /* Actions subclassing */
