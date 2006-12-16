@@ -55,6 +55,14 @@ namespace Konnekt {
       sigOnIMessage signal;
     };
 
+    struct sIMsgStackItem {
+      sIMessage_base* im;
+      bool returnCodeSet;
+      int returnCode;
+
+      sIMsgStackItem(sIMessage_base* _im): im(_im), returnCodeSet(false), returnCode(0) { }
+    };
+
     enum sGlobalObserver {
       beforeIM, afterIM,
       beforeActions, afterActions,
@@ -84,11 +92,15 @@ namespace Konnekt {
     };
 
     typedef std::deque<sSubclassedAction> tSubclassedActions;
+    typedef std::deque<sIMsgStackItem> tIMsgStack;
     typedef std::map<int, sObserver*> tObservers;
     typedef std::map<int, int> tStaticValues;
 
   public:
-    inline IMController(): _returnCodeSet(false), _returnCode(0) { 
+    inline IMController() { 
+      // locking
+      LockerCS lock(CS());
+
       // setting/unsetting Ctrl global pointer
       registerObserver(IM_PLUG_INIT, bind(resolve_cast0(&IMController::_plugInit), this));
       registerObserver(IM_PLUG_DEINIT, bind(resolve_cast0(&IMController::_plugDeInit), this));
@@ -122,9 +134,6 @@ namespace Konnekt {
      * @see registerObserver
      */
     inline int process(sIMessage_base* msgBase) {
-      // clear residues
-      clear();
-
       // set im
       setIM(msgBase);
 
@@ -157,7 +166,11 @@ namespace Konnekt {
         }
         IMLOG("[IMController<%i>::process()]: id = %i", this, getIM()->id);
       }
-      return getReturnCode();
+
+      int returnCode = getReturnCode();
+      _imStack.pop_back();
+
+      return returnCode;
     }
 
     inline bool registerGlobalObserver(sGlobalObserver type, fOnIMessage f, int priority = 0, signals::connect_position pos = signals::at_back, 
@@ -267,12 +280,12 @@ namespace Konnekt {
     }
 
     inline int getReturnCode() {
-      return _returnCode;
+      return getIMsgStackItem()->returnCode;
     }
 
     inline void setReturnCode(int code) {
-      _returnCodeSet = true;
-      _returnCode = code;
+      getIMsgStackItem()->returnCodeSet = true;
+      getIMsgStackItem()->returnCode = code;
     }
 
     /*
@@ -303,11 +316,11 @@ namespace Konnekt {
     }
 
     inline bool isReturnCodeSet() {
-      return _returnCodeSet;
+      return getIMsgStackItem()->returnCodeSet;
     }
 
     inline sIMessage_2params* getIM() {
-      return static_cast<sIMessage_2params*>(_im);
+      return static_cast<sIMessage_2params*>(getIMsgStackItem()->im);
     }
 
     inline bool isAction() {
@@ -332,6 +345,10 @@ namespace Konnekt {
     }
 
   protected:
+    inline sIMsgStackItem* getIMsgStackItem() {
+      return &_imStack.at(_imStack.size() - 1);
+    }
+
     inline bool notifyGlobalObservers(sGlobalObserver type) {
       try {
         _notifyObservers(type, _globalObservers);
@@ -357,16 +374,9 @@ namespace Konnekt {
       }
     }
 
-    // little housekeeping
-    inline void clear() {
-      _returnCodeSet = false;
-      _returnCode = NULL;
-      _im = NULL;
-    }
-
     // dumb setter
     inline void setIM(sIMessage_base* msgBase) { 
-      _im = msgBase;
+      _imStack.push_back(sIMsgStackItem(msgBase));
     }
 
     /* Actions subclassing */
@@ -389,7 +399,7 @@ namespace Konnekt {
     /* inline void _dbgObservers() {
       for (tObservers::iterator it = _imObservers.begin(); it != _imObservers.end(); it++) {
         for (tConnections::iterator it2 = it->second->connections.begin(); it2 != it->second->connections.end(); it2++) {
-          IMLOG("Observer[%i].connection: %s", it->first, it2->first.c_str());
+          IMLOG("IMObserver[%i].connection: %s", it->first, it2->first.c_str());
         }
       }
       for (tObservers::iterator it = _actionObservers.begin(); it != _actionObservers.end(); it++) {
@@ -466,10 +476,7 @@ namespace Konnekt {
     tObservers _actionObservers;
     tObservers _globalObservers;
     tObservers _imObservers;
-
-    sIMessage_base* _im;
-    bool _returnCodeSet;
-    int _returnCode;
+    tIMsgStack _imStack;
   };
 }
 
