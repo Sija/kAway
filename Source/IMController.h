@@ -55,6 +55,12 @@ namespace Konnekt {
       sigOnIMessage signal;
     };
 
+    enum sGlobalObserver {
+      beforeIM, afterIM,
+      beforeActions, afterActions,
+      beforeForward, afterForward
+    };
+
     /*
      * @see registerObserver
      * @see subclassAction
@@ -82,7 +88,7 @@ namespace Konnekt {
     typedef std::map<int, int> tStaticValues;
 
   public:
-    inline IMController(): returnCodeSet(false), returnCode(0) { 
+    inline IMController(): _returnCodeSet(false), _returnCode(0) { 
       // setting/unsetting Ctrl global pointer
       registerObserver(IM_PLUG_INIT, bind(resolve_cast0(&IMController::_plugInit), this));
       registerObserver(IM_PLUG_DEINIT, bind(resolve_cast0(&IMController::_plugDeInit), this));
@@ -99,10 +105,13 @@ namespace Konnekt {
     }
 
     inline virtual ~IMController() { 
-      for (tObservers::iterator it = globalObservers.begin(); it != globalObservers.end(); it++) {
+      for (tObservers::iterator it = _globalObservers.begin(); it != _globalObservers.end(); it++) {
         delete it->second;
       }
-      for (tObservers::iterator it = actionObservers.begin(); it != actionObservers.end(); it++) {
+      for (tObservers::iterator it = _imObservers.begin(); it != _imObservers.end(); it++) {
+        delete it->second;
+      }
+      for (tObservers::iterator it = _actionObservers.begin(); it != _actionObservers.end(); it++) {
         delete it->second;
       }
     }
@@ -120,11 +129,11 @@ namespace Konnekt {
       setIM(msgBase);
 
       // looking for static values
-      if (staticValues.find(im->id) != staticValues.end()) {
-        setReturnCode(staticValues[im->id]);
+      if (_staticValues.find(getIM()->id) != _staticValues.end()) {
+        setReturnCode(_staticValues[getIM()->id]);
       }
       // notify global observers
-      notifyGlobalObservers();
+      notifyIMObservers();
 
       // ui action message
       if (isAction()) {
@@ -139,16 +148,22 @@ namespace Konnekt {
 
       // log IMessage
       if (isReturnCodeSet()) {
-        IMLOG("[IMController<%i>::process()]: id = %i, returnCode = %i", this, im->id, 
+        IMLOG("[IMController<%i>::process()]: id = %i, returnCode = %i", this, getIM()->id, 
           getReturnCode());
       } else {
         // set error if no result
         if (Ctrl) {
           Ctrl->setError(IMERROR_NORESULT);
         }
-        IMLOG("[IMController<%i>::process()]: id = %i", this, im->id);
+        IMLOG("[IMController<%i>::process()]: id = %i", this, getIM()->id);
       }
       return getReturnCode();
+    }
+
+    inline bool registerGlobalObserver(sGlobalObserver type, fOnIMessage f, int priority = 0, signals::connect_position pos = signals::at_back, 
+      const StringRef& name = "", bool overwrite = true) 
+    {
+      return _registerObserver(type, f, priority, pos, name, overwrite, _globalObservers);
     }
 
     /*
@@ -164,13 +179,13 @@ namespace Konnekt {
     inline bool registerObserver(tIMid id, fOnIMessage f, int priority = 0, signals::connect_position pos = signals::at_back, 
       const StringRef& name = "", bool overwrite = true) 
     {
-      return _registerObserver(id, f, priority, pos, name, overwrite, globalObservers);
+      return _registerObserver(id, f, priority, pos, name, overwrite, _imObservers);
     }
 
     inline bool registerActionObserver(const sSubclassedAction& an, fOnIMessage f, int priority = 0, 
       signals::connect_position pos = signals::at_back, const StringRef& name = "", bool overwrite = true) 
     {
-      if (_registerObserver(an.id, f, priority, pos, name, overwrite, actionObservers)) {
+      if (_registerObserver(an.id, f, priority, pos, name, overwrite, _actionObservers)) {
         subclassAction(an);
         return true;
       }
@@ -180,12 +195,12 @@ namespace Konnekt {
     inline bool registerActionObserver(int id, fOnIMessage f, int priority = 0, signals::connect_position pos = signals::at_back, 
       const StringRef& name = "", bool overwrite = true) 
     {
-      return _registerObserver(id, f, priority, pos, name, overwrite, actionObservers);
+      return _registerObserver(id, f, priority, pos, name, overwrite, _actionObservers);
     }
 
     /* Subclassing */
     inline bool isSublassed(int id, int parent) {
-      for (tSubclassedActions::iterator it = subclassedActions.begin(); it != subclassedActions.end(); it++) {
+      for (tSubclassedActions::iterator it = _subclassedActions.begin(); it != _subclassedActions.end(); it++) {
         if (it->id == id && it->parent == parent) return true;
       }
       return false;
@@ -233,7 +248,7 @@ namespace Konnekt {
 
     inline void subclassAction(const sSubclassedAction& an) {
       if (!isSublassed(an.id, an.parent)) {
-        subclassedActions.push_back(an);
+        _subclassedActions.push_back(an);
       }
     }
 
@@ -241,21 +256,23 @@ namespace Konnekt {
       subclassAction(sSubclassedAction(id, parent, autoForward));
     }
 
-    inline IMController* forwardAction(bool _setReturnCode = true) {
+    inline IMController* forwardAction() {
       if (isAction() && isSublassed()) {
-        int retValue = Ctrl->IMessageDirect(IM_UIACTION, getPrevOwner(), (int) getAN());
-        if (_setReturnCode) setReturnCode(retValue);
+        if (notifyGlobalObservers(beforeForward)) {
+          setReturnCode(Ctrl->IMessageDirect(IM_UIACTION, getPrevOwner(), (int) getAN()));
+          notifyGlobalObservers(afterForward);
+        }
       }
       return this;
     }
 
     inline int getReturnCode() {
-      return returnCode;
+      return _returnCode;
     }
 
     inline void setReturnCode(int code) {
-      returnCodeSet = true;
-      returnCode = code;
+      _returnCodeSet = true;
+      _returnCode = code;
     }
 
     /*
@@ -286,11 +303,11 @@ namespace Konnekt {
     }
 
     inline bool isReturnCodeSet() {
-      return returnCodeSet;
+      return _returnCodeSet;
     }
 
     inline sIMessage_2params* getIM() {
-      return im;
+      return static_cast<sIMessage_2params*>(im);
     }
 
     inline bool isAction() {
@@ -303,43 +320,60 @@ namespace Konnekt {
     }
 
     inline void setStaticValue(int id, int value) {
-      staticValues[id] = value;
+      _staticValues[id] = value;
     }
 
     inline bool isObserved(int id) {
-      return _isObserved(id, globalObservers);
+      return _isObserved(id, _imObservers);
     }
 
     inline bool isActionObserved(int id) {
-      return _isObserved(id, actionObservers);
+      return _isObserved(id, _actionObservers);
     }
 
   protected:
-    inline void notifyGlobalObservers() {
-      _notifyObservers(im->id, globalObservers);
+    inline bool notifyGlobalObservers(sGlobalObserver type) {
+      try {
+        _notifyObservers(type, _globalObservers);
+      } catch (const Exception& e) {
+        IMLOG("[IMController<%i>::notifyGlobalObservers()]: exception caught, reason = %s", this,
+          e.getReason().a_str());
+        return false;
+      }
+      return true;
+    }
+
+    inline void notifyIMObservers() {
+      if (notifyGlobalObservers(beforeIM)) {
+        _notifyObservers(getIM()->id, _imObservers);
+        notifyGlobalObservers(afterIM);
+      }
     }
 
     inline void notifyActionObservers() {
-      _notifyObservers(getAN()->act.id, actionObservers);
+      if (notifyGlobalObservers(beforeActions)) {
+        _notifyObservers(getAN()->act.id, _actionObservers);
+        notifyGlobalObservers(afterActions);
+      }
     }
 
     // little housekeeping
     inline void clear() {
-      returnCodeSet = false;
-      returnCode = NULL;
-      im = NULL;
+      _returnCodeSet = false;
+      _returnCode = NULL;
+      _im = NULL;
     }
 
     // dumb setter
     inline void setIM(sIMessage_base* msgBase) { 
-      im = static_cast<sIMessage_2params*>(msgBase);
+      im = msgBase;
     }
 
     /* Actions subclassing */
     inline sSubclassedAction* _getSubclassedAction(int id, int parent) {
       int i = 0;
-      for (tSubclassedActions::iterator it = subclassedActions.begin(); it != subclassedActions.end(); it++, i++) {
-        if (id == it->id && parent == it->parent) return &subclassedActions.at(i);
+      for (tSubclassedActions::iterator it = _subclassedActions.begin(); it != _subclassedActions.end(); it++, i++) {
+        if (id == it->id && parent == it->parent) return &_subclassedActions.at(i);
       }
       return NULL;
     }
@@ -353,12 +387,12 @@ namespace Konnekt {
     }
 
     /* inline void _dbgObservers() {
-      for (tObservers::iterator it = globalObservers.begin(); it != globalObservers.end(); it++) {
+      for (tObservers::iterator it = _imObservers.begin(); it != _imObservers.end(); it++) {
         for (tConnections::iterator it2 = it->second->connections.begin(); it2 != it->second->connections.end(); it2++) {
           IMLOG("Observer[%i].connection: %s", it->first, it2->first.c_str());
         }
       }
-      for (tObservers::iterator it = actionObservers.begin(); it != actionObservers.end(); it++) {
+      for (tObservers::iterator it = _actionObservers.begin(); it != _actionObservers.end(); it++) {
         for (tConnections::iterator it2 = it->second->connections.begin(); it2 != it->second->connections.end(); it2++) {
           IMLOG("ActionObserver[%i].connection: %s", it->first, it2->first.c_str());
         }
@@ -406,7 +440,7 @@ namespace Konnekt {
     }
 
     inline tIMCallback _subclass() {
-      for (tSubclassedActions::iterator it = subclassedActions.begin(); it != subclassedActions.end(); it++) {
+      for (tSubclassedActions::iterator it = _subclassedActions.begin(); it != _subclassedActions.end(); it++) {
         sUIActionInfo nfo(it->parent, it->id);
         nfo.mask = UIAIM_ALL;
         nfo.txt = new char[100];
@@ -427,14 +461,15 @@ namespace Konnekt {
     }
 
   protected:
-    tSubclassedActions subclassedActions;
-    tStaticValues staticValues;
-    tObservers actionObservers;
-    tObservers globalObservers;
+    tSubclassedActions _subclassedActions;
+    tStaticValues _staticValues;
+    tObservers _actionObservers;
+    tObservers _globalObservers;
+    tObservers _imObservers;
 
-    sIMessage_2params* im;
-    bool returnCodeSet;
-    int returnCode;
+    sIMessage_base* _im;
+    bool _returnCodeSet;
+    int _returnCode;
   };
 }
 
