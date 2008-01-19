@@ -19,6 +19,12 @@
 #define __HELPERS_H__
 
 /*
+ * Int64 to string conversion
+ */
+
+std::string i64tostr(__int64 value, int radix = 10);
+
+/*
  *  Bool -> Human readable string
  */
 
@@ -49,13 +55,17 @@ namespace Helpers {
   String icon32(int ico);
 
   String trunc(StringRef txt, int limit, const StringRef& suffix = "...");
-  String trim(const StringRef& txt);
+
+  string rtrim(string txt, const string& chars = " ");
+  string ltrim(string txt, const string& chars = " ");
+  string trim(string txt, const string& chars = " ");
 
   int getPluginsGroup();
   int pluginExists(int net, int type = IMT_ALL);
   const char * getPlugName(int plugID);
 
   void UIActionCall(int group, int act, int cntID = 0);
+  void touchConfigWnd();
 
   #ifdef SHARED_TABLETKA_H
   bool isMsgWndOpen(int cntID);

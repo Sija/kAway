@@ -19,6 +19,7 @@
 #define __CFGCTRL_H__
 
 #include "IMController.h"
+#include "Helpers.h"
 
 using namespace Konnekt::Tables;
 using namespace Stamina;
@@ -31,7 +32,7 @@ namespace Konnekt {
     STAMINA_OBJECT_CLASS_VERSION(CfgController, iSharedObject, Version(0,1,1,0));
 
   public:
-    typedef std::vector<sIMessage_setColumn*> tCfgCols;
+    typedef std::deque<sIMessage_setColumn*> tCfgCols;
 
   public:
     inline CfgController(IMController* IMCtrl) {
@@ -92,39 +93,39 @@ namespace Konnekt {
       }
     }
 
-    inline void resetColumn(tColId id, tCntId cnt = 0) {
+    inline void resetColumn(tColId id, tCntId cnt = 0, sUIAction* an = 0) {
       if (!_cols.size()) return;
 
       tTable table = !cnt ? tableConfig : tableContacts;
       for (tCfgCols::iterator it = _cols.begin(); it != _cols.end(); it++) {
         if ((*it)->_id == id && (*it)->_table == table) {
-          _resetColumn(*it, cnt); break;
+          _resetColumn(*it, cnt, an); break;
         }
       }
     }
 
     /* Helpers accessors */
-    inline int getInt(tColId col) {
+    inline int getInt(tColId col) const {
       return GETINT(col);
     }
-    inline int getInt(tColId col, tCntId cnt) {
+    inline int getInt(tColId col, tCntId cnt) const {
       return GETCNTI(cnt, col);
     }
-    inline __int64 getInt64(tColId col, tCntId cnt) {
+    inline __int64 getInt64(tColId col, tCntId cnt) const {
       return GETCNTI64(cnt, col);
     }
 
-    inline const char* getChar(tColId col) {
+    inline const char* getChar(tColId col) const {
       return GETSTR(col);
     }
-    inline const char* getChar(tColId col, tCntId cnt) {
+    inline const char* getChar(tColId col, tCntId cnt) const {
       return GETCNTC(cnt, col);
     }
 
-    inline String getString(tColId col) {
+    inline String getString(tColId col) const {
       return getChar(col);
     }
-    inline String getString(tColId col, tCntId cnt) {
+    inline String getString(tColId col, tCntId cnt) const {
       return getChar(col, cnt);
     }
 
@@ -148,28 +149,31 @@ namespace Konnekt {
     /*
      * @todo find some better way to handle it
      */
-    inline int getInheritedIValue(tColId col, tCntId cnt) {
+    inline int getInheritedIValue(tColId col, tCntId cnt) const {
       return getInt(col, cnt) >= 0 ? getInt(col, cnt) : getInt(col);
     }
 
-    inline bool getInheritedBValue(tColId col, tCntId cnt) {
+    inline bool getInheritedBValue(tColId col, tCntId cnt) const {
       return (getInt(col) && (getInt(col, cnt) < 2)) || (!getInt(col) && (getInt(col, cnt) == 1));
     }
 
-    inline const char* getInheritedCValue(tColId col, tCntId cnt) {
+    inline const char* getInheritedCValue(tColId col, tCntId cnt) const {
       const char* val = getChar(col, cnt);
 
       return strlen(val) ? val : getChar(col);
     }
 
   protected:
-    inline void _resetColumn(sIMessage_setColumn* it, tCntId cnt = 0) {
+    inline void _resetColumn(sIMessage_setColumn* it, tCntId cnt = 0, sUIAction* an = 0) {
       bool isCnt = it->_table == tableContacts && cnt;
       bool isConfig = it->_table == tableConfig;
 
       if (!isCnt && !isConfig) {
         return;
       }
+
+      bool convert = true;
+      String val;
 
       switch (it->_type) {
         case ctypeInt: {
@@ -179,6 +183,7 @@ namespace Konnekt {
           if (isCnt) {
             set(it->_id, cnt, it->_def);
           }
+          val = inttostr(it->_def);
           break;
         }
         case ctypeInt64: {
@@ -188,6 +193,7 @@ namespace Konnekt {
           if (isCnt) {
             set(it->_id, cnt, *it->_def_p64);
           }
+          val = i64tostr(*it->_def_p64);
           break;
         }
         case ctypeString: {
@@ -197,8 +203,13 @@ namespace Konnekt {
           if (isCnt) {
             set(it->_id, cnt, it->_def_ch);
           }
+          val = it->_def_ch;
+          convert = false;
           break;
         }
+      }
+      if (an) {
+        UIActionCfgSetValue(*an, val.c_str(), convert);
       }
     }
 

@@ -18,12 +18,20 @@
 #ifndef __IMESSAGECTRL_H__
 #define __IMESSAGECTRL_H__
 
+#include <string>
+#include <hash_map>
+#include <stack>
+#include <deque>
+
 #include <boost/signal.hpp>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 
 using namespace Stamina;
 using namespace boost;
+
+using namespace std;
+using namespace stdext;
 
 namespace Konnekt {
   typedef void tIMCallback;
@@ -48,7 +56,7 @@ namespace Konnekt {
     typedef signal<tIMCallback(IMController*)> sigOnIMessage;
 
   public:
-    typedef std::map<String, signals::connection> tConnections;
+    typedef hash_map<string, signals::connection> tConnections;
 
     struct sObserver {
       tConnections connections;
@@ -91,19 +99,17 @@ namespace Konnekt {
         id(_id), parent(_parent), prevOwner(_prevOwner), autoForward(_autoForward) { }
     };
 
-    typedef std::deque<sSubclassedAction> tSubclassedActions;
-    typedef std::deque<sIMsgStackItem> tIMsgStack;
-    typedef std::map<int, sObserver*> tObservers;
-    typedef std::map<int, int> tStaticValues;
+    typedef deque<sSubclassedAction> tSubclassedActions;
+    typedef stack<sIMsgStackItem> tIMsgStack;
+    typedef hash_map<int, sObserver*> tObservers;
+    typedef hash_map<int, int> tStaticValues;
 
   public:
-    inline IMController() { 
-      // locking
-      LockerCS lock(CS());
-
+    inline IMController() {
       // setting/unsetting Ctrl global pointer
       registerObserver(IM_PLUG_INIT, bind(resolve_cast0(&IMController::_plugInit), this));
       registerObserver(IM_PLUG_DEINIT, bind(resolve_cast0(&IMController::_plugDeInit), this));
+
       // actions subclassing
       registerObserver(IM_UI_PREPARE, bind(resolve_cast0(&IMController::_subclass), this));
 
@@ -116,7 +122,7 @@ namespace Konnekt {
       setStaticValue(IM_PLUG_UI_V, 0);
     }
 
-    inline virtual ~IMController() { 
+    inline virtual ~IMController() {
       for (tObservers::iterator it = _globalObservers.begin(); it != _globalObservers.end(); it++) {
         delete it->second;
       }
@@ -134,6 +140,9 @@ namespace Konnekt {
      * @see registerObserver
      */
     inline int process(sIMessage_base* msgBase) {
+      // locking
+      LockerCS lock(_locker);
+
       // set im
       setIM(msgBase);
 
@@ -157,18 +166,17 @@ namespace Konnekt {
 
       // log IMessage
       if (isReturnCodeSet()) {
-        IMLOG("[IMController<%i>::process()]: id = %i, returnCode = %i", this, getIM()->id, 
-          getReturnCode());
+        IMLOG("[IMController::process()]: id = %i, returnCode = %i", getIM()->id, getReturnCode());
       } else {
         // set error if no result
         if (Ctrl) {
           Ctrl->setError(IMERROR_NORESULT);
         }
-        IMLOG("[IMController<%i>::process()]: id = %i", this, getIM()->id);
+        IMLOG("[IMController::process()]: id = %i", getIM()->id);
       }
 
       int returnCode = getReturnCode();
-      _imStack.pop_back();
+      _imStack.pop();
 
       return returnCode;
     }
@@ -284,6 +292,9 @@ namespace Konnekt {
     }
 
     inline void setReturnCode(int code) {
+      // locking
+      LockerCS lock(_locker);
+
       getIMsgStackItem()->returnCodeSet = true;
       getIMsgStackItem()->returnCode = code;
     }
@@ -333,6 +344,9 @@ namespace Konnekt {
     }
 
     inline void setStaticValue(int id, int value) {
+      // locking
+      LockerCS lock(_locker);
+
       _staticValues[id] = value;
     }
 
@@ -346,18 +360,19 @@ namespace Konnekt {
 
   protected:
     inline sIMsgStackItem* getIMsgStackItem() {
-      return &_imStack.at(_imStack.size() - 1);
+      return &_imStack.top();
     }
 
     inline bool notifyGlobalObservers(sGlobalObserver type) {
       try {
         _notifyObservers(type, _globalObservers);
-      } catch (const Exception& e) {
-        IMLOG("[IMController<%i>::notifyGlobalObservers()]: exception caught, reason = %s", this,
-          e.getReason().a_str());
-        return false;
+        return true;
+      } catch (const Stamina::Exception& e) {
+        IMLOG("[IMController::notifyGlobalObservers()]: exception caught, reason = %s", e.getReason().a_str());
+      } catch (const std::exception& e) {
+        IMLOG("[IMController::notifyGlobalObservers()]: exception caught, reason = %s", e.what());
       }
-      return true;
+      return false;
     }
 
     inline void notifyIMObservers() {
@@ -376,7 +391,10 @@ namespace Konnekt {
 
     // dumb setter
     inline void setIM(sIMessage_base* msgBase) { 
-      _imStack.push_back(sIMsgStackItem(msgBase));
+      // locking
+      LockerCS lock(_locker);
+
+      _imStack.push(sIMsgStackItem(msgBase));
     }
 
     /* Actions subclassing */
@@ -410,6 +428,9 @@ namespace Konnekt {
     } */
 
     inline void _notifyObservers(int id, tObservers& list) {
+      // locking
+      LockerCS lock(_locker);
+
       if (!_isObserved(id, list)) {
         return;
       }
@@ -419,6 +440,9 @@ namespace Konnekt {
     inline bool _registerObserver(int id, fOnIMessage f, int priority, signals::connect_position pos, 
       StringRef name, bool overwrite, tObservers& list) 
     {
+      // locking
+      LockerCS lock(_locker);
+
       if (f.empty()) {
         return false;
       }
@@ -450,6 +474,9 @@ namespace Konnekt {
     }
 
     inline tIMCallback _subclass() {
+      // locking
+      LockerCS lock(_locker);
+
       for (tSubclassedActions::iterator it = _subclassedActions.begin(); it != _subclassedActions.end(); it++) {
         sUIActionInfo nfo(it->parent, it->id);
         nfo.mask = UIAIM_ALL;
@@ -461,7 +488,7 @@ namespace Konnekt {
           it->prevOwner = Ctrl->ICMessage(IMC_PLUG_ID, 0);
         }
 
-        IMLOG("[IMController<%i>::subclass()]: name = %s, id = %i, parent = %i, prevOwner = %i", this, nfo.txt, 
+        IMLOG("[IMController::subclass()]: name = %s, id = %i, parent = %i, prevOwner = %i", nfo.txt, 
           it->id, it->parent, it->prevOwner);
 
         Ctrl->ICMessage(IMI_ACTION_REMOVE, (int)&nfo.act);
@@ -477,6 +504,7 @@ namespace Konnekt {
     tObservers _globalObservers;
     tObservers _imObservers;
     tIMsgStack _imStack;
+    CriticalSection _locker;
   };
 }
 

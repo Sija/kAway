@@ -17,6 +17,17 @@
 #include "Helpers.h"
 
 /*
+ * Int64 to string conversion
+ */
+
+std::string i64tostr(__int64 value, int radix) {
+  char buf[50];
+  _i64toa(value, (char*) buf, radix);
+
+  return buf;
+}
+
+/*
  *  Bool -> Human readable string
  */
 
@@ -53,14 +64,14 @@ void log(enDebugLevel level, const char * format, va_list ap) {
 void log(const char * format, ...) {
   va_list ap;
   va_start(ap, format);
-	log(DBG_LOG, format, ap);
+  log(DBG_LOG, format, ap);
   va_end(ap);
 }
 
 void logDebug(const char * format, ...) {
   va_list ap;
   va_start(ap, format);
-	log(DBG_DEBUG, format, ap);
+  log(DBG_DEBUG, format, ap);
   va_end(ap);
 }
 
@@ -88,11 +99,24 @@ namespace Helpers {
     return PassStringRef(txt);
   }
 
-  String trim(const StringRef& txt) {
-    CStdString buff(txt.a_str()); 
-    buff = buff.Trim();
-
-    return buff;
+  string trim(string txt, const string& chars) {
+    txt = ltrim(txt, chars);
+    txt = rtrim(txt, chars);
+    return txt;
+  }
+  string rtrim(string txt, const string& chars) {
+    string::size_type pos = txt.find_last_not_of(chars);
+    if (!txt.length() || !chars.length() || pos == string::npos) {
+      return txt;
+    }
+    return txt.erase(pos + 1);
+  }
+  string ltrim(string txt, const string& chars) {
+    string::size_type pos = txt.find_first_not_of(chars);
+    if (!txt.length() || !chars.length() || pos == string::npos) {
+      return txt;
+    }
+    return txt.erase(0, pos);
   }
 
   int getPluginsGroup() {
@@ -110,6 +134,10 @@ namespace Helpers {
   void UIActionCall(int group, int act, int cntID) {
     Ctrl->ICMessage(IMI_ACTION_CALL, 
       (int) &sUIActionNotify_2params(sUIAction(group, act, cntID), ACTN_ACTION, 0, 0), 0);
+  }
+
+  void touchConfigWnd() {
+    SendMessage((HWND)UIGroupHandle(sUIAction(0, IMIG_CFGWND)), WM_USER + 18091, 0, 0);
   }
 
 #ifdef SHARED_TABLETKA_H

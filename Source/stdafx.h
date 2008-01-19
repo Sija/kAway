@@ -45,6 +45,7 @@
 #include <process.h>
 #include <commctrl.h>
 #include <map>
+#include <hash_map>
 #include <list>
 #include <deque>
 #include <stdstring.h>
