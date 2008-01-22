@@ -431,10 +431,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Source\PluginDispatcher.h"
-				>
-			</File>
-			<File
 				RelativePath="..\Source\forwarders\SMSForwarder.h"
 				>
 			</File>
