@@ -36,17 +36,17 @@ namespace Konnekt {
     if (_static_values.find(id) != _static_values.end()) {
       ev->setReturnValue(_static_values[id]);
     } else {
-      // return current event if no listeners
-      if (!hasListeners(id)) {
-        return ev;
-      }
       // notify global listeners
       notify(*ev);
     }
 
-    // log IMessage
-    IMLOG("[IMessageDispatcher::dispatch()]: %s", ev->toString().c_str());
-
+    if (ev->isProcessed()) {
+      // log IMessage
+      IMLOG("[IMessageDispatcher::dispatch()]: %s", ev->toString().c_str());
+    } else {
+      // set error if no result
+      if (Ctrl) Ctrl->setError(IMERROR_NORESULT);
+    }
     // return event
     return ev;
   }

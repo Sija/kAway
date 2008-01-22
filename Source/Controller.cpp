@@ -32,7 +32,6 @@ namespace kAway2 {
     dispatcher.setStaticValue(IM_PLUG_NET, net);
 
     /* Callbacks */
-
     dispatcher.connect(IM_UI_PREPARE, bind(&Controller::onPrepare, this, _1));
     dispatcher.connect(IM_UIACTION, bind(&Controller::onAction, this, _1));
     dispatcher.connect(IM_MSG_RCV, bind(&Controller::onMsgRcv, this, _1));
@@ -50,6 +49,9 @@ namespace kAway2 {
     dispatcher.connect(api::isAutoAway, bind(&Controller::apiAutoAway, this, _1));
     dispatcher.connect(api::ignore, bind(&Controller::apiIgnore, this, _1));
     dispatcher.connect(api::showAwayWnd, bind(&Controller::apiShowAwayWnd, this, _1));
+
+    // bind extended away timer
+    extAutoAwayTimer.reset(timerTmplCreate(bind(&Controller::onExtAutoAway, this)));
 
     /* Configuration columns */
     config->setColumn(DTCFG, cfg::autoAwaySync, DT_CT_INT, syncExtended, "kAway2/autoAwaySync");
@@ -125,9 +127,6 @@ namespace kAway2 {
     config->setColumn(DTCNT, cfg::reply::minInterval, DT_CT_INT, -1, "kAway2/reply/minInterval");
     config->setColumn(DTCNT, cfg::reply::minIntervalType, DT_CT_INT, -1, "kAway2/reply/minIntervalType");
     config->setColumn(DTCNT, cfg::reply::useHtml, DT_CT_INT, 0, "kAway2/reply/useHtml");
-
-    // binding method for extended away
-    this->extAutoAwayTimer.reset(timerTmplCreate(bind(&Controller::onExtAutoAway, this)));
   }
 
   /* IMessage callback methods */

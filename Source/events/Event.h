@@ -48,7 +48,7 @@ namespace Konnekt {
      *
      * @return string 
      */
-    inline string toString() {
+    virtual inline string toString() {
       string str = stringf("id = %i", getID());
 
       // add return value if event was processed
