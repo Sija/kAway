@@ -121,19 +121,19 @@ namespace Konnekt {
     }
 
     /**
-     * Returns subclassed action info
+     * Returns SubclassInfo action info
      *
-     * @return ActionDispatcher::Subclassed&
+     * @return ActionDispatcher::SubclassInfo&
      */
-    inline ActionDispatcher::Subclassed& getSubclassedInfo() {
-      return _dispatcher.getSublassed(getID(), getParent());
+    inline ActionDispatcher::SubclassInfo& getSubclassInfo() {
+      return _dispatcher.getSublassInfo(getID(), getParent());
     }
 
     /**
      * Forwards action to it's previous owner.
      */
     inline void forward() {
-      setReturnValue(Ctrl->IMessageDirect(getIMessage()->id, getSubclassedInfo().getPrevOwner(), (int) getActionNotify()));
+      setReturnValue(Ctrl->IMessageDirect(getIMessage()->id, getSubclassInfo().getPrevOwner(), (int) getActionNotify()));
     }
 
   protected:

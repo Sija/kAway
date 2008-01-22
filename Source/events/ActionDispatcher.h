@@ -30,22 +30,22 @@ namespace Konnekt {
     STAMINA_OBJECT_CLASS_VERSION(ActionDispatcher, EventDispatcher<ActionEvent>, Version(0,1,0,0));
 
   public:
-    class Subclassed {
+    class SubclassInfo {
     public:
       /**
-       * Constructs a new Subclassed.
+       * Constructs a new SubclassInfo.
        *
        * @param int action id
        * @param int parent action id
        * @param bool automatically forwards action to it's parent if set to true
        */
-      Subclassed(int id, int parent, bool auto_forward):
+      SubclassInfo(int id, int parent, bool auto_forward):
         _id(id), _parent(parent), _prev_owner(-1), _auto_forward(auto_forward) { }
 
       /**
-       * Constructs an empty instance of Subclassed.
+       * Constructs an empty instance of SubclassInfo.
        */
-      Subclassed(): _id(0), _parent(0), _prev_owner(-1), _auto_forward(false) { }
+      SubclassInfo(): _id(0), _parent(0), _prev_owner(-1), _auto_forward(false) { }
 
     /**
      * Returns action ID
@@ -84,11 +84,11 @@ namespace Konnekt {
     }
 
     /**
-     * Returns true if ...
+     * Returns true if action should be forwarded to it's previous owner
      *
      * @return bool
      */
-    inline bool isAutoForwardable() {
+    inline bool autoForward() {
       return _auto_forward;
     }
 
@@ -100,7 +100,7 @@ namespace Konnekt {
     };
 
   public:
-    typedef deque<Subclassed> tSubclassed;
+    typedef deque<SubclassInfo> tSubclassed;
 
   public:
     /**
@@ -119,14 +119,14 @@ namespace Konnekt {
     }
 
     /**
-     * Returns reference of Subclassed
+     * Returns reference of SubclassInfo
      *
      * @param int action id
      * @param int parent action id
      *
-     * @return Subclassed&
+     * @return SubclassInfo&
      */
-    inline Subclassed& getSublassed(int id, int parent) {
+    inline SubclassInfo& getSublassInfo(int id, int parent) {
       for (tSubclassed::iterator it = _subclassed.begin(); it != _subclassed.end(); it++) {
         if (it->getID() == id && it->getParent() == parent) return *it;
       }
@@ -144,7 +144,7 @@ namespace Konnekt {
       if (isSublassed(id, parent)) {
         return;
       }
-      _subclassed.push_back(Subclassed(id, parent, auto_forward));
+      _subclassed.push_back(SubclassInfo(id, parent, auto_forward));
     }
 
     /**
@@ -169,7 +169,7 @@ namespace Konnekt {
 
         UIActionGet(nfo);
 
-        int prev_owner;
+        int prev_owner = 0;
         if (!(prev_owner = Ctrl->ICMessage(IMI_ACTION_GETOWNER, (int) &nfo.act))) {
           prev_owner = Ctrl->ICMessage(IMC_PLUG_ID, 0);
         }

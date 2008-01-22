@@ -33,7 +33,7 @@ namespace Konnekt {
     notify(*ev);
 
     try {
-      if (ev->getSubclassedInfo().isAutoForwardable()) {
+      if (ev->getSubclassInfo().autoForward()) {
         ev->forward(); // forward to previous owner
       }
     } catch (...) { }
