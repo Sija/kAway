@@ -1,3 +1,18 @@
+/**
+  *  Action Dispatcher class
+  *
+  *  Licensed under The GNU Lesser General Public License
+  *  Redistributions of files must retain the above copyright notice.
+  *
+  *  @filesource
+  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
+  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
+  *  @version      $Revision$
+  *  @modifiedby   $LastChangedBy: sija $
+  *  @lastmodified $Date$
+  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  */
+
 #include "stdafx.h"
 
 #include "ActionDispatcher.h"
@@ -8,36 +23,36 @@ namespace Konnekt {
    * Dispatches incoming Action IMessage
    *
    * @param sIMessage_base*
+   * @return oEvent
    */
-  Event* ActionDispatcher::dispatch(sIMessage_base* msgBase) {
+  oEvent ActionDispatcher::dispatch(sIMessage_base* msgBase) {
     // create event object
-    ActionEvent* ev = new ActionEvent(msgBase, *this);
+    SharedPtr<ActionEvent> ev = new ActionEvent(msgBase, *this);
+
+    // notify action listeners
+    notify(*ev);
 
     try {
-      // notify action listeners
-      notify(*ev);
-
-      try {
-        if (ev->getSubclassedInfo().isAutoForwardable()) {
-          ev->forward();
-        }
-      } catch (...) { }
-
-      // log IMessage
-      string msg = stringf("[ActionDispatcher::dispatch()]: id = %i, code = %i, cnt = %i", 
-        ev->getID(), ev->getCode(), ev->getParent());
-
-      if (ev->isProcessed()) {
-        msg += stringf(", returnValue = %i", ev->getReturnValue());
+      if (ev->getSubclassedInfo().isAutoForwardable()) {
+        ev->forward(); // forward to previous owner
       }
-      IMLOG(msg.c_str());
+    } catch (...) { }
 
-      // return event
-      return ev;
+    // log IMessage
+    string msg = stringf("[ActionDispatcher::dispatch()]: id = %i, code = %i", 
+      ev->getID(), ev->getCode());
 
-    } catch (...) {
-      delete ev;
-      throw;
+    // add contact id if exist
+    if (ev->getCnt()) {
+      msg += stringf(", cnt = %i", ev->getCnt());
     }
+    // add return value if event was processed
+    if (ev->isProcessed()) {
+      msg += stringf(", returnValue = %i", ev->getReturnValue());
+    }
+    IMLOG(msg.c_str());
+
+    // return event
+    return ev;
   }
 }

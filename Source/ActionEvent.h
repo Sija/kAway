@@ -37,7 +37,13 @@ namespace Konnekt {
      * @param ActionDispatcher& ActionDispatcher object reference
      */
     ActionEvent(sIMessage_base* msgBase, ActionDispatcher& dispatcher): IMEvent(msgBase), _dispatcher(dispatcher) {
-      setID(getActionNotify()->act.id);
+      // get pointer to sUIActionNotify structure
+      sUIActionNotify* an = static_cast<sUIActionNotify*>((sUIActionNotify_base*) getIMessage()->p1);
+
+      // set pointer to sUIActionNotify (for performance reasons)
+      setActionNotify(an);
+      // set action id
+      setID(an->act.id);
     }
 
   public:
@@ -47,7 +53,7 @@ namespace Konnekt {
      * @return sUIActionNotify*
      */
     inline sUIActionNotify* getActionNotify() {
-      return static_cast<sUIActionNotify*>((sUIActionNotify_base*) getIMessage()->p1);
+      return _an;
     }
 
     /**
@@ -56,7 +62,7 @@ namespace Konnekt {
      * @return int
      */
     inline int getCnt() {
-      return getActionNotify()->act.cnt;
+      return _an->act.cnt;
     }
 
     /**
@@ -65,7 +71,7 @@ namespace Konnekt {
      * @return int
      */
     inline int getParent() {
-      return getActionNotify()->act.parent;
+      return _an->act.parent;
     }
 
     /**
@@ -74,7 +80,7 @@ namespace Konnekt {
      * @return int
      */
     inline int getCode() {
-      return getActionNotify()->code;
+      return _an->code;
     }
 
     /**
@@ -92,8 +98,7 @@ namespace Konnekt {
      * @return bool
      */
     inline bool isSubclassed() {
-      sUIActionNotify* an = getActionNotify();
-      return _dispatcher.isSublassed(an->act.id, an->act.parent);
+      return _dispatcher.isSublassed(getID(), getParent());
     }
 
     /**
@@ -102,12 +107,11 @@ namespace Konnekt {
      * @return ActionDispatcher::Subclassed&
      */
     inline ActionDispatcher::Subclassed& getSubclassedInfo() {
-      sUIActionNotify* an = getActionNotify();
-      return _dispatcher.getSublassed(an->act.id, an->act.parent);
+      return _dispatcher.getSublassed(getID(), getParent());
     }
 
     /**
-     * Forwards action to it's parent.
+     * Forwards action to it's previous owner.
      */
     inline void forward() {
       setReturnValue(Ctrl->IMessageDirect(getIMessage()->id, getSubclassedInfo().getPrevOwner(), (int) getActionNotify()));
@@ -123,8 +127,18 @@ namespace Konnekt {
       _dispatcher = dispatcher;
     }
 
+    /**
+     * Sets pointer to sUIActionNotify structure.
+     *
+     * @param sUIActionNotify*
+     */
+    inline void setActionNotify(sUIActionNotify* an) {
+      _an = an;
+    }
+
   protected:
     ActionDispatcher& _dispatcher;
+    sUIActionNotify* _an;
   };
 }
 

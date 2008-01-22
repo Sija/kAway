@@ -34,7 +34,7 @@ namespace Konnekt {
      *
      * @param sIMessage_base* sIMessage_base structure
      */
-    IMEvent(sIMessage_base* msgBase): Event(msgBase->id, msgBase) { }
+    IMEvent(sIMessage_base* msgBase): Event(msgBase->id, msgBase), _im(static_cast<sIMessage*>(msgBase)) { }
 
   public:
     /**
@@ -43,7 +43,7 @@ namespace Konnekt {
      * @return sIMessage*
      */
     inline sIMessage* getIMessage() {
-      return static_cast<sIMessage*>(getSubject());
+      return _im;
     }
 
     /**
@@ -92,6 +92,19 @@ namespace Konnekt {
       // setting return value to pointer to internal, temp buffer
       setReturnValue((int) buff);
     }
+
+  protected:
+    /**
+     * Sets pointer to sIMessage structure.
+     *
+     * @param sIMessage*
+     */
+    inline void setIMessage(sIMessage* im) {
+      _im = im;
+    }
+
+  protected:
+    sIMessage* _im;
   };
 }
 

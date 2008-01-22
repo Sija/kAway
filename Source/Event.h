@@ -1,5 +1,5 @@
 /**
-  *  Event class
+  *  Generic Event class
   *
   *  Licensed under The GNU Lesser General Public License
   *  Redistributions of files must retain the above copyright notice.
@@ -83,7 +83,7 @@ namespace Konnekt {
     /**
      * Sets the processed flag.
      *
-     * @param Boolean The processed flag value
+     * @param bool The processed flag value
      */
     inline void setProcessed(bool processed) {
       _processed = processed;
@@ -92,7 +92,7 @@ namespace Konnekt {
     /**
      * Returns whether the event has been processed by a listener or not.
      *
-     * @return Boolean true if the event has been processed, false otherwise
+     * @return bool true if the event has been processed, false otherwise
      */
     inline bool isProcessed() {
       return _processed;
@@ -114,6 +114,9 @@ namespace Konnekt {
     void * _subject;
     int _id;
   };
+
+  // smart pointer type
+  typedef SharedPtr<Event> oEvent;
 }
 
 #endif // __EVENT_H__

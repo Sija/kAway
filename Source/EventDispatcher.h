@@ -1,5 +1,5 @@
 /**
-  *  Event Dispatcher class
+  *  Generic Event Dispatcher class
   *
   *  Licensed under The GNU Lesser General Public License
   *  Redistributions of files must retain the above copyright notice.
@@ -48,6 +48,9 @@ namespace Konnekt {
     typedef signal<void(E&)> sigListener;
 
   public:
+    /**
+     * Structure holding listener and it's connections
+     */
     struct sListener {
       tConnections connections;
       sigListener signal;

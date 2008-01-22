@@ -43,7 +43,7 @@ namespace Konnekt {
         _id(id), _parent(parent), _prev_owner(-1), _auto_forward(auto_forward) { }
 
       /**
-       * Constructs a new Subclassed.
+       * Constructs an empty instance of Subclassed.
        */
       Subclassed(): _id(0), _parent(0), _prev_owner(-1), _auto_forward(false) { }
 
@@ -99,6 +99,7 @@ namespace Konnekt {
       bool _auto_forward;
     };
 
+  public:
     typedef deque<Subclassed> tSubclassed;
 
   public:
@@ -133,11 +134,11 @@ namespace Konnekt {
     }
 
     /**
-     * Returns reference of Subclassed
+     * Subclasses the given action
      *
      * @param int action id
      * @param int parent action id
-     * @param bool
+     * @param bool true if should forward to parent
      */
     inline void subclass(int id, int parent, bool auto_forward = false) {
       if (isSublassed(id, parent)) {
@@ -150,8 +151,9 @@ namespace Konnekt {
      * Dispatches incoming Action IMessage
      *
      * @param sIMessage_base*
+     * @return oEvent
      */
-    Event* dispatch(sIMessage_base* msgBase);
+    oEvent dispatch(sIMessage_base* msgBase);
 
     /**
      * Subclasses all registered actions

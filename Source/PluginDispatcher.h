@@ -55,15 +55,11 @@ namespace Konnekt {
      * @param sIMessage_base*
      */
     inline int dispatch(sIMessage_base* msgBase) {
-      // generic event object
-      Event* ev = 0;
-
       // dispatch IMessage
-      ev = _global_dispatcher.dispatch(msgBase);
+      oEvent ev = _global_dispatcher.dispatch(msgBase);
 
       // dispatch action
-      if (msgBase->id == IM_UIACTION) {
-        delete ev; ev = 0; // delete previous event
+      if (ev->getID() == IM_UIACTION) {
         ev = _action_dispatcher.dispatch(msgBase);
       }
       return ev->getReturnValue();

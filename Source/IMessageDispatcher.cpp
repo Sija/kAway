@@ -1,3 +1,18 @@
+/**
+  *  IMessage Dispatcher class
+  *
+  *  Licensed under The GNU Lesser General Public License
+  *  Redistributions of files must retain the above copyright notice.
+  *
+  *  @filesource
+  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
+  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
+  *  @version      $Revision$
+  *  @modifiedby   $LastChangedBy: sija $
+  *  @lastmodified $Date$
+  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  */
+
 #include "stdafx.h"
 
 #include "IMessageDispatcher.h"
@@ -8,42 +23,41 @@ namespace Konnekt {
    * Dispatch incoming IMessage
    *
    * @param sIMessage_base*
+   * @return oEvent
    */
-  Event* IMessageDispatcher::dispatch(sIMessage_base* msgBase) {
+  oEvent IMessageDispatcher::dispatch(sIMessage_base* msgBase) {
     // get imessage id
     int id = msgBase->id;
 
     // create event object
-    IMEvent* ev = new IMEvent(msgBase);
+    SharedPtr<IMEvent> ev = new IMEvent(msgBase);
 
-    try {
-      // look for static values
-      if (_static_values.find(id) != _static_values.end()) {
-        ev->setReturnValue(_static_values[id]);
-      } else {
-        // notify global listeners
-        notify(*ev);
+    // look for static values
+    if (_static_values.find(id) != _static_values.end()) {
+      ev->setReturnValue(_static_values[id]);
+    } else {
+      // return current event if no listeners
+      if (!hasListeners(id)) {
+        return ev;
       }
-
-      // log IMessage
-      string msg = stringf("[IMessageDispatcher::dispatch()]: id = %i", id);
-
-      if (ev->isProcessed()) {
-        msg += stringf(", returnValue = %i", ev->getReturnValue());
-      } else {
-        // set error if no result
-        if (Ctrl) {
-          Ctrl->setError(IMERROR_NORESULT);
-        }
-      }
-      IMLOG(msg.c_str());
-
-      // return event
-      return ev;
-
-    } catch (...) {
-      delete ev;
-      throw;
+      // notify global listeners
+      notify(*ev);
     }
+
+    // log IMessage
+    string msg = stringf("[IMessageDispatcher::dispatch()]: id = %i", id);
+
+    if (ev->isProcessed()) {
+      msg += stringf(", returnValue = %i", ev->getReturnValue());
+    } else {
+      // set error if no result
+      if (Ctrl) {
+        Ctrl->setError(IMERROR_NORESULT);
+      }
+    }
+    IMLOG(msg.c_str());
+
+    // return event
+    return ev;
   }
 }

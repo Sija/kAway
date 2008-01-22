@@ -19,10 +19,10 @@
 #define __IMESSAGEDISPATCHER_H__
 
 #include "EventDispatcher.h"
-#include "Event.h"
+#include "IMEvent.h"
 
 namespace Konnekt {
-  class IMessageDispatcher : public EventDispatcher<class IMEvent> {
+  class IMessageDispatcher : public EventDispatcher<IMEvent> {
   public:
     /**
      * Class version macro
@@ -33,8 +33,11 @@ namespace Konnekt {
     typedef hash_map<int, int> tStaticValues;
 
   public:
+    /**
+     * Constructs a new IMessageDispatcher object.
+     */
     inline IMessageDispatcher() {
-      // default values for common messages, may be overriden
+      // set default values for common messages, some of them should be overriden
       setStaticValue(IM_PLUG_NETNAME, 0);
       setStaticValue(IM_PLUG_PRIORITY, 0);
       setStaticValue(IM_PLUG_SDKVERSION, KONNEKT_SDK_V);
@@ -58,8 +61,9 @@ namespace Konnekt {
      * Dispatch incoming IMessage
      *
      * @param sIMessage_base*
+     * @return oEvent
      */
-    Event* dispatch(sIMessage_base* msgBase);
+    oEvent dispatch(sIMessage_base* msgBase);
 
   protected:
     tStaticValues _static_values;
