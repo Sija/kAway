@@ -185,35 +185,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\Source\ActionDispatcher.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\Source\AwayWnd.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\Source\forwarders\CntForwarder.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\Source\Controller.cpp"
 				>
 			</File>
 			<File
@@ -241,43 +213,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Source\Forwarder.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\Source\FwdController.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="..\Source\Helpers.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\Source\IMessageDispatcher.cpp"
 				>
 			</File>
 			<File
@@ -295,26 +231,6 @@
 			<File
 				RelativePath="..\Source\NetList.cpp"
 				>
-			</File>
-			<File
-				RelativePath="..\Source\forwarders\SMSForwarder.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\Source\Status.cpp"
@@ -340,6 +256,102 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<Filter
+				Name="events"
+				>
+				<File
+					RelativePath="..\Source\events\ActionDispatcher.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Source\events\IMessageDispatcher.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="forwarders"
+				>
+				<File
+					RelativePath="..\Source\forwarders\CntForwarder.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\Source\Forwarder.cpp"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\Source\forwarders\SMSForwarder.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+			</Filter>
+			<Filter
+				Name="controllers"
+				>
+				<File
+					RelativePath="..\Source\Controller.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Source\FwdController.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -347,19 +359,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\Source\ActionDispatcher.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Source\ActionEvent.h"
-				>
-			</File>
-			<File
 				RelativePath="..\Source\AwayWnd.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Source\forwarders\CntForwarder.h"
 				>
 			</File>
 			<File
@@ -367,19 +367,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Source\Controller.h"
-				>
-			</File>
-			<File
 				RelativePath="..\Source\EditFix.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Source\Event.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Source\EventDispatcher.h"
 				>
 			</File>
 			<File
@@ -391,23 +379,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Source\Forwarder.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Source\FwdController.h"
-				>
-			</File>
-			<File
 				RelativePath="..\Source\Helpers.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Source\IMessageDispatcher.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Source\IMEvent.h"
 				>
 			</File>
 			<File
@@ -427,14 +399,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Source\PluginController.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Source\forwarders\SMSForwarder.h"
-				>
-			</File>
-			<File
 				RelativePath="..\Source\Status.h"
 				>
 			</File>
@@ -442,6 +406,66 @@
 				RelativePath="..\Source\stdafx.h"
 				>
 			</File>
+			<Filter
+				Name="events"
+				>
+				<File
+					RelativePath="..\Source\events\ActionDispatcher.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Source\events\ActionEvent.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Source\events\Event.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Source\events\EventDispatcher.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Source\events\IMessageDispatcher.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Source\events\IMEvent.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="forwarders"
+				>
+				<File
+					RelativePath="..\Source\forwarders\CntForwarder.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Source\Forwarder.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Source\forwarders\SMSForwarder.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="controllers"
+				>
+				<File
+					RelativePath="..\Source\Controller.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Source\FwdController.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Source\PluginController.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"

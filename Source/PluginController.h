@@ -18,14 +18,11 @@
 #ifndef __PLUGINCONTROLLER_H__
 #define __PLUGINCONTROLLER_H__
 
-#include "EventDispatcher.h"
-#include "Event.h"
+#include "Events/IMessageDispatcher.h"
+#include "Events/IMEvent.h"
 
-#include "ActionDispatcher.h"
-#include "ActionEvent.h"
-
-#include "IMessageDispatcher.h"
-#include "IMEvent.h"
+#include "Events/ActionDispatcher.h"
+#include "Events/ActionEvent.h"
 
 #include "Config.h"
 
@@ -67,10 +64,10 @@ namespace Konnekt {
      * @return T*
      */
     inline static T* getInstance() {
-      if (!instance.isValid()) {
-        instance = new T;
+      if (!_instance.isValid()) {
+        _instance = new T;
       }
-      return instance;
+      return _instance;
     }
 
     /**
@@ -146,12 +143,12 @@ namespace Konnekt {
     IMessageDispatcher _dispatcher;
     ActionDispatcher _action_dispatcher;
 
-    static oInstance instance;
+    static oInstance _instance;
     oConfig config;
   };
 
   template <class T>
-  SharedPtr<T> PluginController<T>::instance = 0;
+  SharedPtr<T> PluginController<T>::_instance = 0;
 }
 
 #endif // __PLUGINCONTROLLER_H__

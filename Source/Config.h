@@ -18,7 +18,7 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#include "IMessageDispatcher.h"
+#include "Events/IMessageDispatcher.h"
 #include "Helpers.h"
 
 using namespace Konnekt::Tables;
