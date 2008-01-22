@@ -5,7 +5,7 @@
   *  Redistributions of files must retain the above copyright notice.
   *
   *  @filesource
-  *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
+  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
   *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
   *  @version      $Revision$
   *  @modifiedby   $LastChangedBy$
@@ -16,36 +16,40 @@
 #include "stdafx.h"
 #include "Controller.h"
 
-//#include "Forwarders/CntForwarder.h"
-//#include "Forwarders/SMSForwarder.h"
+// #include "Forwarders/CntForwarder.h"
+// #include "Forwarders/SMSForwarder.h"
 
 namespace kAway2 {
   Controller::Controller() : isOn(false), muteStateSwitched(false), autoAway(typeDisabled), pluginsGroup(0) {
+    // get IMessage dispatcher object
+    IMessageDispatcher& dispatcher = getIMessageDispatcher();
+
     /* Static values like net, type or version */
-    this->setStaticValue(IM_PLUG_TYPE, IMT_UI | IMT_CONFIG | IMT_ALLMESSAGES);
-    this->setStaticValue(IM_PLUG_PRIORITY, PLUGP_HIGHEST);
-    this->setStaticValue(IM_PLUG_NAME, (int) "kAway2");
-    this->setStaticValue(IM_PLUG_SIG, (int) sig);
-    this->setStaticValue(IM_PLUG_NET, net);
+    dispatcher.setStaticValue(IM_PLUG_TYPE, IMT_UI | IMT_CONFIG | IMT_ALLMESSAGES);
+    dispatcher.setStaticValue(IM_PLUG_PRIORITY, PLUGP_HIGHEST);
+    dispatcher.setStaticValue(IM_PLUG_NAME, (int) "kAway2");
+    dispatcher.setStaticValue(IM_PLUG_SIG, (int) sig);
+    dispatcher.setStaticValue(IM_PLUG_NET, net);
 
     /* Callbacks */
-    this->registerObserver(IM_UI_PREPARE, bind(resolve_cast0(&Controller::onPrepare), this));
-    this->registerObserver(IM_UIACTION, bind(resolve_cast0(&Controller::onAction), this));
-    this->registerObserver(IM_MSG_RCV, bind(resolve_cast0(&Controller::onMsgRcv), this));
-    this->registerObserver(IM_BEFOREEND, bind(resolve_cast0(&Controller::onEnd), this));
-    this->registerObserver(IM_STATUSCHANGE, bind(resolve_cast0(&Controller::onStatusChange), this));
-    this->registerObserver(IM_ALLPLUGINSINITIALIZED, bind(resolve_cast0(&Controller::onPluginsLoaded), this));
-    this->registerObserver(IM_AWAY, bind(resolve_cast0(&Controller::onAutoAway), this));
-    this->registerObserver(IM_BACK, bind(resolve_cast0(&Controller::onBack), this));
+
+    dispatcher.connect(IM_UI_PREPARE, bind(&Controller::onPrepare, this, _1));
+    dispatcher.connect(IM_UIACTION, bind(&Controller::onAction, this, _1));
+    dispatcher.connect(IM_MSG_RCV, bind(&Controller::onMsgRcv, this, _1));
+    dispatcher.connect(IM_BEFOREEND, bind(&Controller::onEnd, this, _1));
+    dispatcher.connect(IM_STATUSCHANGE, bind(&Controller::onStatusChange, this, _1));
+    dispatcher.connect(IM_ALLPLUGINSINITIALIZED, bind(&Controller::onPluginsLoaded, this, _1));
+    dispatcher.connect(IM_AWAY, bind(&Controller::onAutoAway, this, _1));
+    dispatcher.connect(IM_BACK, bind(&Controller::onBack, this, _1));
 
     /* API callbacks */
-    this->registerObserver(api::isEnabled, bind(resolve_cast0(&Controller::apiEnabled), this));
-    this->registerObserver(api::enable, bind(resolve_cast0(&Controller::apiEnable), this));
-    this->registerObserver(api::disable, bind(resolve_cast0(&Controller::apiDisable), this));
-    this->registerObserver(api::isIgnored, bind(resolve_cast0(&Controller::apiIgnored), this));
-    this->registerObserver(api::isAutoAway, bind(resolve_cast0(&Controller::apiAutoAway), this));
-    this->registerObserver(api::ignore, bind(resolve_cast0(&Controller::apiIgnore), this));
-    this->registerObserver(api::showAwayWnd, bind(resolve_cast0(&Controller::apiShowAwayWnd), this));
+    dispatcher.connect(api::isEnabled, bind(&Controller::apiEnabled, this, _1));
+    dispatcher.connect(api::enable, bind(&Controller::apiEnable, this, _1));
+    dispatcher.connect(api::disable, bind(&Controller::apiDisable, this, _1));
+    dispatcher.connect(api::isIgnored, bind(&Controller::apiIgnored, this, _1));
+    dispatcher.connect(api::isAutoAway, bind(&Controller::apiAutoAway, this, _1));
+    dispatcher.connect(api::ignore, bind(&Controller::apiIgnore, this, _1));
+    dispatcher.connect(api::showAwayWnd, bind(&Controller::apiShowAwayWnd, this, _1));
 
     /* Configuration columns */
     config->setColumn(DTCFG, cfg::autoAwaySync, DT_CT_INT, syncExtended, "kAway2/autoAwaySync");
@@ -126,111 +130,9 @@ namespace kAway2 {
     this->extAutoAwayTimer.reset(timerTmplCreate(bind(&Controller::onExtAutoAway, this)));
   }
 
-  void Controller::testCfgActions() {
-    /* Configuration UI */
-    char header[400];
-    sprintf(header, "<span class='note'>Powered by: <b>%s</b></span><br/>"
-      "<span class='note'>Skompilowano: <b>%s</b> [<b>%s</b>]</span><br/>"
-      "Informacje o wtyczce na stronie projektu "
-      "<b>KPlugins</b> (http://kplugins.net/)<br/><br/>"
-      "Copyright © 2004-2006 <b>Sijawusz Pur Rahnama</b><br/>"
-      "Copyright © 2004-2006 <b>KPlugins Team</b>",
-      poweredBy, __DATE__, __TIME__);
-
-    char desc[] = 
-      "Wtyczka ma za zadanie zaj¹æ siê kwesti¹ Twojej nieobecnoœci przy komputerze :)<br/>"
-      "Osoby pisz¹ce do Ciebie zostan¹ powiadomione (albo i nie ;)) o tym od kiedy i dlaczego Cie nie ma, "
-      "ty za to dostaniesz informacjê o tym ile osób nawiedzi³o Ciê podczas Twoich godzin-bez-komputera ;>";
-
-    char dateFormat[] =
-      "%<b>a</b> - Abbreviated weekday name<br/>"
-      "%<b>A</b> - Full weekday name<br/>"
-      "%<b>b</b> - Abbreviated month name<br/>"
-      "%<b>B</b> - Full month name<br/>"
-      "%<b>d</b> - Day of month as decimal number (01 – 31)<br/>"
-      "%<b>j</b> - Day of year as decimal number (001 – 366)<br/>"
-      "%<b>m</b> - Month as decimal number (01 – 12)<br/>"
-      "%<b>U</b> - Week of year as decimal number, with Sunday as first day of week (00 – 53)<br/>"
-      "%<b>w</b> - Weekday as decimal number (0 – 6; Sunday is 0)<br/>"
-      "%<b>W</b> - Week of year as decimal number, with Monday as first day of week (00 – 53)<br/>"
-      "%<b>x</b> - Date representation for current locale<br/>"
-      "%<b>y</b> - Year without century, as decimal number (00 – 99)<br/>"
-      "%<b>Y</b> - Year with century, as decimal number<br/>"
-      "%<b>z</b>, %<b>Z</b> - Either the time-zone name or time zone abbreviation, depending on registry settings; "
-      "no characters if time zone is unknown<br/>"
-      "%<b>%</b> - Percent sign";
-
-    char timeFormat[] =
-      "%<b>H</b> - Hour in 24-hour format (00 – 23)<br/>"
-      "%<b>I</b> - Hour in 12-hour format (01 – 12)<br/>"
-      "%<b>M</b> - Minute as decimal number (00 – 59)<br/>"
-      "%<b>p</b> - Current locale's A.M./P.M. indicator for 12-hour clock<br/>"
-      "%<b>S</b> - Second as decimal number (00 – 59)<br/>"
-      "%<b>X</b> - Time representation for current locale<br/>"
-      "%<b>%</b> - Percent sign";
-
-    CfgPage pTest(ui::ui + 10, IMIG_CFG_PLUGS, "SSaj mego bena", ico::logoSmall);
-    pTest.setInfoBox(CfgInfoBox(header, desc, ico::logoSmall, 4)).setFlag(ACTR_SAVE);
-
-    CfgGroup gGlobal("Ustawienia");
-    gGlobal << CfgCheckBox("Wycisz przy w³¹czeniu trybu away", cfg::muteOnEnable);
-    gGlobal << CfgCheckBox("Wy³¹czaj w momencie wys³ania wiadomoœci", cfg::disableOnMsgSend).setBits(ShowBits::levelAdvanced);
-    gGlobal << CfgCheckBox("Zapisuj wiadomoœci w osobnej historii", cfg::saveToHistory).setBits(ShowBits::levelAdvanced);
-    gGlobal << CfgCheckBox("Komendy z okna rozmów (a'la IRC)", cfg::ircCmds).setTip(
-      "/<b>away</b> [...] - w³¹cza tryb away<br/>"
-      "/<b>brb</b> [...] - j.w. + nie wysy³a powiadomieñ o w³.<br/>"
-      "/<b>back</b> [...] - wy³¹cza tryb away<br/>"
-      "/<b>re</b> [...] - j.w. + nie wysy³a powiadomieñ o wy³.", true, 240);
-    gGlobal << CfgCheckBox("Pokazuj powiadomienia K.Notify", cfg::useKNotify).needPlugin(plugsNET::knotify);
-    gGlobal << CfgCheckBox("Pytaj przed wyjœciem z trybu away", cfg::confirmation).setBits(ShowBits::levelAdvanced);
-    pTest << gGlobal.setBits(ShowBits::levelIntermediate);
-
-    CfgGroup gTimeFormat("Formatowanie czasu");
-    gTimeFormat << CfgEdit(cfg::dateFormat).isInline(true).setTip(dateFormat, true, 300);
-    gTimeFormat << CfgLabel("Format daty");
-    gTimeFormat << CfgEdit(cfg::timeFormat).isInline(true).setTip(timeFormat, true, 285);
-    gTimeFormat << CfgLabel("Format godziny");
-    pTest << gTimeFormat.setBits(ShowBits::levelAdvanced);
-
-    CfgGroup gAutoAway("Ustawienia auto-away'a");
-    gAutoAway << CfgSeparator("Synchronizuj z trybem auto-away:");
-    gAutoAway << CfgRadio("podstawowym", cfg::autoAwaySync).setValue(1).isInline(true);
-    gAutoAway << CfgRadio("rozszerzonym", cfg::autoAwaySync).setValue(2);
-    gAutoAway << CfgRadio("nie synchronizuj", cfg::autoAwaySync).setValue(0).isBold(true).isLast(true);
-    gAutoAway << CfgSeparator("Powód nieobecnoœci:");
-    gAutoAway << CfgText(cfg::autoAwayMsg);
-    pTest << gAutoAway.setBits(ShowBits::levelIntermediate);
-
-    /* |-> Interface group */
-    CfgGroup gUI("Interfejs");
-    gUI << CfgCheckBox("Pokazuj przycisk w g³ównym oknie", cfg::btnInMainWindow).needRestart(true);
-    gUI << CfgCheckBox("Pokazuj przycisk w oknie rozmowy", cfg::btnInCntWindow).needRestart(true);
-    gUI << CfgCheckBox("Pokazuj przycisk w menu tray'a", cfg::btnInTrayMenu).needRestart(true);
-    pTest << gUI;
-
-    /*
-    CfgGroup gHistory("Historia powodów nieobecnoœci");
-    gHistory << CfgSeparator("Historia powodów nieobecnoœci");
-    gHistory << CfgSlider("Ma³o", "Du¿o", cfg::mruSize, 1, 30);
-    gHistory << CfgSeparator();
-    gHistory << CfgButton("wyczyœæ", act::clearMru, ico::trash).setWidth(80).setHeight(30);
-    pTest << gHistory;
-
-    CfgGroup gResetSettings;
-    gResetSettings << CfgButton("resetuj ustawienia", act::resetSettings, 27).isInline(true).setWidth(140).setHeight(30);
-    gResetSettings << CfgButton("resetuj ustawienia kontaktów", act::resetCntSettings, 27).setWidth(180).setHeight(30);
-    pTest << gResetSettings.setBits(ShowBits::levelAdvanced);
-    */
-
-    pTest.draw();
-  }
-
   /* IMessage callback methods */
 
-  void Controller::onPrepare() {
-    // CfgAction testin'
-    // testCfgActions();
-
+  void Controller::onPrepare(IMEvent& ev) {
     this->pluginsGroup = Helpers::getPluginsGroup();
 
     this->mruList = new MRU(cfg::mruName, cfg::mruSize, true);
@@ -256,8 +158,8 @@ namespace kAway2 {
     statusCtrl->addReplacementSt(plugsNET::gg, ST_DND, ST_AWAY);
     statusCtrl->addReplacementSt(plugsNET::gg, ST_NA, ST_AWAY);
 
-    log("[Controller<%i>::onPrepare()]: Ctrl = %i, sCtrl = %i, wnd = %i", 
-      this, Ctrl, statusCtrl, wnd);
+    log("[Controller::onPrepare()]: Ctrl = %i, sCtrl = %i, wnd = %i", 
+      Ctrl, statusCtrl, wnd);
 
     /* Defining help variables */
     Format::tHelpVars stVars, rVars;
@@ -309,8 +211,8 @@ namespace kAway2 {
       "<span class='note'>Skompilowano: <b>%s</b> [<b>%s</b>]</span><br/>"
       "Informacje o wtyczce na stronie projektu "
       "<b>KPlugins</b> (http://kplugins.net/)<br/><br/>"
-      "Copyright © 2004-2006 <b>Sijawusz Pur Rahnama</b><br/>"
-      "Copyright © 2004-2006 <b>KPlugins Team</b>",
+      "Copyright © 2004-2008 <b>Sijawusz Pur Rahnama</b><br/>"
+      "Copyright © 2004-2008 <b>KPlugins Team</b>",
       poweredBy, __DATE__, __TIME__);
 
     char desc[] = 
@@ -671,24 +573,23 @@ namespace kAway2 {
       UIActionInsert(IMIG_TRAY, 0, 0, ACTT_SEP);
       UIActionInsert(IMIG_TRAY, ui::powerInTrayMenu, 0, 0, "W³¹cz tryb away", ico::enable);
     }
-
-    this->setSuccess();
+    ev.setSuccess();
   }
 
-  void Controller::onEnd() {
+  void Controller::onEnd(IMEvent& ev) {
     if (this->isEnabled()) {
       this->disable("", true);
     }
     this->extAutoAwayTimer.reset();
-    this->setSuccess();
+    ev.setSuccess();
   }
 
-  void Controller::onMsgRcv() {
-    cMessage* m = (cMessage*) this->getIM()->p1;
+  void Controller::onMsgRcv(IMEvent& ev) {
+    cMessage* m = (cMessage*) ev.getIMessage()->p1;
 
     // hmmm, i have to remove it some sunny day...
     if ((m->type != MT_MESSAGE) || (m->flag & MF_AUTOMATED)) {
-      return this->setReturnCode(0);
+      return ev.setReturnValue(0);
     }
 
     // we're searchin' for contact id
@@ -735,7 +636,7 @@ namespace kAway2 {
           cmd.c_str(), nullChk(awayMsg), params.size());
 
         if (!set) {
-          return this->setReturnCode(IM_MSG_delete);
+          return ev.setReturnValue(IM_MSG_delete);
         }
 
         String body, ext(m->ext);
@@ -757,13 +658,13 @@ namespace kAway2 {
         m->flag |= (m->flag & MF_HTML) ? 0 : MF_HTML;
         m->flag |= MF_DONTADDTOHISTORY;
 
-        return this->setReturnCode(IM_MSG_update | IM_MSG_delete);
+        return ev.setReturnValue(IM_MSG_update | IM_MSG_delete);
       }
     }
 
     if (this->isEnabled() && !this->cntProp(cnt)->ignored) {
       if (userMsg && config->getInheritedBValue(cfg::disableOnMsgSend, cnt)) {
-        this->disable(); return this->setReturnCode(0);
+        this->disable(); return ev.setReturnValue(0);
       }
 
       if (config->getInheritedBValue(cfg::saveToHistory, cnt)) {
@@ -796,12 +697,9 @@ namespace kAway2 {
     }
   }
 
-  void Controller::onAction() {
-    sUIActionNotify_2params* an = this->getAN();
+  void Controller::onAction(IMEvent& ev) {
+    sUIActionNotify* an = ActionEvent(ev.getIMessage(), _action_dispatcher).getActionNotify();
     int id = an->act.id, cnt = an->act.cnt;
-
-    logDebug("[Controller<%i>::onAction()]: an->act.id = %i, an->act.cnt = %i, an->code = %i", 
-      this, an->act.id, an->act.cnt, an->code);
 
     statusList->actionHandle(id, an->code);
     autoReplyList->actionHandle(id, an->code);
@@ -862,23 +760,23 @@ namespace kAway2 {
     }
   }
 
-  void Controller::onStatusChange() {
-    statusCtrl->actionHandle(this->getIM());
+  void Controller::onStatusChange(IMEvent& ev) {
+    statusCtrl->actionHandle(ev.getIMessage());
   }
 
-  void Controller::onPluginsLoaded() {
+  void Controller::onPluginsLoaded(IMEvent& ev) {
     if (int oldId = Helpers::pluginExists(plugsNET::kaway)) {
       Ctrl->IMessage(&sIMessage_plugOut(oldId, "kAway2 jest nastêpc¹ wtyczki K.Away :)",
         sIMessage_plugOut::erNo, sIMessage_plugOut::euNowAndOnNextStart));
-      return this->setFailure();
+      return ev.setFailure();
     }
     if (int ggCrypt = Helpers::pluginExists(plugsNET::ggcrypt)) {
       Ctrl->IMessage(&sIMessage_plugOut(ggCrypt, "Wtyczka GG Crypt jest przestarza³a, przy czym\n"
         "nie pozwala na poprawne dzia³anie wtyczki kAway2.",
         sIMessage_plugOut::erNo, sIMessage_plugOut::euNowAndOnNextStart));
-      return this->setFailure();
+      return ev.setFailure();
     }
-    this->setSuccess();
+    ev.setSuccess();
   }
 
   void Controller::onExtAutoAway() {
@@ -892,7 +790,7 @@ namespace kAway2 {
     Ctrl->IMessage(im::extendedAutoAway, NET_BROADCAST);
   }
 
-  void Controller::onAutoAway() {
+  void Controller::onAutoAway(IMEvent& ev) {
     if (this->isEnabled()) return;
 
     int status = config->getInt(cfg::status::onAutoAwaySt);
@@ -913,7 +811,7 @@ namespace kAway2 {
     }
   }
 
-  void Controller::onBack() {
+  void Controller::onBack(IMEvent& ev) {
     if (!this->isAutoAway()) return;
 
     if (this->isEnabled()) {
@@ -930,47 +828,47 @@ namespace kAway2 {
 
   /* API callback methods */
 
-  void Controller::apiEnabled() {
-    this->setReturnCode(this->isEnabled());
+  void Controller::apiEnabled(IMEvent& ev) {
+    ev.setReturnValue(this->isEnabled());
   }
 
-  void Controller::apiEnable() {
-    sIMessage_2params* msg = this->getIM();
+  void Controller::apiEnable(IMEvent& ev) {
+    sIMessage* msg = ev.getIMessage();
 
     logDebug("Remote API Call [enable]: from = %s, msg = %s, status = %i", 
-      Helpers::getPlugName(msg->sender), nullChk((char*)msg->p1), msg->p2);
-    this->setReturnCode(this->enable((char*)msg->p1, msg->p2));
+      Helpers::getPlugName(msg->sender), nullChk((char*) msg->p1), msg->p2);
+    ev.setReturnValue(this->enable((char*) msg->p1, msg->p2));
   }
 
-  void Controller::apiDisable() {
-    sIMessage_2params* msg = this->getIM();
+  void Controller::apiDisable(IMEvent& ev) {
+    sIMessage* msg = ev.getIMessage();
 
     logDebug("Remote API Call [disable]: from = %s, msg = %s", 
-      Helpers::getPlugName(msg->sender), nullChk((char*)msg->p1));
-    this->setReturnCode(this->disable((char*)msg->p1));
+      Helpers::getPlugName(msg->sender), nullChk((char*) msg->p1));
+    ev.setReturnValue(this->disable((char*) msg->p1));
   }
 
-  void Controller::apiIgnored() {
-    this->setReturnCode(this->cntProp(this->getIM()->p1)->ignored);
+  void Controller::apiIgnored(IMEvent& ev) {
+    ev.setReturnValue(this->cntProp(ev.getIMessage()->p1)->ignored);
   }
 
-  void Controller::apiAutoAway() {
-    this->setReturnCode(this->isAutoAway());
+  void Controller::apiAutoAway(IMEvent& ev) {
+    ev.setReturnValue(this->isAutoAway());
   }
 
-  void Controller::apiIgnore() {
-    sIMessage_2params* msg = this->getIM();
+  void Controller::apiIgnore(IMEvent& ev) {
+    sIMessage* msg = ev.getIMessage();
 
     logDebug("Remote API Call [ignore]: from = %s, cnt = %i, ignore = %s", 
-      Helpers::getPlugName(msg->sender), msg->p1, btoa((bool)msg->p2));
+      Helpers::getPlugName(msg->sender), msg->p1, btoa((bool) msg->p2));
     if (this->isEnabled()) {
       this->cntProp(msg->p1)->ignored = (bool) msg->p2;
     }
   }
 
-  void Controller::apiShowAwayWnd() {
+  void Controller::apiShowAwayWnd(IMEvent& ev) {
     logDebug("Remote API Call [showAwayWnd]: from = %s",
-      Helpers::getPlugName(this->getIM()->sender));
+      Helpers::getPlugName(ev.getIMessage()->sender));
     wnd->show();
   }
 
@@ -1024,7 +922,7 @@ namespace kAway2 {
     }
 
     this->showKNotify("Tryb away zosta³ <b>w³¹czony<b>", ico::enable);
-    log("[Controller<%i>::enable()]: msg = %s, silent = %s", this, nullChk(msg), btoa(silent));
+    log("[Controller::enable()]: msg = %s, silent = %s", nullChk(msg), btoa(silent));
     Ctrl->IMessage(im::away, NET_BROADCAST, -1, (int) msg.c_str(), status);
 
     return true;
@@ -1067,7 +965,7 @@ namespace kAway2 {
     this->muteStateSwitched = false;
 
     this->showKNotify("Tryb away zosta³ <b>wy³¹czony<b>", ico::disable);
-    log("[Controller<%i>::disable()]: msg = %s, silent = %s", this, nullChk(msg), btoa(silent));
+    log("[Controller::disable()]: msg = %s, silent = %s", nullChk(msg), btoa(silent));
     Ctrl->IMessage(im::back, NET_BROADCAST, -1, (int) msg.c_str());
 
     return true;

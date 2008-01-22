@@ -5,7 +5,7 @@
   *  Redistributions of files must retain the above copyright notice.
   *
   *  @filesource
-  *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
+  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
   *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
   *  @version      $Revision$
   *  @modifiedby   $LastChangedBy$
@@ -18,7 +18,7 @@
 #ifndef __PLUGCTRL_H__
 #define __PLUGCTRL_H__
 
-#include "IMController.h"
+#include "PluginDispatcher.h"
 #include "CfgController.h"
 
 using namespace Stamina;
@@ -26,14 +26,14 @@ using namespace boost;
 
 namespace Konnekt {
   template <class T>
-  class PlugController : public IMController {
+  class PlugController : public PluginDispatcher {
   public:
     /* Class version */
-    STAMINA_OBJECT_CLASS_VERSION(PlugController<T>, IMController, Version(0,1,0,0));
+    STAMINA_OBJECT_CLASS_VERSION(PlugController<T>, PluginDispatcher, Version(0,1,0,0));
 
   protected:
     inline PlugController() {
-      config = new CfgController(this);
+      config = new CfgController(getIMessageDispatcher());
     }
     inline ~PlugController() {
       delete config;

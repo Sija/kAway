@@ -5,7 +5,7 @@
   *  Redistributions of files must retain the above copyright notice.
   *
   *  @filesource
-  *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
+  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
   *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
   *  @version      $Revision$
   *  @modifiedby   $LastChangedBy$
@@ -18,7 +18,7 @@
 #ifndef __CFGCTRL_H__
 #define __CFGCTRL_H__
 
-#include "IMController.h"
+#include "IMessageDispatcher.h"
 #include "Helpers.h"
 
 using namespace Konnekt::Tables;
@@ -29,14 +29,14 @@ namespace Konnekt {
   class CfgController : public SharedObject<iSharedObject>, public signals::trackable {
   public:
     /* Class version */
-    STAMINA_OBJECT_CLASS_VERSION(CfgController, iSharedObject, Version(0,1,1,0));
+    STAMINA_OBJECT_CLASS_VERSION(CfgController, iSharedObject, Version(0,1,2,0));
 
   public:
     typedef std::deque<sIMessage_setColumn*> tCfgCols;
 
   public:
-    inline CfgController(IMController* IMCtrl) {
-      this->attachObservers(IMCtrl);
+    inline CfgController(IMessageDispatcher& dispatcher) {
+      this->attachObservers(dispatcher);
     }
     inline CfgController() { }
 
@@ -48,8 +48,8 @@ namespace Konnekt {
 
   public:
     /* automagical registration of configuration columns (set via setColumn()) */
-    inline void attachObservers(IMController* IMCtrl) {
-      IMCtrl->registerObserver(IM_SETCOLS, bind(&CfgController::_setColumns, this, _1));
+    inline void attachObservers(IMessageDispatcher& dispatcher) {
+      dispatcher.connect(IM_SETCOLS, bind(&CfgController::_setColumns, this, _1));
     }
 
     inline void setColumn(tTable table, tColId id, int type, const char* def, const char* name) {
@@ -213,11 +213,11 @@ namespace Konnekt {
       }
     }
 
-    inline tIMCallback _setColumns(IMController* IMCtrl) {
+    inline void _setColumns(IMEvent& ev) {
       for (tCfgCols::iterator it = _cols.begin(); it != _cols.end(); it++) {
         Ctrl->IMessage(*it);
       }
-      IMCtrl->setSuccess();
+      ev.setSuccess();
     }
 
   protected:

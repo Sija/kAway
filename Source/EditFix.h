@@ -5,7 +5,7 @@
   *  Redistributions of files must retain the above copyright notice.
   *
   *  @filesource
-  *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
+  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
   *  @copyright    Copyright (c) 2003-2005 Kamil 'Olórin' Figiela
   *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
   *  @version      $Revision$

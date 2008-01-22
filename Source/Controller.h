@@ -5,7 +5,7 @@
   *  Redistributions of files must retain the above copyright notice.
   *
   *  @filesource
-  *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
+  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
   *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
   *  @version      $Revision$
   *  @modifiedby   $LastChangedBy$
@@ -22,7 +22,6 @@
 
 #include "Helpers.h"
 #include "PlugController.h"
-#include "CfgActions.h"
 #include "MRU.h"
 #include "NetList.h"
 #include "Format.h"
@@ -30,7 +29,7 @@
 #include "Message.h"
 #include "AwayWnd.h"
 
-//#include "FwdController.h"
+// #include "FwdController.h"
 
 namespace kAway2 {
   class Controller : public PlugController<Controller> {
@@ -73,27 +72,25 @@ namespace kAway2 {
     Controller();
 
   protected:
-    void testCfgActions(); // @debug
-
     /* IMessage callback methods */
-    void onPrepare();
-    void onAction();
-    void onMsgRcv();
-    void onEnd();
-    void onStatusChange();
-    void onPluginsLoaded();
+    void onPrepare(IMEvent& ev);
+    void onAction(IMEvent& ev);
+    void onMsgRcv(IMEvent& ev);
+    void onEnd(IMEvent& ev);
+    void onStatusChange(IMEvent& ev);
+    void onPluginsLoaded(IMEvent& ev);
     void onExtAutoAway();
-    void onAutoAway();
-    void onBack();
+    void onAutoAway(IMEvent& ev);
+    void onBack(IMEvent& ev);
 
     /* API callback methods */
-    void apiEnabled();
-    void apiEnable();
-    void apiDisable();
-    void apiIgnored();
-    void apiAutoAway();
-    void apiIgnore();
-    void apiShowAwayWnd();
+    void apiEnabled(IMEvent& ev);
+    void apiEnable(IMEvent& ev);
+    void apiDisable(IMEvent& ev);
+    void apiIgnored(IMEvent& ev);
+    void apiAutoAway(IMEvent& ev);
+    void apiIgnore(IMEvent& ev);
+    void apiShowAwayWnd(IMEvent& ev);
 
   public:
     /* strictly Controller methods */
@@ -174,7 +171,7 @@ namespace kAway2 {
     oNetList autoReplyList;
     oNetList statusList;
     oFormattedStatus statusCtrl;
-    //oFwdController fwdCtrl;
+    // oFwdController fwdCtrl;
     oAwayWnd wnd;
     oMRU mruList;
   };
