@@ -1,5 +1,5 @@
 /**
-  *  Configuration Controller
+  *  Configuration class
   *
   *  Licensed under The GNU Lesser General Public License
   *  Redistributions of files must retain the above copyright notice.
@@ -15,8 +15,8 @@
 
 #pragma once
 
-#ifndef __CFGCTRL_H__
-#define __CFGCTRL_H__
+#ifndef __CONFIG_H__
+#define __CONFIG_H__
 
 #include "IMessageDispatcher.h"
 #include "Helpers.h"
@@ -26,30 +26,32 @@ using namespace Stamina;
 using namespace boost;
 
 namespace Konnekt {
-  class CfgController : public SharedObject<iSharedObject>, public signals::trackable {
+  class Config : public SharedObject<iSharedObject>, public signals::trackable {
   public:
     /* Class version */
-    STAMINA_OBJECT_CLASS_VERSION(CfgController, iSharedObject, Version(0,1,2,0));
+    STAMINA_OBJECT_CLASS_VERSION(Config, iSharedObject, Version(0,2,0,0));
 
   public:
-    typedef std::deque<sIMessage_setColumn*> tCfgCols;
+    typedef std::deque<sIMessage_setColumn*> tColumns;
 
   public:
-    inline CfgController(IMessageDispatcher& dispatcher) {
+    inline Config(IMessageDispatcher& dispatcher) {
       this->attachObservers(dispatcher);
     }
-    inline CfgController() { }
+    inline Config() { }
 
-    inline virtual ~CfgController() { 
-      for (tCfgCols::iterator it = _cols.begin(); it != _cols.end(); it++) {
+    inline virtual ~Config() { 
+      for (tColumns::iterator it = _cols.begin(); it != _cols.end(); it++) {
         delete *it;
       }
     }
 
   public:
-    /* automagical registration of configuration columns (set via setColumn()) */
+    /**
+     * automagical registration of configuration columns (set via setColumn())
+     */
     inline void attachObservers(IMessageDispatcher& dispatcher) {
-      dispatcher.connect(IM_SETCOLS, bind(&CfgController::_setColumns, this, _1));
+      dispatcher.connect(IM_SETCOLS, bind(&Config::_setColumns, this, _1));
     }
 
     inline void setColumn(tTable table, tColId id, int type, const char* def, const char* name) {
@@ -73,8 +75,8 @@ namespace Konnekt {
         return;
       }
 
-      tCfgCols dtCnt;
-      for (tCfgCols::iterator it = _cols.begin(); it != _cols.end(); it++) {
+      tColumns dtCnt;
+      for (tColumns::iterator it = _cols.begin(); it != _cols.end(); it++) {
         if ((*it)->_table == tableConfig && resetCfg) {
           _resetColumn(*it);
         }
@@ -86,7 +88,7 @@ namespace Konnekt {
       if (dtCnt.size()) {
         int count = Ctrl->IMessage(IMC_CNT_COUNT);
         for (int i = 1; i < count; i++) {
-          for (tCfgCols::iterator it = dtCnt.begin(); it != dtCnt.end(); it++) {
+          for (tColumns::iterator it = dtCnt.begin(); it != dtCnt.end(); it++) {
             _resetColumn(*it, i);
           }
         }
@@ -97,7 +99,7 @@ namespace Konnekt {
       if (!_cols.size()) return;
 
       tTable table = !cnt ? tableConfig : tableContacts;
-      for (tCfgCols::iterator it = _cols.begin(); it != _cols.end(); it++) {
+      for (tColumns::iterator it = _cols.begin(); it != _cols.end(); it++) {
         if ((*it)->_id == id && (*it)->_table == table) {
           _resetColumn(*it, cnt, an); break;
         }
@@ -147,7 +149,7 @@ namespace Konnekt {
     }
 
     /*
-     * @todo find some better way to handle it
+     * TODO: find some better way to handle it
      */
     inline int getInheritedIValue(tColId col, tCntId cnt) const {
       return getInt(col, cnt) >= 0 ? getInt(col, cnt) : getInt(col);
@@ -214,17 +216,18 @@ namespace Konnekt {
     }
 
     inline void _setColumns(IMEvent& ev) {
-      for (tCfgCols::iterator it = _cols.begin(); it != _cols.end(); it++) {
+      for (tColumns::iterator it = _cols.begin(); it != _cols.end(); it++) {
         Ctrl->IMessage(*it);
       }
       ev.setSuccess();
     }
 
   protected:
-    tCfgCols _cols;
+    tColumns _cols;
   };
 
-  typedef SharedPtr<CfgController> oCfgCtrl;
+  // smart pointer type
+  typedef SharedPtr<Config> oConfig;
 }
 
-#endif // __CFGCTRL_H__
+#endif // __CONFIG_H__

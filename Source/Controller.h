@@ -21,7 +21,7 @@
 #include "kAway2.h"
 
 #include "Helpers.h"
-#include "PlugController.h"
+#include "PluginController.h"
 #include "MRU.h"
 #include "NetList.h"
 #include "Format.h"
@@ -32,13 +32,13 @@
 // #include "FwdController.h"
 
 namespace kAway2 {
-  class Controller : public PlugController<Controller> {
+  class Controller : public PluginController<Controller> {
   public:
-    friend class PlugController<Controller>;
+    friend class PluginController<Controller>;
 
   public:
     /* Class version */
-    STAMINA_OBJECT_CLASS_VERSION(Controller, PlugController, Version(1,2,0,0));
+    STAMINA_OBJECT_CLASS_VERSION(Controller, PluginController, Version(1,3,0,0));
 
   public:
     typedef std::deque<cMessage*> tMsgQueue;

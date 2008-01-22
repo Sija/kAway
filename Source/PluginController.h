@@ -15,48 +15,64 @@
 
 #pragma once
 
-#ifndef __PLUGCTRL_H__
-#define __PLUGCTRL_H__
+#ifndef __PLUGINCONTROLLER_H__
+#define __PLUGINCONTROLLER_H__
 
 #include "PluginDispatcher.h"
-#include "CfgController.h"
+#include "Config.h"
 
 using namespace Stamina;
 using namespace boost;
 
 namespace Konnekt {
   template <class T>
-  class PlugController : public PluginDispatcher {
+  class PluginController : public PluginDispatcher {
   public:
-    /* Class version */
-    STAMINA_OBJECT_CLASS_VERSION(PlugController<T>, PluginDispatcher, Version(0,1,0,0));
+    /**
+     * Class version macro
+     */
+    STAMINA_OBJECT_CLASS_VERSION(PluginController<T>, PluginDispatcher, Version(0,1,0,0));
+
+  public:
+    typedef SharedPtr<T> oInstance;
 
   protected:
-    inline PlugController() {
-      config = new CfgController(getIMessageDispatcher());
-    }
-    inline ~PlugController() {
-      delete config;
+    /**
+     * Creates new PluginController object.
+     */
+    inline PluginController() {
+      config = new Config(getIMessageDispatcher());
     }
 
   public:
+    /**
+     * Returns instance of object T.
+     *
+     * @return T*
+     */
     inline static T* getInstance() {
       if (!instance.isValid()) {
         instance = new T;
       }
       return instance;
     }
-    inline static CfgController* getConfig() {
+
+    /**
+     * Returns Config class instance.
+     *
+     * @return Config*
+     */
+    inline static Config* getConfig() {
       return getInstance()->config;
     }
 
   protected:
-    static SharedPtr<T> instance;
-    CfgController* config;
+    static oInstance instance;
+    oConfig config;
   };
 
   template <class T>
-  SharedPtr<T> PlugController<T>::instance = 0;
+  SharedPtr<T> PluginController<T>::instance = 0;
 }
 
-#endif // __PLUGCTRL_H__
+#endif // __PLUGINCONTROLLER_H__

@@ -359,11 +359,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Source\CfgController.h"
+				RelativePath="..\Source\forwarders\CntForwarder.h"
 				>
 			</File>
 			<File
-				RelativePath="..\Source\forwarders\CntForwarder.h"
+				RelativePath="..\Source\Config.h"
 				>
 			</File>
 			<File
@@ -427,7 +427,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Source\PlugController.h"
+				RelativePath="..\Source\PluginController.h"
 				>
 			</File>
 			<File
