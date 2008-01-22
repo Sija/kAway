@@ -43,6 +43,21 @@ namespace Konnekt {
      */
     Event(): _value(0), _processed(false), _id(0), _subject(0) { }
 
+    /**
+     * Returns string represantation of the event
+     *
+     * @return string 
+     */
+    inline string toString() {
+      string str = stringf("id = %i", getID());
+
+      // add return value if event was processed
+      if (isProcessed()) {
+        str += stringf(", returnValue = %i", getReturnValue());
+      }
+      return str;
+    }
+
   public:
     /**
      * Returns the subject.

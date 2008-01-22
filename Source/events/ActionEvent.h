@@ -46,6 +46,25 @@ namespace Konnekt {
       setID(an->act.id);
     }
 
+    /**
+     * Returns string represantation of the event
+     *
+     * @return string 
+     */
+    inline string toString() {
+      string str = stringf("id = %i, code = %i", getID(), getCode());
+
+      // add contact id if exist
+      if (getCnt()) {
+        str += stringf(", cnt = %i", getCnt());
+      }
+      // add return value if event was processed
+      if (isProcessed()) {
+        str += stringf(", returnValue = %i", getReturnValue());
+      }
+      return str;
+    }
+
   public:
     /**
      * Returns pointer to sUIActionNotify structure.

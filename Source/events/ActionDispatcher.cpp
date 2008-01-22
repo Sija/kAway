@@ -39,18 +39,7 @@ namespace Konnekt {
     } catch (...) { }
 
     // log IMessage
-    string msg = stringf("[ActionDispatcher::dispatch()]: id = %i, code = %i", 
-      ev->getID(), ev->getCode());
-
-    // add contact id if exist
-    if (ev->getCnt()) {
-      msg += stringf(", cnt = %i", ev->getCnt());
-    }
-    // add return value if event was processed
-    if (ev->isProcessed()) {
-      msg += stringf(", returnValue = %i", ev->getReturnValue());
-    }
-    IMLOG(msg.c_str());
+    IMLOG("[ActionDispatcher::dispatch()]: %s", ev->toString().c_str());
 
     // return event
     return ev;

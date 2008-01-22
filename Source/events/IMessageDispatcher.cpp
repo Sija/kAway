@@ -45,17 +45,7 @@ namespace Konnekt {
     }
 
     // log IMessage
-    string msg = stringf("[IMessageDispatcher::dispatch()]: id = %i", id);
-
-    if (ev->isProcessed()) {
-      msg += stringf(", returnValue = %i", ev->getReturnValue());
-    } else {
-      // set error if no result
-      if (Ctrl) {
-        Ctrl->setError(IMERROR_NORESULT);
-      }
-    }
-    IMLOG(msg.c_str());
+    IMLOG("[IMessageDispatcher::dispatch()]: %s", ev->toString().c_str());
 
     // return event
     return ev;

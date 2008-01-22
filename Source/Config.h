@@ -28,7 +28,9 @@ using namespace boost;
 namespace Konnekt {
   class Config : public SharedObject<iSharedObject>, public signals::trackable {
   public:
-    /* Class version */
+    /**
+     * Class version macro
+     */
     STAMINA_OBJECT_CLASS_VERSION(Config, iSharedObject, Version(0,2,0,0));
 
   public:

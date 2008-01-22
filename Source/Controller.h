@@ -1,5 +1,5 @@
 /**
-  *  kAway2 Control class
+  *  kAway2 Controller class
   *
   *  Licensed under The GNU Lesser General Public License
   *  Redistributions of files must retain the above copyright notice.
@@ -37,7 +37,9 @@ namespace kAway2 {
     friend class PluginController<Controller>;
 
   public:
-    /* Class version */
+    /**
+     * Class version macro
+     */
     STAMINA_OBJECT_CLASS_VERSION(Controller, PluginController, Version(1,3,0,0));
 
   public:
