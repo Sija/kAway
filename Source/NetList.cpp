@@ -18,7 +18,7 @@
 
 void NetList::load() {
   String buff(GETSTR(cfgCol));
-  tItems nets;
+  tItems loaded_nets;
 
   if (!buff.empty()) {
     Item item;
@@ -37,7 +37,7 @@ void NetList::load() {
       logDebug("[NetList<%i>::load().saved-item]: net = %i, active = %s",
         this, item.getNet(), btoa(item.isActive()));
 
-      nets.push_back(item);
+      loaded_nets.push_back(item);
     }
   }
 
@@ -58,9 +58,10 @@ void NetList::load() {
 
     if (item.getName().length() && !isIgnored(item.getNet())) {
       item._action_id = dynActGroup + n++;
+      item._parent_id = cfgGroup;
       item._active = defaultUse;
 
-      for (tItems::iterator it = nets.begin(); it != nets.end(); it++) {
+      for (tItems::iterator it = loaded_nets.begin(); it != loaded_nets.end(); it++) {
         if (it->getNet() == item.getNet()) {
           item.setActive(it->isActive()); break;
         }
@@ -118,14 +119,6 @@ void NetList::drawGroup(int columns, const string& title) {
   UIActionCfgAdd(cfgGroup, 0, ACTT_GROUPEND);
 }
 
-void NetList::_drawItem(NetList::Item& item, bool draw_inline, int x) {
-  logDebug("[NetList<%i>::_drawItem()]: name = %s, active = %s",
-    this, item.getName().c_str(), btoa(item.isActive()));
-
-  UIActionCfgAdd(cfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(item.getIconID()).a_str(), 0, x);
-  UIActionCfgAdd(cfgGroup, item.getActionID(), ACTT_CHECK | (draw_inline ? ACTSC_INLINE : 0), item.getName().c_str());
-}
-
 void NetList::drawItems(int columns) {
   int items_count = _items.size();
   if (!items_count) {
@@ -138,7 +131,7 @@ void NetList::drawItems(int columns) {
 
   for (tItems::iterator it = _items.begin(); it != _items.end(); it++, i++, col++) {
     col %= columns;
-    _drawItem(*it, (col != columns - 1 && i != items_count - 1), (col > 0) ? 10 : 0);
+    it->draw((col != columns - 1 && i != items_count - 1), (col > 0) ? 10 : 0);
   }
 
   // constructor action

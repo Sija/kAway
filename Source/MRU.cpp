@@ -16,12 +16,12 @@
 #include "stdafx.h"
 #include "MRU.h"
 
-MRU::tMRUlist MRU::get(bool rev, const char * buff, int buffSize) {
-  tMRUlist list;
+MRU::tItems MRU::get(bool rev, const char * buff, int buffSize) {
+  tItems list;
   sMRU mruList;
 
-  mruList.name = this->name.a_str();
-  mruList.count = this->getCount();
+  mruList.name = _name.c_str();
+  mruList.count = getCount();
   mruList.flags = MRU_SET_LOADFIRST;
 
   if (buff) {
@@ -46,39 +46,41 @@ MRU::tMRUlist MRU::get(bool rev, const char * buff, int buffSize) {
 }
 
 void MRU::append(const StringRef& current) {
-  tMRUlist list;
+  tItems list;
   list.push_back(current);
-  this->append(list);
+
+  append(list);
 }
 
-void MRU::append(tMRUlist list) {
-  int count = this->getCount();
-  for (tMRUlist::iterator it = list.begin(); it != list.end(); it++) {
+void MRU::append(const tItems& list) {
+  int count = getCount();
+  for (tItems::const_iterator it = list.begin(); it != list.end(); it++) {
     sMRU mru;
 
-    mru.name = this->name.a_str();
+    mru.name = _name.c_str();
     mru.flags = MRU_SET_LOADFIRST | MRU_GET_USETEMP;
-    mru.current = (*it).a_str();
+    mru.current = it->a_str();
     mru.count = count;
 
     Ctrl->IMessage(&sIMessage_MRU(IMC_MRU_SET, &mru));
   }
 }
+
 void MRU::clear() {
   sMRU mru;
 
-  mru.name = this->name.a_str();
+  mru.name = _name.c_str();
   mru.count = 0;
 
   Ctrl->IMessage(&sIMessage_MRU(IMC_MRU_SET, &mru));
 }
 
 void MRU::set(const StringRef& current) {
-  this->clear();
-  this->append(current);
+  clear();
+  append(current);
 }
 
-void MRU::set(tMRUlist list) {
-  this->clear();
-  this->append(list);
+void MRU::set(const tItems& list) {
+  clear();
+  append(list);
 }

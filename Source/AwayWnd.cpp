@@ -173,10 +173,10 @@ namespace kAway2 {
         CheckDlgButton(hWnd, MUTE, GETINT(cfg::wnd::muteOnEnable) ? BST_CHECKED : 0);
 
         // odczytujemy liste mru
-        MRU::tMRUlist list = Controller::getInstance()->mruList->get();
+        MRU::tItems list = Controller::getInstance()->mruList->get();
 
         // wype³niamy combobox
-        for (MRU::tMRUlist::iterator it = list.begin(); it != list.end(); it++) {
+        for (MRU::tItems::iterator it = list.begin(); it != list.end(); it++) {
           SendMessage(hWndCombo, CB_ADDSTRING, 0, (LPARAM) (*it).a_str());
         }
 

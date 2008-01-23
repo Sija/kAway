@@ -48,11 +48,12 @@ public:
      *
      * @param string net name
      * @param int action id
+     * @param int parent action id
      * @param bool true if net is checked as active
      * @param bool true if net should be ignored
      */
-    Item(int net, int action_id, const string& name, bool active = true) :
-      _action_id(action_id), _net(net), _name(name), _active(active) { }
+    Item(int net, int action_id, int parent_id, const string& name, bool active = true) :
+      _action_id(action_id), _parent_id(parent_id), _net(net), _name(name), _active(active) { }
 
     /**
      * Constructs an empty Item.
@@ -85,6 +86,15 @@ public:
      */
     inline int getActionID() {
       return _action_id;
+    }
+
+    /**
+     * Returns parent action id
+     *
+     * @return int
+     */
+    inline int getParentID() {
+      return _parent_id;
     }
 
     /**
@@ -124,7 +134,23 @@ public:
     }
 
   protected:
+    /**
+     * Draws the ui control
+     *
+     * @param bool true if control should be drawn inline
+     * @param int left margin (in px)
+     */
+    inline void draw(bool draw_inline, int left_margin = 0) {
+      logDebug("[NetList::Item<%i>::draw()]: name = %s, active = %s",
+        this, getName().c_str(), btoa(isActive()));
+
+      UIActionCfgAdd(getParentID(), 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(getIconID()).a_str(), 0, left_margin);
+      UIActionCfgAdd(getParentID(), getActionID(), ACTT_CHECK | (draw_inline ? ACTSC_INLINE : 0), getName().c_str());
+    }
+
+  protected:
     unsigned int _action_id;
+    unsigned int _parent_id;
     unsigned int _net;
     string _name;
     bool _active;
@@ -228,15 +254,6 @@ public:
   void removeIgnored(int net);
 
 protected:
-  /**
-   * Draws given Item object
-   *
-   * @param Item&
-   * @param bool true if control should be drawn as inline 
-   * @param int x position
-   */
-  void _drawItem(Item& item, bool draw_inline, int x);
-
   /**
    * Events handling methods
    */

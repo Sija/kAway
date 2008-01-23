@@ -22,7 +22,7 @@
 
 class MRU : public SharedObject<iSharedObject> {
 public:
-  typedef std::deque<String> tMRUlist;
+  typedef std::deque<String> tItems;
 
   /*
    * Class version
@@ -30,61 +30,47 @@ public:
 	STAMINA_OBJECT_CLASS_VERSION(MRU, iSharedObject, Version(0,1,0,0));
 
 public:
-  MRU(const StringRef& _name, int _count = 100, bool _dtbCount = false) : 
-    name(_name), count(_count), dtbCount(_dtbCount) { }
+  MRU(const string& name, int count = 100) : 
+    _name(name), _count(count) { }
 
 public:
-  tMRUlist get(bool rev = true, const char * buff = 0, int buffSize = 1024);
+  tItems get(bool rev = true, const char * buff = 0, int buffSize = 1024);
+
   void append(const StringRef& current);
-  void append(tMRUlist list);
+  void append(const tItems& list);
 
   void set(const StringRef& current);
-  void set(tMRUlist list);
+  void set(const tItems& list);
 
   void clear();
 
-  inline int getCount() {
-    return this->dtbCount ? GETINT(this->count) : this->count;
+  inline unsigned int getCount() {
+    return _count;
   }
-
-  /*
-   *  Static methods
-   */
-  inline static tMRUlist get(const StringRef& name, int count = 100, bool rev = true, 
-    const char * buff = 0, int buffSize = 1024) {
-    MRU mru(name, count);
-    return mru.get(rev, buff, buffSize);
-  }
-
-  inline static void append(const StringRef& name, const StringRef& current, int count = 100) {
-    MRU mru(name, count);
-    mru.append(current);
-  }
-
-  inline static void append(const StringRef& name, tMRUlist list, int count = 100) {
-    MRU mru(name, count);
-    mru.append(list);
-  }
-
-  inline static void set(const StringRef& name, const StringRef& current, int count = 100) {
-    MRU mru(name, count);
-    mru.set(current);
-  }
-
-  inline static void set(const StringRef& name, tMRUlist list, int count = 100) {
-    MRU mru(name, count);
-    mru.set(list);
-  }
-
-  inline static void clear(const StringRef& name) {
-    MRU mru(name);
-    mru.clear();
+  inline void setCount(int count) {
+    _count = count;
   }
 
 protected:
-  String name;
-  unsigned int count;
-  bool dtbCount;
+  string _name;
+  unsigned int _count;
+};
+
+class MRUConfigurable : public MRU {
+public:
+  MRUConfigurable(const string& name, int cfg_column) : MRU(name),
+    _cfg_column(cfg_column) { }
+
+public:
+  inline unsigned int getCount() {
+    return GETINT(_cfg_column);
+  }
+  inline void setCount(int count) {
+    SETINT(_cfg_column, count);
+  }
+
+protected:
+  unsigned int _cfg_column;
 };
 
 typedef SharedPtr<MRU> oMRU;

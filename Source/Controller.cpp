@@ -139,7 +139,7 @@ namespace kAway2 {
     this->pluginsGroup = Helpers::getPluginsGroup();
 
     // set up MRU list and away window
-    this->mruList = new MRU(cfg::mruName, cfg::mruSize, true);
+    this->mruList = new MRUConfigurable(cfg::mruName, cfg::mruSize);
     this->wnd = new AwayWnd();
 
     this->statusList = new NetList(action_dispatcher, cfg::status::netChange, ui::statusCfgGroup, dynAct::status, 
