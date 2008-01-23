@@ -1008,19 +1008,19 @@ namespace kAway2 {
     }
 
     for (NetList::tItems::iterator it = nets.begin(); it != nets.end(); it++) {
-      actSt = statusCtrl->getActualStatus(it->net);
+      actSt = statusCtrl->getActualStatus(it->getNet());
       status = _status;
 
-      if (!statusCtrl->isNetValid(it->net)) {
+      if (!statusCtrl->isNetValid(it->getNet())) {
         continue;
       }
       if (chgOnlyIfOnline && (actSt != ST_ONLINE && actSt != ST_CHAT)) {
         status = -1;
       }
       if (changeInfo) {
-        statusCtrl->changeStatusInfo(it->net, config->getChar(cfg::tpl::status), status);
+        statusCtrl->changeStatusInfo(it->getNet(), config->getChar(cfg::tpl::status), status);
       } else if (status != -1) {
-        statusCtrl->changeStatus(it->net, status);
+        statusCtrl->changeStatus(it->getNet(), status);
       }
     }
   }
@@ -1029,7 +1029,7 @@ namespace kAway2 {
     int session, net = config->getInt(CNT_NET, cnt);
 
     if (((statusCtrl->getActualStatus(net) == ST_HIDDEN) && !config->getInheritedBValue(cfg::reply::whenInvisible, cnt)) || 
-      !autoReplyList->getItem(net).active || !autoReplyList->getItem(net).isConnected())
+      !autoReplyList->getItem(net).isActive() || !autoReplyList->getItem(net).isConnected())
       return;
 
     String ext, uid(config->getChar(CNT_UID, cnt));

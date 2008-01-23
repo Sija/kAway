@@ -41,6 +41,8 @@ public:
 
   class Item {
   public:
+    friend class NetList;
+
     /**
      * Constructs a new Item.
      *
@@ -50,27 +52,82 @@ public:
      * @param bool true if net should be ignored
      */
     Item(int net, int action_id, const string& name, bool active = true) :
-      action_id(action_id), net(net), name(name), active(active) { }
+      _action_id(action_id), _net(net), _name(name), _active(active) { }
 
     /**
      * Constructs an empty Item.
      */
-    Item(): action_id(0), net(0), active(false) { }
+    Item(): _action_id(0), _net(0), _active(false) { }
 
   public:
+    /**
+     * Returns true if net is connected
+     *
+     * @return bool
+     */
     inline bool isConnected() {
-      return (bool) Ctrl->IMessage(IM_ISCONNECTED, net, IMT_PROTOCOL);
+      return (bool) Ctrl->IMessage(IM_ISCONNECTED, getNet(), IMT_PROTOCOL);
     }
 
+    /**
+     * Returns icon id
+     *
+     * @return int
+     */
     inline int getIconID() {
-      return UIIcon(IT_LOGO, (int) net, 0, 0);
+      return UIIcon(IT_LOGO, (int) getNet(), 0, 0);
     }
 
-  public:
-    unsigned int action_id;
-    unsigned int net;
-    string name;
-    bool active;
+    /**
+     * Returns action id
+     *
+     * @return int
+     */
+    inline int getActionID() {
+      return _action_id;
+    }
+
+    /**
+     * Returns net id
+     *
+     * @return int
+     */
+    inline int getNet() {
+      return _net;
+    }
+
+    /**
+     * Returns net name
+     *
+     * @return string
+     */
+    inline string getName() {
+      return _name;
+    }
+
+    /**
+     * Returns true if item is active
+     *
+     * @return bool
+     */
+    inline bool isActive() {
+      return _active;
+    }
+
+    /**
+     * Sets the item status
+     *
+     * @param bool
+     */
+    inline void setActive(bool active) {
+      _active = active;
+    }
+
+  protected:
+    unsigned int _action_id;
+    unsigned int _net;
+    string _name;
+    bool _active;
   };
 
   typedef deque<int> tIgnored;
