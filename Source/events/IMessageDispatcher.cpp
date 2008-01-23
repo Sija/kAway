@@ -26,11 +26,11 @@ namespace Konnekt {
    * @return oEvent
    */
   oEvent IMessageDispatcher::dispatch(sIMessage_base* msgBase) {
-    // get imessage id
-    int id = msgBase->id;
-
     // create event object
     SharedPtr<IMEvent> ev = new IMEvent(msgBase);
+
+    // get imessage id
+    int id = ev->getID();
 
     // look for static values
     if (_static_values.find(id) != _static_values.end()) {

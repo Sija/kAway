@@ -132,25 +132,30 @@ namespace kAway2 {
   /* IMessage callback methods */
 
   void Controller::onPrepare(IMEvent& ev) {
+    // get ActionDispatcher object
+    ActionDispatcher& action_dispatcher = getActionDispatcher();
+
+    // set plugins group id
     this->pluginsGroup = Helpers::getPluginsGroup();
 
+    // set up MRU list and away window
     this->mruList = new MRU(cfg::mruName, cfg::mruSize, true);
     this->wnd = new AwayWnd();
 
-    this->statusList = new NetList(cfg::status::netChange, ui::statusCfgGroup, dynAct::status, 
+    this->statusList = new NetList(action_dispatcher, cfg::status::netChange, ui::statusCfgGroup, dynAct::status, 
       act::cfgGroupCheckCreate, act::cfgGroupCheckDestroy);
     statusList->addIgnored(plugsNET::konnferencja);
     statusList->addIgnored(plugsNET::klan);
     statusList->addIgnored(plugsNET::checky);
     statusList->addIgnored(plugsNET::actio);
-    statusList->loadNets();
+    statusList->load();
 
-    this->autoReplyList = new NetList(cfg::reply::netChange, ui::replyCfgGroup, dynAct::reply, 
+    this->autoReplyList = new NetList(action_dispatcher, cfg::reply::netChange, ui::replyCfgGroup, dynAct::reply, 
       act::replyCfgGroupCheckCreate, act::replyCfgGroupCheckDestroy);
     autoReplyList->addIgnored(plugsNET::klan);
     autoReplyList->addIgnored(plugsNET::checky);
     autoReplyList->addIgnored(plugsNET::actio);
-    autoReplyList->loadNets();
+    autoReplyList->load();
 
     this->statusCtrl = new FormattedStatus(statusList, cfg::status::whenInvisible, cfg::status::dotsAppend, "status");
     statusCtrl->addReplacementSt(plugsNET::gg, ST_CHAT, ST_ONLINE);
@@ -410,7 +415,7 @@ namespace kAway2 {
     UIActionCfgAdd(ui::statusCfgGroup, 0, ACTT_GROUPEND);
 
     /* |-> Net selection group */
-    statusList->UIDraw(3, "Wybierz sieci, na których chcesz zmieniaæ status:");
+    statusList->drawGroup(3, "Wybierz sieci, na których chcesz zmieniaæ status:");
 
     /* Autoresponder tab */
     /* |-> Minimal reply interval group */
@@ -433,7 +438,7 @@ namespace kAway2 {
     }
 
     /* |-> Net selection group */
-    autoReplyList->UIDraw(3, "Wybierz sieci, na których maj¹ dzia³aæ powiadomienia:");
+    autoReplyList->drawGroup(3, "Wybierz sieci, na których maj¹ dzia³aæ powiadomienia:");
 
     UIActionCfgAdd(ui::replyCfgGroup, 0, ACTT_GROUP, "Wysy³anie powiadomieñ");
     ifINT {
@@ -700,8 +705,8 @@ namespace kAway2 {
     sUIActionNotify* an = ActionEvent(ev.getIMessage(), _action_dispatcher).getActionNotify();
     int id = an->act.id, cnt = an->act.cnt;
 
-    statusList->actionHandle(id, an->code);
-    autoReplyList->actionHandle(id, an->code);
+    // statusList->actionHandle(id, an->code);
+    // autoReplyList->actionHandle(id, an->code);
 
     switch (id) {
       case ui::msgTbGrp:
@@ -995,14 +1000,14 @@ namespace kAway2 {
 
   void Controller::changeStatus(int _status, bool changeInfo) {
     int actSt, status, chgOnlyIfOnline = (this->autoAway == typeBasic) && GETINT(cfg::status::chgOnlyIfOnline);
-    NetList::tNets nets = statusList->getNets();
+    NetList::tItems& nets = statusList->getItems();
 
     if (changeInfo) {
       statusCtrl->stringFormatter->addVar("date", this->awayTime.strftime(config->getChar(cfg::dateFormat)));
       statusCtrl->stringFormatter->addVar("time", this->awayTime.strftime(config->getChar(cfg::timeFormat)));
     }
 
-    for (NetList::tNets::iterator it = nets.begin(); it != nets.end(); it++) {
+    for (NetList::tItems::iterator it = nets.begin(); it != nets.end(); it++) {
       actSt = statusCtrl->getActualStatus(it->net);
       status = _status;
 
@@ -1024,7 +1029,7 @@ namespace kAway2 {
     int session, net = config->getInt(CNT_NET, cnt);
 
     if (((statusCtrl->getActualStatus(net) == ST_HIDDEN) && !config->getInheritedBValue(cfg::reply::whenInvisible, cnt)) || 
-      !autoReplyList->getNetState(net) || !autoReplyList->isConnected(net))
+      !autoReplyList->getItem(net).active || !autoReplyList->getItem(net).isConnected())
       return;
 
     String ext, uid(config->getChar(CNT_UID, cnt));

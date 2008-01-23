@@ -16,12 +16,12 @@
 #include "stdafx.h"
 #include "NetList.h"
 
-void NetList::loadNets() {
-  String buff(GETSTR(this->cfgCol));
-  tNets nets;
+void NetList::load() {
+  String buff(GETSTR(cfgCol));
+  tItems nets;
 
   if (!buff.empty()) {
-    sNet item;
+    Item item;
 
     int pos = (int) buff.find("|");
     int off = 0;
@@ -30,217 +30,170 @@ void NetList::loadNets() {
       item.net = atoi(buff.substr(off, pos - off).a_str());
       off = pos + 1;
       pos = (int) buff.find("|", off);
-      item.use = atoi(buff.substr(off, pos - off).a_str()) ? true : false;
+      item.active = (bool) atoi(buff.substr(off, pos - off).a_str());
       off = pos + 1;
       pos = (int) buff.find("|", off);
 
-      logDebug("[NetList<%i>::loadNets().saved-item]: net = %i, use = %s",
-        this, item.net, btoa(item.use));
+      logDebug("[NetList<%i>::load().saved-item]: net = %i, active = %s",
+        this, item.net, btoa(item.active));
 
       nets.push_back(item);
     }
   }
 
-  int id, type, net;
-  int plugs = IMessage(IMC_PLUG_COUNT);
+  int plugs = Ctrl->IMessage(IMC_PLUG_COUNT);
+  int id, type;
 
-  String name;
-  sNet item;
+  Item item;
 
   for (int i = 1, n = 1; i < plugs; i++) {
-    id = IMessage(IMC_PLUG_ID, 0, 0, i);
-    type = IMessageDirect(IM_PLUG_TYPE, id);
+    id = Ctrl->IMessage(IMC_PLUG_ID, 0, 0, i);
+    type = Ctrl->IMessageDirect(IM_PLUG_TYPE, id);
 
-    if ((type & IMT_NET) == IMT_NET) {
-      net = (int) IMessageDirect(IM_PLUG_NET, id);
-      name = (char*) IMessageDirect(IM_PLUG_NETNAME, id);
+    if ((type & IMT_NET) != IMT_NET) {
+      continue;
+    }
+    item.net = (int) Ctrl->IMessageDirect(IM_PLUG_NET, id);
+    item.name = (char*) Ctrl->IMessageDirect(IM_PLUG_NETNAME, id);
 
-      if (name.length() && !this->isIgnored(net)) {
-        item.net = net;
-        item.id = n++;
-        item.name = name;
-        item.use = this->defaultUse;
+    if (item.name.length() && !isIgnored(item.net)) {
+      item.action_id = dynActGroup + n++;
+      item.active = defaultUse;
 
-        for (tNets::iterator it = nets.begin(); it != nets.end(); it++) {
-          if (it->net == item.net) {
-            item.use = it->use; break;
-          }
+      for (tItems::iterator it = nets.begin(); it != nets.end(); it++) {
+        if (it->net == item.net) {
+          item.active = it->active; break;
         }
-        this->nets.push_back(item);
-
-        logDebug("[NetList<%i>::loadNets().item]: id = %i, net = %i, name = %s, use = %s",
-          this, item.id, item.net, item.name.c_str(), btoa(item.use));
       }
+      _items.push_back(item);
+
+      logDebug("[NetList<%i>::load().item]: action id = %i, net = %i, name = %s, active = %s",
+        this, item.action_id, item.net, item.name.c_str(), btoa(item.active));
     }
   }
 }
 
-void NetList::saveNets() {
-  String buff;
+void NetList::save() {
+  string buff;
   char v[10];
 
-  for (tNets::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
+  for (tItems::iterator it = _items.begin(); it != _items.end(); it++) {
     buff += itoa(it->net, v, 10);
     buff += "|";
-    buff += it->use ? "1" : "0";
+    buff += it->active ? "1" : "0";
     buff += "|";
 
-    logDebug("[NetList<%i>::saveNets().item]: name = %s, use = %s",
-      this, it->name.c_str(), btoa(it->use));
+    logDebug("[NetList<%i>::save().item]: name = %s, active = %s",
+      this, it->name.c_str(), btoa(it->active));
   }
-
-  SETSTR(this->cfgCol, buff.a_str());
+  SETSTR(cfgCol, buff.c_str());
 }
 
-void NetList::actionHandle(int id, int code) {
-  if (!this || !Ctrl || !Ctrl->isRunning()) return;
-
-  if ((id == this->cfgGroup) && (code == ACTN_SAVE) && this->netsDrawn) {
-    logDebug("[NetList<%i>::actionHandle()]: id = %i, code = %i", this, id, code);
-    this->UIGetState();
-    this->saveNets();
-  } else if ((id == this->actCreate) && (code == ACTN_CREATEWINDOW)) {
-    this->netsDrawn = true;
-    this->UISetState();
-  } else if ((id == this->actDestroy) && (code == ACTN_DESTROYWINDOW)) {
-    this->netsDrawn = false;
+void NetList::_onCreate(ActionEvent& ev) {
+  if (ev.getCode() == ACTN_CREATEWINDOW) {
+    _opened = true;
+    refreshUI();
   }
 }
 
-void NetList::UIDraw(int colCount, char *groupTitle) {
-  int i = 0, col = 0, ico;
-  int netsCount = this->nets.size();
+void NetList::_onDestroy(ActionEvent& ev) {
+  if (ev.getCode() == ACTN_DESTROYWINDOW) {
+    _opened = false;
+  }
+}
 
-  if (!netsCount)
+void NetList::_onAction(ActionEvent& ev) {
+  if (ev.getCode() == ACTN_SAVE && _opened) {
+    refreshFromUI();
+    save();
+  }
+}
+
+void NetList::drawGroup(int columns, const string& title) {
+  if (!_items.size()) {
     return;
-
-  if (this->selection == typeRadiosEmpty) {
-    this->nets.push_back(sNet(0, 0, (String) "Brak", 0));
-    netsCount++;
   }
-
-  if (groupTitle) {
-    UIActionCfgAdd(this->cfgGroup, 0, ACTT_GROUP, groupTitle);
-  }
-  UIActionCfgAdd(this->cfgGroup, this->actDestroy, ACTT_HWND, 0, 0, 0, -20);
-
-  for (tNets::iterator it = this->nets.begin(); it != this->nets.end(); it++, i++, col++) {
-    ico = UIIcon(IT_LOGO, (int) it->net, 0, 0);
-    col %= colCount;
-
-    logDebug("[NetList<%i>::UIDraw().item]: name = %s, use = %s",
-      this, it->name.c_str(), btoa(it->use));
-
-    UIActionCfgAdd(this->cfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(ico).a_str(), 0, (col > 0) ? 10 : 0);
-    if (this->selection != typeCheckboxes) {
-      String name = it->name + AP_VALUE + inttostr(it->net);
-      UIActionCfgAdd(this->cfgGroup, this->dynActGroup + it->id, ACTT_RADIO | 
-        ((col != (colCount - 1) && i != (netsCount - 1)) ? ACTSC_INLINE : 0) |
-        (i != (netsCount - 1) ? 0 : ACTSRADIO_LAST), name.a_str());
-    } else {
-      UIActionCfgAdd(this->cfgGroup, this->dynActGroup + it->id, ACTT_CHECK | 
-        ((col != (colCount - 1) && i != (netsCount - 1)) ? ACTSC_INLINE : 0), it->name.a_str());
-    }
-  }
-
-  UIActionCfgAdd(this->cfgGroup, this->actCreate, ACTT_HWND, 0, 0, 0, -20);
-  if (groupTitle) {
-    UIActionCfgAdd(this->cfgGroup, 0, ACTT_GROUPEND);
-  }
-
-  if (this->selection == typeRadiosEmpty) {
-    this->nets.pop_back();
-  }
+  UIActionCfgAdd(cfgGroup, 0, ACTT_GROUP, title.c_str());
+  drawItems(columns);
+  UIActionCfgAdd(cfgGroup, 0, ACTT_GROUPEND);
 }
 
-void NetList::UIGetState() {
-  char buff[16];
+void NetList::_drawItem(NetList::Item& item, bool draw_inline, int x) {
+  logDebug("[NetList<%i>::_drawItem()]: name = %s, active = %s",
+    this, item.name.c_str(), btoa(item.active));
+
+  UIActionCfgAdd(cfgGroup, 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(item.getIconID()).a_str(), 0, x);
+  UIActionCfgAdd(cfgGroup, item.action_id, ACTT_CHECK | (draw_inline ? ACTSC_INLINE : 0), item.name.c_str());
+}
+
+void NetList::drawItems(int columns) {
+  int items_count = _items.size();
+  if (!items_count) {
+    return;
+  }
+  int i = 0, col = 0;
+
+  // destructor action
+  UIActionCfgAdd(cfgGroup, actDestroy, ACTT_HWND, 0, 0, 0, -20);
+
+  for (tItems::iterator it = _items.begin(); it != _items.end(); it++, i++, col++) {
+    col %= columns;
+    _drawItem(*it, (col != columns - 1 && i != items_count - 1), (col > 0) ? 10 : 0);
+  }
+
+  // constructor action
+  UIActionCfgAdd(cfgGroup, actCreate, ACTT_HWND, 0, 0, 0, -20);
+}
+
+void NetList::refreshFromUI() {
   bool v;
 
-  if (this->selection != typeCheckboxes) {
-    UIActionCfgGetValue(sUIAction(this->cfgGroup, this->dynActGroup + this->nets.size()), buff, 16, true);
-  }
+  for (tItems::iterator it = _items.begin(); it != _items.end(); it++) {
+    v = *UIActionCfgGetValue(sUIAction(cfgGroup, it->action_id), 0, 0, true) == '1';
 
-  for (tNets::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
-    if (this->selection != typeCheckboxes) {
-      v = (it->net == atoi(buff)) ? true : false;
-    } else {
-      v = *UIActionCfgGetValue(sUIAction(this->cfgGroup, this->dynActGroup + it->id), 0, 0, true) == '1';
-    }
+    logDebug("[NetList<%i>::refreshFromUI().item]: name = %s, active = %s [now: %s]",
+      this, it->name.c_str(), btoa(it->active), btoa(v));
 
-    logDebug("[NetList<%i>::UIGetState().item]: name = %s, use = %s [now: %s]",
-      this, it->name.c_str(), btoa(it->use), btoa(v));
-
-    if (it->use != v) it->use = v;
+    if (it->active != v) it->active = v;
   }
 }
 
-void NetList::UISetState() {
-  bool isCheckedAny = false;
+void NetList::refreshUI() {
+  for (tItems::iterator it = _items.begin(); it != _items.end(); it++) {
+    UIActionCfgSetValue(sUIAction(cfgGroup, it->action_id), (it->active ? "1" : "0"), true);
 
-  for (tNets::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
-    if (this->selection != typeCheckboxes) {
-      if (it->use) {
-        UIActionCfgSetValue(sUIAction(this->cfgGroup, this->dynActGroup + it->id), inttostr(it->net).c_str(), true);
-        isCheckedAny = true;
-      }
-    } else {
-      UIActionCfgSetValue(sUIAction(this->cfgGroup, this->dynActGroup + it->id), (it->use ? "1" : "0"), true);
-    }
-
-    logDebug("[NetList<%i>::UISetState().item]: name = %s, use = %s",
-      this, it->name.c_str(), btoa(it->use));
-  }
-
-  if (this->selection == typeRadiosEmpty && !isCheckedAny) {
-    UIActionCfgSetValue(sUIAction(this->cfgGroup, this->dynActGroup), "0", true);
+    logDebug("[NetList<%i>::refreshUI().item]: name = %s, active = %s",
+      this, it->name.c_str(), btoa(it->active));
   }
 }
 
-String NetList::getNetName(int net) {
-  String fake;
-  for (tNets::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
-    if (it->net == net) return it->name;
-  }
-  return fake;
-}
-
-bool NetList::getNetState(int net) {
-  for (tNets::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
-    if (it->net == net) return it->use;
+bool NetList::hasItem(int net) {
+  for (tItems::iterator it = _items.begin(); it != _items.end(); it++) {
+    if (it->net == net) return true;
   }
   return false;
 }
 
-bool NetList::setNetState(int net, bool use) {
-  for (tNets::iterator it = this->nets.begin(); it != this->nets.end(); it++) {
-    if (it->net == net) {
-      if (it->use != use) it->use = use;
-      return true;
-    }
+NetList::Item& NetList::getItem(int net) {
+  for (tItems::iterator it = _items.begin(); it != _items.end(); it++) {
+    if (it->net == net) return *it;
   }
-  return false;
-}
-
-bool NetList::isConnected(int net) {
-  return Ctrl->IMessage(IM_ISCONNECTED, net, IMT_PROTOCOL);
+  throw new ExceptionString("Given net was not found");
 }
 
 bool NetList::isIgnored(int net) {
-  for (tIgnoredNets::iterator it = this->ignoredNets.begin(); it != this->ignoredNets.end(); it++) {
-    if ((*it) == net) return true;
+  for (tIgnored::iterator it = _ignored.begin(); it != _ignored.end(); it++) {
+    if (*it == net) return true;
   }
   return Ctrl->IMessage(IM::hidePresence, net);
 }
 
 void NetList::addIgnored(int net) {
-  this->ignoredNets.push_back(net);
+  _ignored.push_back(net);
 }
 
 void NetList::removeIgnored(int net) {
-  for (tIgnoredNets::iterator it = this->ignoredNets.begin(); it != this->ignoredNets.end(); it++) {
-    if ((*it) == net) {
-      it = this->ignoredNets.erase(it); break;
-    }
+  for (tIgnored::iterator it = _ignored.begin(); it != _ignored.end(); it++) {
+    if (*it == net) _ignored.erase(it); return;
   }
 }

@@ -46,15 +46,15 @@ void Status::removeReplacementSt(int net, int before) {
 }
 
 void Status::changeStatus(int st) {
-  NetList::tNets nets = this->netList->getNets();
-  for (NetList::tNets::iterator it = nets.begin(); it != nets.end(); it++) {
+  NetList::tItems& nets = this->netList->getItems();
+  for (NetList::tItems::iterator it = nets.begin(); it != nets.end(); it++) {
     if (this->isNetValid(it->net)) this->changeStatus(it->net, st);
   }
 }
 
 void Status::changeStatusInfo(const StringRef& info, int st) {
-  NetList::tNets nets = this->netList->getNets();
-  for (NetList::tNets::iterator it = nets.begin(); it != nets.end(); it++) {
+  NetList::tItems& nets = this->netList->getItems();
+  for (NetList::tItems::iterator it = nets.begin(); it != nets.end(); it++) {
     if (this->isNetValid(it->net)) this->changeStatusInfo(it->net, info, st);
   }
 }
@@ -147,8 +147,8 @@ void Status::rememberInfo() {
   this->omittedSt.clear();
   this->rememberedSt.clear();
 
-  NetList::tNets nets = this->netList->getNets();
-  for (NetList::tNets::iterator it = nets.begin(); it != nets.end(); it++) {
+  NetList::tItems& nets = this->netList->getItems();
+  for (NetList::tItems::iterator it = nets.begin(); it != nets.end(); it++) {
     this->rememberInfo(it->net);
   }
 }
@@ -247,7 +247,7 @@ String Status::getDots() {
 }
 
 bool Status::isNetValid(int net) {
-  if (this->netList->getNetState(net) && this->netList->isConnected(net)) {
+  if (this->netList->getItem(net).active && this->netList->getItem(net).isConnected()) {
     if (!this->changeOnHidden() && (ST_HIDDEN == this->getActualStatus(net))) {
       return false;
     } else {

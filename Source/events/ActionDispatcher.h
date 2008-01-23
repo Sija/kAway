@@ -92,6 +92,15 @@ namespace Konnekt {
       return _auto_forward;
     }
 
+    /**
+     * Sets auto forward option
+     *
+     * @param bool
+     */
+    inline void setAutoForward(bool auto_forward) {
+      _auto_forward = auto_forward;
+    }
+
     protected:
       unsigned int _parent;
       unsigned int _id;
@@ -157,6 +166,7 @@ namespace Konnekt {
 
     /**
      * Subclasses all registered actions
+     * TODO: zrobic to jakos sensowniej
      *
      * @param IMEvent&
      */
