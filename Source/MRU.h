@@ -44,10 +44,10 @@ public:
 
   void clear();
 
-  inline unsigned int getCount() {
+  virtual inline unsigned int getCount() {
     return _count;
   }
-  inline void setCount(int count) {
+  virtual inline void setCount(int count) {
     _count = count;
   }
 
