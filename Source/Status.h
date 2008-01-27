@@ -23,6 +23,9 @@
 
 class Status : public SharedObject<iSharedObject> {
 public:
+  /**
+   * Structure holding IMessage id constants
+   */
   static const struct IM {
     static const unsigned int key = IM_USER + (900 * 1000);
     static const unsigned int infoCharLimit = key + 1;
@@ -30,42 +33,79 @@ public:
 
 public:
   /*
-   * Class version
+   * Class version macro
    */
-	STAMINA_OBJECT_CLASS_VERSION(Status, iSharedObject, Version(0,1,0,0));
+	STAMINA_OBJECT_CLASS_VERSION(Status, iSharedObject, Version(0,2,0,0));
 
-  struct sInfo {
-    unsigned int net;
-    unsigned int st;
-    String info;
+  class Item {
+  public:
+    friend class Status;
 
-    sInfo(int _net, int _st, const StringRef& _info = "") : 
-      net(_net), st(_st), info(_info) { }
-    sInfo() { }
+    /**
+     * Constructs a new Item.
+     *
+     * @param int net id
+     * @param int status code
+     * @param String status info message
+     */
+    Item(tNet net, tStatus status, const StringRef& info = "") : 
+      _net(net), _status(status), _info(info) { }
+
+    /**
+     * Constructs an empty Item.
+     */
+    Item() { }
+
+  public:
+    /**
+     * Returns net id
+     *
+     * @return int
+     */
+    inline tNet getNet() const {
+      return _net;
+    }
+
+    /**
+     * Returns status code
+     *
+     * @return int
+     */
+    inline tStatus getStatus() const {
+      return _status;
+    }
+
+    /**
+     * Returns status info message
+     *
+     * @return String
+     */
+    inline const StringRef& getInfo() const {
+      return _info;
+    }
+
+  protected:
+    tNet _net;
+    tStatus _status;
+    String _info;
   };
 
-  struct sInfoCharLimit {
-    unsigned int net;
-    unsigned int length;
-
-    sInfoCharLimit(int _net, int _length) : 
-      net(_net), length(_length) { }
-    sInfoCharLimit() { }
-  };
-
+  /**
+   * Structure holding status replacements for certain nets
+   */
   struct sStReplacement {
-    unsigned int net;
-    unsigned int before;
-    unsigned int after;
+    tNet net;
+    tStatus before;
+    tStatus after;
 
-    sStReplacement(int _net, int _before, int _after) : 
-      net(_net), before(_before), after(_after) { }
+    sStReplacement(tNet net, tStatus before, tStatus after) : 
+      net(net), before(before), after(after) { }
   };
 
-  typedef std::list<sInfo> tInfos;
-  typedef std::map<int, std::list<sInfo>> tOmittedInfos;
-  typedef std::list<sStReplacement> tStReplacements;
-  typedef std::list<sInfoCharLimit> tInfoCharLimits;
+  typedef std::deque<Item> tItems;
+  typedef std::deque<sStReplacement> tStReplacements;
+  typedef stdext::hash_map<tNet, tItems> tOmittedInfos;
+  typedef stdext::hash_map<tNet, int> tNetInfoLimits;
 
 public:
   Status(NetList* netList, int onHiddenCfgCol = 0, int dotsCfgCol = 0);
@@ -78,10 +118,10 @@ public:
   // Czy zmieniaæ przy statusie 'ukryty' ?
   bool changeOnHidden();
   // obs³uga akcji
-  void actionHandle(sIMessage_base* msgBase);
+  void actionHandle(IMEvent& ev);
 
   // tekstowa nazwa statusu
-  String labelById(int st);
+  String getStatusLabel(int status);
   // "..." przy obcinanym opisie
   String getDots();
   // zwraca limit znaków opisu dla danej sieci
@@ -133,11 +173,11 @@ protected:
 
   tOmittedInfos omittedSt;
   // zapamietane statusy i ich opisy
-  tInfos rememberedSt;
+  tItems rememberedSt;
   // zamienniki nieobs³ugiwanych statusów
   tStReplacements stReplacements;
   // maksymalne d³ugoœci statusów opisowych
-  tInfoCharLimits infoCharLimits;
+  tNetInfoLimits infoCharLimits;
 };
 
 typedef SharedPtr<Status> oStatus;

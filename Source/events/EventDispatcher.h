@@ -78,11 +78,11 @@ namespace Konnekt {
      * @param int Listener priority
      * @param signals::connect_position
      *
-     * @return bool 
+     * @return signals::connection 
      */
-    inline bool connect(int id, const fListener& f, int priority = 0, signals::connect_position pos = signals::at_back) {
+    inline signals::connection connect(int id, const fListener& f, int priority = 0, signals::connect_position pos = signals::at_back) {
       if (f.empty()) {
-        return false;
+        throw new ExceptionString("Empty functor was given.");
       }
 
       if (_listeners.find(id) == _listeners.end()) {
@@ -90,14 +90,17 @@ namespace Konnekt {
       }
 
       signals::connection c = _listeners[id]->signal.connect(priority, f, pos);
-      if (c.connected()) {
-        _listeners[id]->connections.push_back(c);
+      if (!c.connected()) {
+        throw new ExceptionString("Listener was not connected.");
       }
-      return c.connected();
+
+      _listeners[id]->connections.push_back(c);
+      return c;
     }
 
     /**
      * Disconnects a listener for a given event id.
+     * TODO: jak to obsluzyc ?
      *
      * @param int An event id
      * @param fListener Listener callback
@@ -108,8 +111,6 @@ namespace Konnekt {
       if (!hasListeners(id)) {
         return false;
       }
-      // TODO: jak to obsluzyc ?
-      // _listeners[id]->signal.disconnect(f);
       return true;
     }
 

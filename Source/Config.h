@@ -38,7 +38,7 @@ namespace Konnekt {
 
   public:
     inline Config(IMessageDispatcher& dispatcher) {
-      this->attachObservers(dispatcher);
+      attachObservers(dispatcher);
     }
     inline Config() { }
 

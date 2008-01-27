@@ -23,6 +23,7 @@ namespace Konnekt {
    * Dispatches incoming Action IMessage
    *
    * @param sIMessage_base*
+   *
    * @return oEvent
    */
   oEvent ActionDispatcher::dispatch(sIMessage_base* msgBase) {

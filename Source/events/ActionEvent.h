@@ -51,7 +51,7 @@ namespace Konnekt {
      *
      * @return string 
      */
-    inline string toString() {
+    inline string toString() const {
       string str = stringf("id = %i, code = %i", getID(), getCode());
 
       // add contact id if exist
@@ -71,7 +71,7 @@ namespace Konnekt {
      *
      * @return sUIActionNotify*
      */
-    inline sUIActionNotify* getActionNotify() {
+    inline sUIActionNotify* getActionNotify() const {
       return _an;
     }
 
@@ -80,7 +80,7 @@ namespace Konnekt {
      *
      * @return int
      */
-    inline int getCnt() {
+    inline int getCnt() const {
       return _an->act.cnt;
     }
 
@@ -89,7 +89,7 @@ namespace Konnekt {
      *
      * @return int
      */
-    inline int getParent() {
+    inline int getParent() const {
       return _an->act.parent;
     }
 
@@ -98,7 +98,7 @@ namespace Konnekt {
      *
      * @return int
      */
-    inline int getCode() {
+    inline int getCode() const {
       return _an->code;
     }
 
@@ -116,7 +116,7 @@ namespace Konnekt {
      *
      * @return bool
      */
-    inline bool isSubclassed() {
+    inline bool isSubclassed() const {
       return _dispatcher.isSublassed(getID(), getParent());
     }
 

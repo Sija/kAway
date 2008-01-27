@@ -61,6 +61,7 @@ namespace Konnekt {
      * Dispatch incoming IMessage
      *
      * @param sIMessage_base*
+     *
      * @return oEvent
      */
     oEvent dispatch(sIMessage_base* msgBase);

@@ -108,10 +108,10 @@ namespace kAway2 {
     const unsigned int act = net * 1000 + 200;
 
     const unsigned int cfgGroupCheckCreate = act + 1;
-    const unsigned int cfgGroupCheckDestroy = act + 2;
+    // const unsigned int cfgGroupCheckDestroy = act + 2;
 
     const unsigned int replyCfgGroupCheckCreate = act + 3;
-    const unsigned int replyCfgGroupCheckDestroy = act + 4;
+    // const unsigned int replyCfgGroupCheckDestroy = act + 4;
 
     const unsigned int clearMru = act + 5;
     const unsigned int resetCntSettings = act + 6;

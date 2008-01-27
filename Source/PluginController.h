@@ -31,7 +31,7 @@ using namespace boost;
 
 namespace Konnekt {
   template <class T>
-  class PluginController : public SharedObject<iSharedObject>, public signals::trackable {
+  class PluginController : public SharedObject<iSharedObject> {
   public:
     /**
      * Class version macro
@@ -54,7 +54,7 @@ namespace Konnekt {
       _dispatcher.connect(IM_UI_PREPARE, bind(&ActionDispatcher::doSubclass, &_action_dispatcher, _1));
 
       // initialize configuration
-      config = new Config(getIMessageDispatcher());
+      config = new Config(_dispatcher);
     }
 
   public:
@@ -79,23 +79,6 @@ namespace Konnekt {
       return getInstance()->config;
     }
 
-  public:
-    /**
-     * Dispatch incoming IMessage
-     *
-     * @param sIMessage_base*
-     */
-    inline int dispatch(sIMessage_base* msgBase) {
-      // dispatch IMessage
-      oEvent ev = _dispatcher.dispatch(msgBase);
-
-      // dispatch action
-      if (ev->getID() == IM_UIACTION) {
-        ev = _action_dispatcher.dispatch(msgBase);
-      }
-      return ev->getReturnValue();
-    }
-
     /**
      * Returns reference to IMessageDispatcher
      *
@@ -112,6 +95,23 @@ namespace Konnekt {
      */
     inline ActionDispatcher& getActionDispatcher() {
       return _action_dispatcher;
+    }
+
+  public:
+    /**
+     * Dispatch incoming IMessage
+     *
+     * @param sIMessage_base*
+     */
+    inline int dispatch(sIMessage_base* msgBase) {
+      // dispatch IMessage
+      oEvent ev = _dispatcher.dispatch(msgBase);
+
+      // dispatch action
+      if (ev->getID() == IM_UIACTION) {
+        ev = _action_dispatcher.dispatch(msgBase);
+      }
+      return ev->getReturnValue();
     }
 
   protected:

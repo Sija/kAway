@@ -37,7 +37,7 @@ public:
   /*
    * Class version macro
    */
-	STAMINA_OBJECT_CLASS_VERSION(NetList, iSharedObject, Version(0,1,0,0));
+	STAMINA_OBJECT_CLASS_VERSION(NetList, iSharedObject, Version(0,2,0,0));
 
   class Item {
   public:
@@ -50,15 +50,14 @@ public:
      * @param int action id
      * @param int parent action id
      * @param bool true if net is checked as active
-     * @param bool true if net should be ignored
      */
-    Item(int net, int action_id, int parent_id, const string& name, bool active = true) :
+    Item(tNet net, int action_id, int parent_id, const string& name, bool active = true) :
       _action_id(action_id), _parent_id(parent_id), _net(net), _name(name), _active(active) { }
 
     /**
      * Constructs an empty Item.
      */
-    Item(): _action_id(0), _net(0), _active(false) { }
+    Item(): _action_id(0), _parent_id(0), _net(0), _active(false) { }
 
   public:
     /**
@@ -66,7 +65,7 @@ public:
      *
      * @return bool
      */
-    inline bool isConnected() {
+    inline bool isConnected() const {
       return (bool) Ctrl->IMessage(IM_ISCONNECTED, getNet(), IMT_PROTOCOL);
     }
 
@@ -75,7 +74,7 @@ public:
      *
      * @return int
      */
-    inline int getIconID() {
+    inline int getIconID() const {
       return UIIcon(IT_LOGO, (int) getNet(), 0, 0);
     }
 
@@ -84,7 +83,7 @@ public:
      *
      * @return int
      */
-    inline int getActionID() {
+    inline int getActionID() const {
       return _action_id;
     }
 
@@ -93,7 +92,7 @@ public:
      *
      * @return int
      */
-    inline int getParentID() {
+    inline int getParentID() const {
       return _parent_id;
     }
 
@@ -102,7 +101,7 @@ public:
      *
      * @return int
      */
-    inline int getNet() {
+    inline tNet getNet() const {
       return _net;
     }
 
@@ -111,7 +110,7 @@ public:
      *
      * @return string
      */
-    inline string getName() {
+    inline string getName() const {
       return _name;
     }
 
@@ -120,7 +119,7 @@ public:
      *
      * @return bool
      */
-    inline bool isActive() {
+    inline bool isActive() const {
       return _active;
     }
 
@@ -151,24 +150,22 @@ public:
   protected:
     unsigned int _action_id;
     unsigned int _parent_id;
-    unsigned int _net;
+    tNet _net;
     string _name;
     bool _active;
   };
 
-  typedef deque<int> tIgnored;
+  typedef deque<tNet> tIgnored;
   typedef deque<Item> tItems;
 
 public:
   /**
    * Constructs a new NetList object.
    */
-  NetList(ActionDispatcher& dispatcher, int _cfgCol, int _cfgGroup, int _dynActGroup, int _actCreate, int _actDestroy) :
-    cfgCol(_cfgCol), cfgGroup(_cfgGroup), dynActGroup(_dynActGroup), actCreate(_actCreate), actDestroy(_actDestroy), 
-    defaultUse(true), _opened(false)
+  NetList(ActionDispatcher& dispatcher, int _cfgCol, int _cfgGroup, int _dynActGroup, int _actCreate) :
+    cfgCol(_cfgCol), cfgGroup(_cfgGroup), dynActGroup(_dynActGroup), actCreate(_actCreate), defaultUse(true), _opened(false)
   {
-    dispatcher.connect(actCreate, boost::bind(&NetList::_onCreate, this, _1));
-    dispatcher.connect(actDestroy, boost::bind(&NetList::_onDestroy, this, _1));
+    dispatcher.connect(actCreate, boost::bind(&NetList::_groupListener, this, _1));
     dispatcher.connect(cfgGroup, boost::bind(&NetList::_onAction, this, _1));
   }
 
@@ -211,7 +208,7 @@ public:
    *
    * @return bool
    */
-  bool hasItem(int net);
+  bool hasItem(tNet net) const;
 
   /**
    * Returns reference to Item class for given net id
@@ -220,7 +217,7 @@ public:
    *
    * @return Item&
    */
-  Item& getItem(int net);
+  Item& getItem(tNet net);
 
   /**
    * Returns reference Items list
@@ -237,28 +234,27 @@ public:
    * @param int
    * @return bool
    */
-  bool isIgnored(int net);
+  bool isIgnored(tNet net) const;
 
   /**
    * Adds fiven net to the ignored list
    *
    * @param int
    */
-  void addIgnored(int net);
+  void addIgnored(tNet net);
 
   /**
    * Removes given net from the ignored list
    *
    * @param int
    */
-  void removeIgnored(int net);
+  void removeIgnored(tNet net);
 
 protected:
   /**
    * Events handling methods
    */
-  void _onCreate(ActionEvent& ev);
-  void _onDestroy(ActionEvent& ev);
+  void _groupListener(ActionEvent& ev);
   void _onAction(ActionEvent& ev);
 
 protected:
@@ -271,7 +267,6 @@ protected:
   unsigned int cfgGroup;
   unsigned int dynActGroup;
   unsigned int actCreate;
-  unsigned int actDestroy;
   bool defaultUse;
 };
 

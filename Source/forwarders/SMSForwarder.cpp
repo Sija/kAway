@@ -14,18 +14,22 @@
   */
 
 #include "stdafx.h"
+
 #include "SMSForwarder.h"
+#include "../Controller.h"
 
 namespace kAway2 {
   SMSForwarder::SMSForwarder() : Forwarder("sms", "SMS", 501, true, true) {
     Controller* pCtrl = Controller::getInstance();
+    IMessageDispatcher& dispatcher = pCtrl->getIMessageDispatcher();
 
-    pCtrl->registerObserver(IM_SETCOLS, bind(resolve_cast0(&SMSForwarder::onISetCols), this));
-    pCtrl->registerObserver(IM_UI_PREPARE, bind(resolve_cast0(&SMSForwarder::onIPrepare), this));
-    pCtrl->registerObserver(IM_MSG_RCV, bind(&SMSForwarder::onNewMsg, this, _1)); // baaad
-    pCtrl->registerObserver(im::away, bind(resolve_cast0(&SMSForwarder::onEnable), this));
-    pCtrl->registerObserver(im::back, bind(resolve_cast0(&SMSForwarder::onDisable), this));
-    pCtrl->registerActionObserver(ui::sms::number, bind(&SMSForwarder::refreshCombo, this, _1));
+    dispatcher.connect(IM_SETCOLS, bind(resolve_cast0(&SMSForwarder::onISetCols), this));
+    dispatcher.connect(IM_UI_PREPARE, bind(resolve_cast0(&SMSForwarder::onIPrepare), this));
+    dispatcher.connect(IM_MSG_RCV, bind(&SMSForwarder::onNewMsg, this, _1)); // baaad
+    dispatcher.connect(im::away, bind(resolve_cast0(&SMSForwarder::onEnable), this));
+    dispatcher.connect(im::back, bind(resolve_cast0(&SMSForwarder::onDisable), this));
+
+    pCtrl->getActionDispatcher().connect(ui::sms::number, bind(&SMSForwarder::refreshCombo, this, _1));
   }
 
   void SMSForwarder::send(const StringRef& msg) {
@@ -64,8 +68,8 @@ namespace kAway2 {
     Forwarder::onIPrepare();
   }
 
-  void SMSForwarder::refreshCombo(Controller* pCtrl) {
-    int code = pCtrl->getAN()->code;
+  void SMSForwarder::refreshCombo(ActionEvent& ev) {
+    int code = ev.getCode();
     if (code == ACTN_CHECK || code == ACTN_CREATE) {
       UIActionSetText(ui::sms::cfgGroup, ui::sms::gates, (char*) Ctrl->IMessage(Sms::IM::getGatewaysComboText, NET_SMS, IMT_ALL, (int) UIActionCfgGetValue(sUIAction(ui::sms::cfgGroup, ui::sms::number), 0, 0)));
     }

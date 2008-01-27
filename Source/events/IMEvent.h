@@ -42,7 +42,7 @@ namespace Konnekt {
      *
      * @return sIMessage*
      */
-    inline sIMessage* getIMessage() {
+    inline sIMessage* getIMessage() const {
       return _im;
     }
 

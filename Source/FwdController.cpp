@@ -14,11 +14,15 @@
   */
 
 #include "stdafx.h"
+
 #include "FwdController.h"
+#include "Controller.h"
 
 namespace kAway2 {
   FwdController::FwdController() : summarizableCount(0), forwardableCount(0) {
-    Controller::getInstance()->registerObserver(IM_UI_PREPARE, bind(&FwdController::registerCfgGroups, this, _1));
+    Controller* pCtrl = Controller::getInstance();
+
+    pCtrl->getIMessageDispatcher().connect(IM_UI_PREPARE, bind(&FwdController::registerCfgGroups, this, _1));
   }
 
   FwdController::~FwdController() {
@@ -28,7 +32,7 @@ namespace kAway2 {
     this->forwarders.clear();
   }
 
-  void FwdController::registerCfgGroups(Controller* pCtrl) {
+  void FwdController::registerCfgGroups(IMEvent &ev) {
     for (tForwarders::iterator it = this->forwarders.begin(); it != this->forwarders.end(); it++) {
       UIGroupAdd(ui::cfgGroup, (*it)->cfgCols["cfgGroup"], ACTR_SAVE, (*it)->title.a_str(), (*it)->ico);
     }

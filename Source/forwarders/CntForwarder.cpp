@@ -14,18 +14,21 @@
   */
 
 #include "stdafx.h"
+
 #include "CntForwarder.h"
+#include "../Controller.h"
 
 namespace kAway2 {
   CntForwarder::CntForwarder() : Forwarder("forward", "Lustereczko", ico::forward, true, true) {
     Controller* pCtrl = Controller::getInstance();
+    IMessageDispatcher& dispatcher = pCtrl->getIMessageDispatcher();
 
-    pCtrl->registerObserver(IM_SETCOLS, bind(resolve_cast0(&CntForwarder::onISetCols), this));
-    pCtrl->registerObserver(IM_UI_PREPARE, bind(resolve_cast0(&CntForwarder::onIPrepare), this));
-    pCtrl->registerObserver(IM_UIACTION, bind(&CntForwarder::onAction, this, _1));
-    pCtrl->registerObserver(IM_MSG_RCV, bind(&CntForwarder::onNewMsg, this, _1)); // baaad
-    pCtrl->registerObserver(im::away, bind(resolve_cast0(&CntForwarder::onEnable), this));
-    pCtrl->registerObserver(im::back, bind(resolve_cast0(&CntForwarder::onDisable), this));
+    dispatcher.connect(IM_SETCOLS, bind(resolve_cast0(&CntForwarder::onISetCols), this));
+    dispatcher.connect(IM_UI_PREPARE, bind(resolve_cast0(&CntForwarder::onIPrepare), this));
+    dispatcher.connect(IM_UIACTION, bind(&CntForwarder::onAction, this, _1));
+    dispatcher.connect(IM_MSG_RCV, bind(&CntForwarder::onNewMsg, this, _1)); // baaad
+    dispatcher.connect(im::away, bind(resolve_cast0(&CntForwarder::onEnable), this));
+    dispatcher.connect(im::back, bind(resolve_cast0(&CntForwarder::onDisable), this));
   }
 
   void CntForwarder::send(const StringRef& msg) {
@@ -41,9 +44,9 @@ namespace kAway2 {
     }
   }
 
-  void CntForwarder::onNewMsg(Controller* pCtrl) {
+  void CntForwarder::onNewMsg(IMEvent& ev) {
     // TODO: wykrywanie zapêtlania
-    Forwarder::onNewMsg(pCtrl);
+    Forwarder::onNewMsg(ev);
   }
 
   void CntForwarder::onISetCols() {
@@ -82,8 +85,9 @@ namespace kAway2 {
     Forwarder::onIPrepare();
   }
 
-  void CntForwarder::onAction(Controller* pCtrl) {
-    int id = pCtrl->getAN()->act.id, code = pCtrl->getAN()->code;
+  void CntForwarder::onAction(IMEvent& ev) {
+    ActionEvent aev(ev.getIMessage(), Controller::getInstance()->getActionDispatcher());
+    int id = aev.getID(), code = aev.getCode();
 
     if (id == ui::forward::userCombo && code == ACTN_CREATE) {
       int count = Ctrl->IMessage(IMC_CNT_COUNT);
@@ -98,7 +102,7 @@ namespace kAway2 {
           combo += "Wy³¹czone" AP_ICO "#2E" AP_VALUE "0\n";
         }
       }
-      UIActionSetText(ui::forward::cfgGroup, ui::forward::userCombo, Helpers::trim(combo).a_str());
+      UIActionSetText(ui::forward::cfgGroup, ui::forward::userCombo, Helpers::trim(combo).c_str());
     } else if (id == ui::forward::netsCombo && code == ACTN_CREATE) {
       String combo, name;
 
@@ -123,7 +127,7 @@ namespace kAway2 {
           combo += "Brak" AP_ICO "#2E" AP_VALUE "0\n";
         }
       }
-      UIActionSetText(ui::forward::cfgGroup, ui::forward::netsCombo, Helpers::trim(combo).a_str());
+      UIActionSetText(ui::forward::cfgGroup, ui::forward::netsCombo, Helpers::trim(combo).c_str());
     }
   }
 }

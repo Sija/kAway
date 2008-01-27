@@ -23,6 +23,8 @@
 #include "../Forwarder.h"
 #include "../Message.h"
 
+#include "../Events/ActionEvent.h"
+
 namespace kAway2 {
   namespace ui {
     namespace sms {
@@ -78,7 +80,7 @@ namespace kAway2 {
     void send(const StringRef& msg);
     void onISetCols();
     void onIPrepare();
-    void refreshCombo(Controller* pCtrl);
+    void refreshCombo(ActionEvent& ev);
   };
 }
 

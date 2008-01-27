@@ -90,10 +90,11 @@ namespace kAway2 {
     }
 
     void send(const StringRef& msg);
+
     void onISetCols();
     void onIPrepare();
-    void onAction(Controller* pCtrl);
-    void onNewMsg(Controller* pCtrl);
+    void onAction(IMEvent& ev);
+    void onNewMsg(IMEvent& ev);
   };
 }
 

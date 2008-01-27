@@ -37,7 +37,7 @@ namespace kAway2 {
     void UIDrawActiveSum();
     void UIDrawActiveFwd();
 
-    void registerCfgGroups(Controller* pCtrl);
+    void registerCfgGroups(IMEvent &ev);
     Forwarder* getById(const StringRef& id);
     void fwdRegister(Forwarder *f);
 

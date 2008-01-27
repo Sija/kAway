@@ -20,8 +20,9 @@
 
 #include "kAway2.h"
 #include "Helpers.h"
-#include "Controller.h"
 #include "Format.h"
+
+#include "Events/IMEvent.h"
 
 namespace kAway2 {
   class Forwarder : public signals::trackable {
@@ -60,8 +61,8 @@ namespace kAway2 {
         this->oForward->cfgTplDraw();
       }
     }
-    virtual void onNewMsg(Controller* pCtrl) {
-      cMessage* msg = (cMessage*) pCtrl->getIM()->p1;
+    virtual void onNewMsg(IMEvent& ev) {
+      cMessage* msg = (cMessage*) ev.getIMessage()->p1;
       int cnt = 0; // baaad
 
       if (this->isSummarizable) {

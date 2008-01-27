@@ -16,8 +16,8 @@
 #include "stdafx.h"
 #include "Controller.h"
 
-// #include "Forwarders/CntForwarder.h"
-// #include "Forwarders/SMSForwarder.h"
+#include "Forwarders/CntForwarder.h"
+#include "Forwarders/SMSForwarder.h"
 
 namespace kAway2 {
   Controller::Controller() : isOn(false), muteStateSwitched(false), autoAway(typeDisabled), pluginsGroup(0) {
@@ -36,7 +36,6 @@ namespace kAway2 {
     dispatcher.connect(IM_UIACTION, bind(&Controller::onAction, this, _1));
     dispatcher.connect(IM_MSG_RCV, bind(&Controller::onMsgRcv, this, _1));
     dispatcher.connect(IM_BEFOREEND, bind(&Controller::onEnd, this, _1));
-    dispatcher.connect(IM_STATUSCHANGE, bind(&Controller::onStatusChange, this, _1));
     dispatcher.connect(IM_ALLPLUGINSINITIALIZED, bind(&Controller::onPluginsLoaded, this, _1));
     dispatcher.connect(IM_AWAY, bind(&Controller::onAutoAway, this, _1));
     dispatcher.connect(IM_BACK, bind(&Controller::onBack, this, _1));
@@ -143,7 +142,7 @@ namespace kAway2 {
     this->wnd = new AwayWnd();
 
     this->statusList = new NetList(action_dispatcher, cfg::status::netChange, ui::statusCfgGroup, dynAct::status, 
-      act::cfgGroupCheckCreate, act::cfgGroupCheckDestroy);
+      act::cfgGroupCheckCreate);
     statusList->addIgnored(plugsNET::konnferencja);
     statusList->addIgnored(plugsNET::klan);
     statusList->addIgnored(plugsNET::checky);
@@ -151,7 +150,7 @@ namespace kAway2 {
     statusList->load();
 
     this->autoReplyList = new NetList(action_dispatcher, cfg::reply::netChange, ui::replyCfgGroup, dynAct::reply, 
-      act::replyCfgGroupCheckCreate, act::replyCfgGroupCheckDestroy);
+      act::replyCfgGroupCheckCreate);
     autoReplyList->addIgnored(plugsNET::klan);
     autoReplyList->addIgnored(plugsNET::checky);
     autoReplyList->addIgnored(plugsNET::actio);
@@ -161,6 +160,12 @@ namespace kAway2 {
     statusCtrl->addReplacementSt(plugsNET::gg, ST_CHAT, ST_ONLINE);
     statusCtrl->addReplacementSt(plugsNET::gg, ST_DND, ST_AWAY);
     statusCtrl->addReplacementSt(plugsNET::gg, ST_NA, ST_AWAY);
+
+    // fwdCtrl->fwdRegister(new SMSForwarder);
+    // fwdCtrl->fwdRegister(new CntForwarder);
+
+    // connect status listener
+    getIMessageDispatcher().connect(IM_STATUSCHANGE, bind(&Status::actionHandle, statusCtrl, _1));
 
     log("[Controller::onPrepare()]: Ctrl = %i, sCtrl = %i, wnd = %i", 
       Ctrl, statusCtrl, wnd);
@@ -764,10 +769,6 @@ namespace kAway2 {
     }
   }
 
-  void Controller::onStatusChange(IMEvent& ev) {
-    statusCtrl->actionHandle(ev.getIMessage());
-  }
-
   void Controller::onPluginsLoaded(IMEvent& ev) {
     if (int oldId = Helpers::pluginExists(plugsNET::kaway)) {
       Ctrl->IMessage(&sIMessage_plugOut(oldId, "kAway2 jest nastêpc¹ wtyczki K.Away :)",
@@ -981,21 +982,21 @@ namespace kAway2 {
   }
 
   void Controller::switchBtns(bool state) {
-    char* name = (state) ? "Wy³¹cz tryb away" : "W³¹cz tryb away";
+    String name = (state) ? "Wy³¹cz tryb away" : "W³¹cz tryb away";
     int ico = (state) ? ico::disable : ico::enable;
 
-    Helpers::chgBtn(IMIG_TRAY, ui::powerInTrayMenu, name, ico);
-    Helpers::chgBtn(this->pluginsGroup, ui::powerInMainWnd, name, ico, 
+    Helpers::chgBtn(IMIG_TRAY, ui::powerInTrayMenu, name.a_str(), ico);
+    Helpers::chgBtn(this->pluginsGroup, ui::powerInMainWnd, name.a_str(), ico, 
       (state && (Helpers::findParentAction(IMIG_MAINWND, this->pluginsGroup) != IMIG_MAINTB)) ? ACTS_CHECKED : 0);
     Helpers::chgBtn(IMIG_MSGTB, ui::msgTbGrp, "kAway2", ico::logoSmall, ACTR_INIT | ACTS_GROUP | (state ? ACTS_CHECKED : 0));
 
     int count = Ctrl->IMessage(IMC_CNT_COUNT);
     for (int i = 1; i < count; i++) {
-      if (Helpers::isMsgWndOpen(i)) {
-        Helpers::chgBtn(IMIG_MSGTB, ui::msgTbGrp, i, "kAway2", ico::logoSmall, ACTR_INIT | ACTS_GROUP | (state ? ACTS_CHECKED : 0));
+      if (!Helpers::isMsgWndOpen(i)) {
+        continue;
       }
+      Helpers::chgBtn(IMIG_MSGTB, ui::msgTbGrp, i, "kAway2", ico::logoSmall, ACTR_INIT | ACTS_GROUP | (state ? ACTS_CHECKED : 0));
     }
-    delete [] name;
   }
 
   void Controller::changeStatus(int _status, bool changeInfo) {

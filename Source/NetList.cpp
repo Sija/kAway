@@ -90,14 +90,11 @@ void NetList::save() {
   SETSTR(cfgCol, buff.c_str());
 }
 
-void NetList::_onCreate(ActionEvent& ev) {
+void NetList::_groupListener(ActionEvent& ev) {
   if (ev.getCode() == ACTN_CREATEWINDOW) {
     _opened = true;
     refreshUI();
   }
-}
-
-void NetList::_onDestroy(ActionEvent& ev) {
   if (ev.getCode() == ACTN_DESTROYWINDOW) {
     _opened = false;
   }
@@ -126,23 +123,18 @@ void NetList::drawItems(int columns) {
   }
   int i = 0, col = 0;
 
-  // destructor action
-  UIActionCfgAdd(cfgGroup, actDestroy, ACTT_HWND, 0, 0, 0, -20);
-
   for (tItems::iterator it = _items.begin(); it != _items.end(); it++, i++, col++) {
     col %= columns;
     it->draw((col != columns - 1 && i != items_count - 1), (col > 0) ? 10 : 0);
   }
 
-  // constructor action
+  // add config group listener - to intercept ACTN_CREATE/DESTROYWINDOW msgs
   UIActionCfgAdd(cfgGroup, actCreate, ACTT_HWND, 0, 0, 0, -20);
 }
 
 void NetList::refreshFromUI() {
-  bool v;
-
   for (tItems::iterator it = _items.begin(); it != _items.end(); it++) {
-    v = *UIActionCfgGetValue(sUIAction(cfgGroup, it->getActionID()), 0, 0, true) == '1';
+    bool v = *UIActionCfgGetValue(sUIAction(cfgGroup, it->getActionID()), 0, 0, true) == '1';
 
     logDebug("[NetList<%i>::refreshFromUI().item]: name = %s, active = %s [now: %s]",
       this, it->getName().c_str(), btoa(it->isActive()), btoa(v));
@@ -160,32 +152,32 @@ void NetList::refreshUI() {
   }
 }
 
-bool NetList::hasItem(int net) {
-  for (tItems::iterator it = _items.begin(); it != _items.end(); it++) {
+bool NetList::hasItem(tNet net) const {
+  for (tItems::const_iterator it = _items.begin(); it != _items.end(); it++) {
     if (it->getNet() == net) return true;
   }
   return false;
 }
 
-NetList::Item& NetList::getItem(int net) {
+NetList::Item& NetList::getItem(tNet net) {
   for (tItems::iterator it = _items.begin(); it != _items.end(); it++) {
     if (it->getNet() == net) return *it;
   }
   throw new ExceptionString("Item was not found");
 }
 
-bool NetList::isIgnored(int net) {
-  for (tIgnored::iterator it = _ignored.begin(); it != _ignored.end(); it++) {
+bool NetList::isIgnored(tNet net) const {
+  for (tIgnored::const_iterator it = _ignored.begin(); it != _ignored.end(); it++) {
     if (*it == net) return true;
   }
   return Ctrl->IMessage(IM::hidePresence, net);
 }
 
-void NetList::addIgnored(int net) {
+void NetList::addIgnored(tNet net) {
   _ignored.push_back(net);
 }
 
-void NetList::removeIgnored(int net) {
+void NetList::removeIgnored(tNet net) {
   for (tIgnored::iterator it = _ignored.begin(); it != _ignored.end(); it++) {
     if (*it == net) {
       _ignored.erase(it); return;

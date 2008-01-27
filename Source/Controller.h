@@ -22,14 +22,13 @@
 
 #include "Helpers.h"
 #include "PluginController.h"
+#include "FwdController.h"
 #include "MRU.h"
 #include "NetList.h"
 #include "Format.h"
 #include "FormattedStatus.h"
 #include "Message.h"
 #include "AwayWnd.h"
-
-// #include "FwdController.h"
 
 namespace kAway2 {
   class Controller : public PluginController<Controller> {
@@ -79,7 +78,6 @@ namespace kAway2 {
     void onAction(IMEvent& ev);
     void onMsgRcv(IMEvent& ev);
     void onEnd(IMEvent& ev);
-    void onStatusChange(IMEvent& ev);
     void onPluginsLoaded(IMEvent& ev);
     void onExtAutoAway();
     void onAutoAway(IMEvent& ev);

@@ -44,12 +44,15 @@ public:
 
   void clear();
 
-  virtual inline unsigned int getCount() {
+  virtual inline int getCount() {
     return _count;
   }
   virtual inline void setCount(int count) {
     _count = count;
   }
+
+protected:
+  void _append(const StringRef& current, int count);
 
 protected:
   string _name;
@@ -62,7 +65,7 @@ public:
     _cfg_column(cfg_column) { }
 
 public:
-  inline unsigned int getCount() {
+  inline int getCount() {
     return GETINT(_cfg_column);
   }
   inline void setCount(int count) {

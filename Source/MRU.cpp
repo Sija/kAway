@@ -45,24 +45,26 @@ MRU::tItems MRU::get(bool rev, const char * buff, int buffSize) {
   return list;
 }
 
-void MRU::append(const StringRef& current) {
-  tItems list;
-  list.push_back(current);
+void MRU::_append(const StringRef& current, int count) {
+  sMRU mru;
 
-  append(list);
+  mru.name = _name.c_str();
+  mru.flags = MRU_SET_LOADFIRST | MRU_GET_USETEMP;
+  mru.current = current.a_str();
+  mru.count = count;
+
+  Ctrl->IMessage(&sIMessage_MRU(IMC_MRU_SET, &mru));
+}
+
+void MRU::append(const StringRef& current) {
+  _append(current, getCount());
 }
 
 void MRU::append(const tItems& list) {
   int count = getCount();
+
   for (tItems::const_iterator it = list.begin(); it != list.end(); it++) {
-    sMRU mru;
-
-    mru.name = _name.c_str();
-    mru.flags = MRU_SET_LOADFIRST | MRU_GET_USETEMP;
-    mru.current = it->a_str();
-    mru.count = count;
-
-    Ctrl->IMessage(&sIMessage_MRU(IMC_MRU_SET, &mru));
+    _append(*it, count);
   }
 }
 

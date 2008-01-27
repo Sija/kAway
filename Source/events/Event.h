@@ -48,7 +48,7 @@ namespace Konnekt {
      *
      * @return string 
      */
-    virtual inline string toString() {
+    virtual inline string toString() const {
       string str = stringf("id = %i", getID());
 
       // add return value if event was processed
@@ -64,7 +64,7 @@ namespace Konnekt {
      *
      * @return void* The subject
      */
-    inline void * getSubject() {
+    inline void * getSubject() const {
       return _subject;
     }
 
@@ -73,7 +73,7 @@ namespace Konnekt {
      *
      * @return id The event id
      */
-    inline int getID() {
+    inline int getID() const {
       return _id;
     }
 
@@ -91,7 +91,7 @@ namespace Konnekt {
      *
      * @return int The return value
      */
-    inline int getReturnValue() {
+    inline int getReturnValue() const {
       return _value;
     }
 
@@ -109,7 +109,7 @@ namespace Konnekt {
      *
      * @return bool true if the event has been processed, false otherwise
      */
-    inline bool isProcessed() {
+    inline bool isProcessed() const {
       return _processed;
     }
 
