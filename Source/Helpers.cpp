@@ -1,28 +1,30 @@
 /**
- *  Helpers
- *
- *  Licensed under The GNU Lesser General Public License
- *  Redistributions of files must retain the above copyright notice.
- *
- *  @filesource
- *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
- *  @version      $Revision$
- *  @modifiedby   $LastChangedBy$
- *  @lastmodified $Date$
- *  @license      http://creativecommons.org/licenses/LGPL/2.1/
- */
+  *  Helpers
+  *
+  *  Licensed under The GNU Lesser General Public License
+  *  Redistributions of files must retain the above copyright notice.
+  *
+  *  @filesource
+  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
+  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
+  *  @version      $Revision$
+  *  @modifiedby   $LastChangedBy$
+  *  @lastmodified $Date$
+  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  */
 
 #include "stdafx.h"
 #include "Helpers.h"
 
 /*
- *  Integer -> String conversion
+ * Int64 to string conversion
  */
 
-String itos(int i, int radix) {
-  char buff[64]; _itoa(i, buff, radix);
-  return buff;
+std::string i64tostr(__int64 value, int radix) {
+  char buf[50];
+  _i64toa(value, (char*) buf, radix);
+
+  return buf;
 }
 
 /*
@@ -62,14 +64,14 @@ void log(enDebugLevel level, const char * format, va_list ap) {
 void log(const char * format, ...) {
   va_list ap;
   va_start(ap, format);
-	log(DBG_LOG, format, ap);
+  log(DBG_LOG, format, ap);
   va_end(ap);
 }
 
 void logDebug(const char * format, ...) {
   va_list ap;
   va_start(ap, format);
-	log(DBG_DEBUG, format, ap);
+  log(DBG_DEBUG, format, ap);
   va_end(ap);
 }
 
@@ -79,11 +81,11 @@ void logDebug(const char * format, ...) {
 
 namespace Helpers {
   String icon16(int ico) {
-    return "reg://IML16/" + itos(ico) + ".ico";
+    return "reg://IML16/" + inttostr(ico) + ".ico";
   }
 
   String icon32(int ico) {
-    return "reg://IML32/" + itos(ico) + ".ico";
+    return "reg://IML32/" + inttostr(ico) + ".ico";
   }
 
   String trunc(StringRef txt, int limit, const StringRef& suffix) {
@@ -97,24 +99,24 @@ namespace Helpers {
     return PassStringRef(txt);
   }
 
-  String trim(const StringRef& txt) {
-    CStdString buff(txt.a_str()); 
-    buff = buff.Trim();
-
-    return buff;
+  string trim(string txt, const string& chars) {
+    txt = ltrim(txt, chars);
+    txt = rtrim(txt, chars);
+    return txt;
   }
-
-  int altCfgVal(int cntId, int colId, bool isBool) {
-    if (isBool) {
-      return((GETINT(colId) && (GETCNTI(cntId, colId) < 2) || 
-        (!GETINT(colId) && (GETCNTI(cntId, colId) == 1))) ? true : false);
-    } else {
-      return (GETCNTI(cntId, colId) >= 0) ? GETCNTI(cntId, colId) : GETINT(colId);
+  string rtrim(string txt, const string& chars) {
+    string::size_type pos = txt.find_last_not_of(chars);
+    if (!txt.length() || !chars.length() || pos == string::npos) {
+      return txt;
     }
+    return txt.erase(pos + 1);
   }
-
-  const char * altCfgStrVal(int cntId, int colId) {
-    return strlen(GETCNTC(cntId, colId)) ? GETCNTC(cntId, colId) : GETSTRA(colId);
+  string ltrim(string txt, const string& chars) {
+    string::size_type pos = txt.find_first_not_of(chars);
+    if (!txt.length() || !chars.length() || pos == string::npos) {
+      return txt;
+    }
+    return txt.erase(0, pos);
   }
 
   int getPluginsGroup() {
@@ -134,6 +136,10 @@ namespace Helpers {
       (int) &sUIActionNotify_2params(sUIAction(group, act, cntID), ACTN_ACTION, 0, 0), 0);
   }
 
+  void touchConfigWnd() {
+    SendMessage((HWND)UIGroupHandle(sUIAction(0, IMIG_CFGWND)), WM_USER + 18091, 0, 0);
+  }
+
 #ifdef SHARED_TABLETKA_H
   bool isMsgWndOpen(int cnt) {
     return Tabs::GetWindowState(cnt) != 0;
@@ -145,8 +151,8 @@ namespace Helpers {
   }
 
 #ifdef __STAMINA_TIME64__
-  bool isToday(Stamina::Date64 date) {
-    Stamina::Date64 today(true);
+  bool isToday(Date64 date) {
+    Date64 today(true);
 
     return ((date.day != today.day) || (date.month != today.month) || (date.year != today.year)) 
       ? false : true;
@@ -155,26 +161,6 @@ namespace Helpers {
 
   int findParentAction(int group, int id) {
     return Ctrl->ICMessage(IMI_ACTION_FINDPARENT, (int) &sUIAction(group, id));
-  }
-
-  int subclassAction(int group, int id, int mask) {
-    sUIActionInfo nfo(group, id);
-    int prevOwner;
-
-    nfo.mask = mask;
-    nfo.txt = new char[100];
-    nfo.txtSize = 99;
-
-    UIActionGet(nfo);
-    if (!(prevOwner = Ctrl->ICMessage(IMI_ACTION_GETOWNER, (int)&nfo.act))) {
-      prevOwner = Ctrl->ICMessage(IMC_PLUG_ID, 0);
-    }
-
-    Ctrl->ICMessage(IMI_ACTION_REMOVE, (int)&nfo.act);
-    Ctrl->ICMessage(IMI_ACTION, (int)&nfo);
-    delete [] nfo.txt;
-
-    return prevOwner;
   }
 
   void addItemToHistory(cMessage* msg, int cnt, const char * dir, const StringRef& name, int session) {

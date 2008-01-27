@@ -1,17 +1,17 @@
 /**
- *  Forwarder Base class
- *
- *  Licensed under The GNU Lesser General Public License
- *  Redistributions of files must retain the above copyright notice.
- *
- *  @filesource
- *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
- *  @version      $Revision$
- *  @modifiedby   $LastChangedBy$
- *  @lastmodified $Date$
- *  @license      http://creativecommons.org/licenses/LGPL/2.1/
- */
+  *  Forwarder Base class
+  *
+  *  Licensed under The GNU Lesser General Public License
+  *  Redistributions of files must retain the above copyright notice.
+  *
+  *  @filesource
+  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
+  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
+  *  @version      $Revision$
+  *  @modifiedby   $LastChangedBy$
+  *  @lastmodified $Date$
+  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  */
 
 #include "stdafx.h"
 #include "Forwarder.h"
@@ -46,12 +46,7 @@ namespace kAway2 {
     * Forwarder::Summary
     */
   Forwarder::Summary::Summary(Forwarder *fwd) : parent(fwd) {
-    this->timer.reset(Stamina::timerTmplCreate(boost::bind(&Forwarder::Summary::send, this)));
-    this->clear();
-  }
-
-  Forwarder::Summary::~Summary() {
-    this->timer.reset();
+    this->timer.reset(timerTmplCreate(bind(&Forwarder::Summary::send, this)));
     this->clear();
   }
 
@@ -108,12 +103,12 @@ namespace kAway2 {
 
   String Forwarder::Summary::getBody() {
     Format format;
-    format.addVar("msgCount", itos(this->receivedMsgCount));
-    format.addVar("userCount", itos(this->msgSenders.size()));
+    format.addVar("msgCount", inttostr(this->receivedMsgCount));
+    format.addVar("userCount", inttostr(this->msgSenders.size()));
     format.addVar("lastMsgFrom", this->lastMsgFrom);
     format.addVar("userList", this->getMsgSendersList());
 
-    return format.parse(GETSTRA(this->parent->cfgCols["tplSummary"]));
+    return format.parse(GETSTR(this->parent->cfgCols["tplSummary"]));
   }
 
   void Forwarder::Summary::cfgTplDraw() {
@@ -143,15 +138,15 @@ namespace kAway2 {
   }
 
   String Forwarder::Forward::getBody(int cnt, cMessage *msg) {
-    Stamina::Date64 date(msg->time);
+    Date64 date(msg->time);
     Format format;
 
     format.addVar("msgFrom", !strlen(GETCNTC(cnt, CNT_DISPLAY)) ? msg->fromUid : GETCNTC(cnt, CNT_DISPLAY));
-    format.addVar("msgTime", date.strftime(GETSTRA(cfg::timeFormat)));
-    format.addVar("msgDate", Helpers::isToday(date) ? "" : date.strftime(GETSTRA(cfg::dateFormat)));
+    format.addVar("msgTime", date.strftime(GETSTR(cfg::timeFormat)));
+    format.addVar("msgDate", Helpers::isToday(date) ? "" : date.strftime(GETSTR(cfg::dateFormat)));
     format.addVar("msgBody", msg->body);
 
-    return format.parse(GETSTRA(this->parent->cfgCols["tplForward"]));
+    return format.parse(GETSTR(this->parent->cfgCols["tplForward"]));
   }
 
   void Forwarder::Forward::cfgTplDraw() {

@@ -1,47 +1,52 @@
 /**
- *  Contact Forwarder class
- *
- *  Licensed under The GNU Lesser General Public License
- *  Redistributions of files must retain the above copyright notice.
- *
- *  @filesource
- *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
- *  @version      $Revision$
- *  @modifiedby   $LastChangedBy$
- *  @lastmodified $Date$
- *  @license      http://creativecommons.org/licenses/LGPL/2.1/
- */
+  *  Contact Forwarder class
+  *
+  *  Licensed under The GNU Lesser General Public License
+  *  Redistributions of files must retain the above copyright notice.
+  *
+  *  @filesource
+  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
+  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
+  *  @version      $Revision$
+  *  @modifiedby   $LastChangedBy$
+  *  @lastmodified $Date$
+  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  */
 
 #include "stdafx.h"
+
 #include "CntForwarder.h"
+#include "../Controller.h"
 
 namespace kAway2 {
   CntForwarder::CntForwarder() : Forwarder("forward", "Lustereczko", ico::forward, true, true) {
-    fCtrl->setEvtOnISetCols(boost::bind(&CntForwarder::onISetCols, this));
-    fCtrl->setEvtOnIPrepare(boost::bind(&CntForwarder::onIPrepare, this));
-    fCtrl->setEvtOnAction(boost::bind(&CntForwarder::onAction, this, _1, _2));
-    fCtrl->setEvtOnNewMsg(boost::bind(&CntForwarder::onNewMsg, this, _1, _2));
-    fCtrl->setEvtOnEnable(boost::bind(&CntForwarder::onEnable, this));
-    fCtrl->setEvtOnDisable(boost::bind(&CntForwarder::onDisable, this));
+    Controller* pCtrl = Controller::getInstance();
+    IMessageDispatcher& dispatcher = pCtrl->getIMessageDispatcher();
+
+    dispatcher.connect(IM_SETCOLS, bind(resolve_cast0(&CntForwarder::onISetCols), this));
+    dispatcher.connect(IM_UI_PREPARE, bind(resolve_cast0(&CntForwarder::onIPrepare), this));
+    dispatcher.connect(IM_UIACTION, bind(&CntForwarder::onAction, this, _1));
+    dispatcher.connect(IM_MSG_RCV, bind(&CntForwarder::onNewMsg, this, _1)); // baaad
+    dispatcher.connect(im::away, bind(resolve_cast0(&CntForwarder::onEnable), this));
+    dispatcher.connect(im::back, bind(resolve_cast0(&CntForwarder::onDisable), this));
   }
 
   void CntForwarder::send(const StringRef& msg) {
     String ext;
-    ext = SetExtParam(ext, cfg::extParamName, itos(cfg::tpl::forward));
+    ext = SetExtParam(ext, cfg::extParamName, inttostr(cfg::tpl::forward));
     ext = SetExtParam(ext, MEX_ADDINFO, "kAway2");
     ext = SetExtParam(ext, MEX_NOSOUND, "1");
 
     if (GETINT(cfg::forward::type) == toCnt) {
       Message::send(GETINT(cfg::forward::cnt), msg, MT_MESSAGE, ext, true);
     } else {
-      Message::send(GETSTRA(cfg::forward::uid), GETINT(cfg::forward::net), msg, MT_MESSAGE, ext, true);
+      Message::send(GETSTR(cfg::forward::uid), GETINT(cfg::forward::net), msg, MT_MESSAGE, ext, true);
     }
   }
 
-  void CntForwarder::onNewMsg(int cnt, cMessage *msg) {
-    // wykrywanie zapêtlania
-    Forwarder::onNewMsg(cnt, msg);
+  void CntForwarder::onNewMsg(IMEvent& ev) {
+    // TODO: wykrywanie zapêtlania
+    Forwarder::onNewMsg(ev);
   }
 
   void CntForwarder::onISetCols() {
@@ -80,7 +85,10 @@ namespace kAway2 {
     Forwarder::onIPrepare();
   }
 
-  void CntForwarder::onAction(int id, int code) {
+  void CntForwarder::onAction(IMEvent& ev) {
+    ActionEvent aev(ev.getIMessage(), Controller::getInstance()->getActionDispatcher());
+    int id = aev.getID(), code = aev.getCode();
+
     if (id == ui::forward::userCombo && code == ACTN_CREATE) {
       int count = Ctrl->IMessage(IMC_CNT_COUNT);
       String combo;
@@ -88,13 +96,13 @@ namespace kAway2 {
       for (int i = 0; i < count; i++) {
         if (i) {
           combo += strlen(GETCNTC(i, CNT_DISPLAY)) ? GETCNTC(i, CNT_DISPLAY) : GETCNTC(i, CNT_UID);
-          combo += AP_ICO + itos(UIIcon(IT_LOGO, GETCNTI(i, CNT_NET), 0, 0));
-          combo += AP_VALUE + itos(i) + "\n";
+          combo += AP_ICO + inttostr(UIIcon(IT_LOGO, GETCNTI(i, CNT_NET), 0, 0));
+          combo += AP_VALUE + inttostr(i) + "\n";
         } else {
           combo += "Wy³¹czone" AP_ICO "#2E" AP_VALUE "0\n";
         }
       }
-      UIActionSetText(ui::forward::cfgGroup, ui::forward::userCombo, Helpers::trim(combo).a_str());
+      UIActionSetText(ui::forward::cfgGroup, ui::forward::userCombo, Helpers::trim(combo).c_str());
     } else if (id == ui::forward::netsCombo && code == ACTN_CREATE) {
       String combo, name;
 
@@ -111,15 +119,15 @@ namespace kAway2 {
             name = (char*) Ctrl->IMessageDirect(IM_PLUG_NETNAME, id);
 
             if (name.length()) {
-              combo += name + AP_ICO + itos(UIIcon(IT_LOGO, net, 0, 0));
-              combo += AP_VALUE + itos(net) + "\n";
+              combo += name + AP_ICO + inttostr(UIIcon(IT_LOGO, net, 0, 0));
+              combo += AP_VALUE + inttostr(net) + "\n";
             }
           }
         } else {
           combo += "Brak" AP_ICO "#2E" AP_VALUE "0\n";
         }
       }
-      UIActionSetText(ui::forward::cfgGroup, ui::forward::netsCombo, Helpers::trim(combo).a_str());
+      UIActionSetText(ui::forward::cfgGroup, ui::forward::netsCombo, Helpers::trim(combo).c_str());
     }
   }
 }

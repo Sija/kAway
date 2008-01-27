@@ -1,22 +1,24 @@
 /**
- *  kAway2 Away Window class
- *
- *  Licensed under The GNU Lesser General Public License
- *  Redistributions of files must retain the above copyright notice.
- *
- *  @filesource
- *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @copyright    Copyright (c) 2004 Kuba 'nix' Niegowski
- *  @copyright    Copyright (c) 2003-2004 Kamil 'Olórin' Figiela
- *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
- *  @version      $Revision$
- *  @modifiedby   $LastChangedBy$
- *  @lastmodified $Date$
- *  @license      http://creativecommons.org/licenses/LGPL/2.1/
- */
+  *  kAway2 Away Window class
+  *
+  *  Licensed under The GNU Lesser General Public License
+  *  Redistributions of files must retain the above copyright notice.
+  *
+  *  @filesource
+  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
+  *  @copyright    Copyright (c) 2004 Kuba 'nix' Niegowski
+  *  @copyright    Copyright (c) 2003-2004 Kamil 'Olórin' Figiela
+  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
+  *  @version      $Revision$
+  *  @modifiedby   $LastChangedBy$
+  *  @lastmodified $Date$
+  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  */
 
 #include "stdafx.h"
+
 #include "AwayWnd.h"
+#include "Controller.h"
 
 // dlg ctrl ID
 #define STATUS_OK           0x2000
@@ -28,7 +30,41 @@
 #define MUTE                0x2006
 
 namespace kAway2 {
-  LRESULT CALLBACK awayWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
+  AwayWnd::AwayWnd() {
+    WNDCLASSEX awayWnd;
+    ZeroMemory(&awayWnd, sizeof(WNDCLASSEX));
+    awayWnd.cbSize = sizeof(awayWnd);
+    awayWnd.style = CS_HREDRAW | CS_VREDRAW;
+    awayWnd.lpfnWndProc = &AwayWnd::wndProc;
+    awayWnd.cbClsExtra = 0;
+    awayWnd.cbWndExtra = 0;
+    awayWnd.hInstance = Ctrl->hInst();
+    awayWnd.hCursor = LoadCursor(NULL, IDC_ARROW);
+    awayWnd.lpszMenuName = NULL;
+    awayWnd.lpszClassName = "kAway2AwayWnd";
+    awayWnd.hbrBackground = GetSysColorBrush(COLOR_BTNFACE);
+    awayWnd.hIcon = LoadIcon(Ctrl->hDll(), MAKEINTRESOURCE(179));
+    awayWnd.hIconSm = LoadIcon(Ctrl->hDll(), MAKEINTRESOURCE(179));
+    RegisterClassEx(&awayWnd);
+  }
+
+  AwayWnd::~AwayWnd() {
+    UnregisterClass("kAway2AwayWnd", Ctrl->hInst());
+  }
+
+  void AwayWnd::show() {
+    if (this->haveInstance(net)) {
+      SetActiveWindow((HWND) this->getInstance(net));
+    } else {
+      HWND hWnd = CreateWindowEx(NULL, "kAway2AwayWnd", "Podaj powód nieobecnoœci", WS_VISIBLE | WS_CAPTION | WS_SYSMENU,
+        (GetSystemMetrics(SM_CXSCREEN) / 2) - ((300 - (GetSystemMetrics(SM_CXFIXEDFRAME) * 2)) / 2),
+        (GetSystemMetrics(SM_CYSCREEN) / 2) - ((100 - (GetSystemMetrics(SM_CYFIXEDFRAME) * 2) + GetSystemMetrics(SM_CYCAPTION)) / 2),
+        300 + GetSystemMetrics(SM_CXFIXEDFRAME) * 2,220 + GetSystemMetrics(SM_CYFIXEDFRAME) * 2 + GetSystemMetrics(SM_CYCAPTION),
+        NULL, NULL, Ctrl->hInst(), (void*) net);
+    }
+  }
+
+  LRESULT CALLBACK AwayWnd::wndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
     switch(iMsg) {
       case WM_CREATE: {
         SendMessage(hWnd, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) ICMessage(IMI_ICONGET, ico::logoSmall, IML_16));
@@ -39,7 +75,7 @@ namespace kAway2 {
         AwayWnd::sWndData *data = new AwayWnd::sWndData(net);
         SetWindowLong(hWnd, GWL_USERDATA, (LONG) data);
 
-        wCtrl->addInstance(net, hWnd);
+        Controller::getInstance()->wnd->addInstance(net, hWnd);
 
         HFONT font = CreateFont(-11, 0, 0, 0, 0, 0, 0, 0, EASTEUROPE_CHARSET, OUT_DEFAULT_PRECIS, 
           CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, "Tahoma");
@@ -83,9 +119,9 @@ namespace kAway2 {
             x, 30, 40, 20, hWnd, (HMENU) it->id, Ctrl->hInst(), NULL);
           x += 40;
           ti.hwnd = hWndTmp;
-          ti.lpszText = (LPSTR) it->name.a_str();
+          ti.lpszText = (LPSTR) it->name;
           SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM) &ti);
-          wCtrl->prepareButtonImage(it->img, hWnd, net, it->id);
+          Controller::getInstance()->wnd->prepareButtonImage(it->img, hWnd, net, it->id);
         }
         // int chkSt = IMessage(IM_GET_STATUS, net);
         CheckDlgButton(hWnd, GETINT(cfg::wnd::onEnableSt), BST_CHECKED);
@@ -134,13 +170,13 @@ namespace kAway2 {
         ti.hwnd = hWndTmp;
         ti.lpszText = "Wycisz wszystkie dŸwiêki";
         SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM) &ti);
-        CheckDlgButton(hWnd, MUTE, GETINT(cfg::muteOnEnable) ? BST_CHECKED : 0);
+        CheckDlgButton(hWnd, MUTE, GETINT(cfg::wnd::muteOnEnable) ? BST_CHECKED : 0);
 
         // odczytujemy liste mru
-        MRU::tMRUlist list = MRUlist->get();
+        MRU::tItems list = Controller::getInstance()->mruList->get();
 
         // wype³niamy combobox
-        for (MRU::tMRUlist::iterator it = list.begin(); it != list.end(); it++) {
+        for (MRU::tItems::iterator it = list.begin(); it != list.end(); it++) {
           SendMessage(hWndCombo, CB_ADDSTRING, 0, (LPARAM) (*it).a_str());
         }
 
@@ -156,7 +192,7 @@ namespace kAway2 {
 
       case WM_DESTROY: {
         AwayWnd::sWndData *data = (AwayWnd::sWndData *) GetWindowLong(hWnd, GWL_USERDATA);
-        wCtrl->removeInstance(data->net);
+        Controller::getInstance()->wnd->removeInstance(data->net);
 
         delete data;
         return 0;
@@ -171,7 +207,7 @@ namespace kAway2 {
             char * msg = new char[len];
             
             GetWindowText(GetDlgItem(hWnd, STATUS_EDIT_INFO), msg, len);
-            MRUlist->append(msg);
+            Controller::getInstance()->mruList->append(msg);
 
             if (IsDlgButtonChecked(hWnd, ST_ONLINE)) st = ST_ONLINE;
             if (IsDlgButtonChecked(hWnd, ST_CHAT)) st = ST_CHAT;
@@ -188,8 +224,8 @@ namespace kAway2 {
             SETINT(cfg::wnd::changeInfoOnEnable, (IsDlgButtonChecked(hWnd, STATUS_CHANGE_INFO) == BST_CHECKED) ? 1 : 0);
             SETINT(cfg::wnd::muteOnEnable, (IsDlgButtonChecked(hWnd, MUTE) == BST_CHECKED) ? 1 : 0);
 
-            pCtrl->fromWnd(true);
-            pCtrl->enable(msg);
+            Controller::getInstance()->fromWnd(true);
+            Controller::getInstance()->enable(msg);
 
             delete [] msg;
             DestroyWindow(hWnd);
@@ -220,40 +256,6 @@ namespace kAway2 {
       }
     }
     return DefWindowProc(hWnd, iMsg, wParam, lParam);
-  }
-
-  void AwayWnd::classRegister() {
-    WNDCLASSEX awayWnd;
-    ZeroMemory(&awayWnd, sizeof(WNDCLASSEX));
-    awayWnd.cbSize = sizeof(awayWnd);
-    awayWnd.style = CS_HREDRAW | CS_VREDRAW;
-    awayWnd.lpfnWndProc = awayWndProc;
-    awayWnd.cbClsExtra = 0;
-    awayWnd.cbWndExtra = 0;
-    awayWnd.hInstance = Ctrl->hInst();
-    awayWnd.hCursor = LoadCursor(NULL, IDC_ARROW);
-    awayWnd.lpszMenuName = NULL;
-    awayWnd.lpszClassName = "kAway2AwayWnd";
-    awayWnd.hbrBackground = GetSysColorBrush(COLOR_BTNFACE);
-    awayWnd.hIcon = LoadIcon(Ctrl->hDll(), MAKEINTRESOURCE(179));
-    awayWnd.hIconSm = LoadIcon(Ctrl->hDll(), MAKEINTRESOURCE(179));
-    RegisterClassEx(&awayWnd);
-  }
-
-  void AwayWnd::classUnRegister() {
-    UnregisterClass("kAway2AwayWnd", Ctrl->hInst());
-  }
-
-  void AwayWnd::show() {
-    if (this->haveInstance(net)) {
-      SetActiveWindow((HWND) this->getInstance(net));
-    } else {
-      HWND hWnd = CreateWindowEx(NULL, "kAway2AwayWnd", "Podaj powód nieobecnoœci", WS_VISIBLE | WS_CAPTION | WS_SYSMENU,
-        (GetSystemMetrics(SM_CXSCREEN) / 2) - ((300 - (GetSystemMetrics(SM_CXFIXEDFRAME) * 2)) / 2),
-        (GetSystemMetrics(SM_CYSCREEN) / 2) - ((100 - (GetSystemMetrics(SM_CYFIXEDFRAME) * 2) + GetSystemMetrics(SM_CYCAPTION)) / 2),
-        300 + GetSystemMetrics(SM_CXFIXEDFRAME) * 2,220 + GetSystemMetrics(SM_CYFIXEDFRAME) * 2 + GetSystemMetrics(SM_CYCAPTION),
-        NULL, NULL, Ctrl->hInst(), (void*) net);
-    }
   }
 
   void AwayWnd::prepareButtonImage(HIMAGELIST &hIml, HWND hWnd, int net, int status) {

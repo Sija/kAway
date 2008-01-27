@@ -1,17 +1,17 @@
 /**
- *  kAway2 Header
- *
- *  Licensed under The GNU Lesser General Public License
- *  Redistributions of files must retain the above copyright notice.
- *
- *  @filesource
- *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
- *  @version      $Revision$
- *  @modifiedby   $LastChangedBy$
- *  @lastmodified $Date$
- *  @license      http://creativecommons.org/licenses/LGPL/2.1/
- */
+  *  kAway2 header file
+  *
+  *  Licensed under The GNU Lesser General Public License
+  *  Redistributions of files must retain the above copyright notice.
+  *
+  *  @filesource
+  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
+  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
+  *  @version      $Revision$
+  *  @modifiedby   $LastChangedBy$
+  *  @lastmodified $Date$
+  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  */
 
 #pragma once
 
@@ -22,14 +22,24 @@ namespace kAway2 {
   /*
    *  Values for {cfg::reply::minIntervalType} col
    */
-  enum enMinIntType {
-    intervalTypeRcvTime,
-    intervalTypeSendTime,
-    intervalTypeBoth
+  enum enIntervalType {
+    typeRcvTime,
+    typeSendTime,
+    typeBoth
   };
 
+  /*
+   *  Values for {cfg::autoAwaySync} col
+   */
+  enum enAutoAwaySync {
+    syncNone,
+    syncBasic,
+    syncExtended
+  };
+
+  const char poweredBy[] = "Astrobotnia";
   const unsigned int net = 667;
-  const char poweredBy[] = "planet boelex";
+  const char sig[] = "KAWAY2";
 
   namespace api {
     const unsigned int api = net * 1000 + IM_USER;
@@ -42,10 +52,15 @@ namespace kAway2 {
     const unsigned int ignore = api + 5;
 
     const unsigned int showAwayWnd = api + 6;
+    const unsigned int isAutoAway = api + 7;
+  }
 
-    const unsigned int isAway = api + 7;
-    const unsigned int isBack = api + 8;
-    const unsigned int isAutoAway = api + 9;
+  namespace im {
+    const unsigned int im = net * 1000 + IM_USER + 100;
+
+    const unsigned int away = im + 1;
+    const unsigned int back = im + 2;
+    const unsigned int extendedAutoAway = im + 3;
   }
 
   namespace ui {
@@ -93,13 +108,14 @@ namespace kAway2 {
     const unsigned int act = net * 1000 + 200;
 
     const unsigned int cfgGroupCheckCreate = act + 1;
-    const unsigned int cfgGroupCheckDestroy = act + 2;
+    // const unsigned int cfgGroupCheckDestroy = act + 2;
 
     const unsigned int replyCfgGroupCheckCreate = act + 3;
-    const unsigned int replyCfgGroupCheckDestroy = act + 4;
+    // const unsigned int replyCfgGroupCheckDestroy = act + 4;
 
     const unsigned int clearMru = act + 5;
     const unsigned int resetCntSettings = act + 6;
+    const unsigned int resetSettings = act + 7;
   }
 
   // dynamiczne akcje
@@ -128,7 +144,8 @@ namespace kAway2 {
 
     const unsigned int mruSize = cfg + 11;
     const unsigned int muteOnEnable = cfg + 12;
-    const unsigned int disableConfirmation = cfg + 13;
+    const unsigned int confirmation = cfg + 13;
+    const unsigned int autoAwayMsg = cfg + 14;
 
     const char extParamName[] = "kA2AutoMsgTpl";
     const char historyFolder[] = "kAway2";
@@ -164,10 +181,8 @@ namespace kAway2 {
       const unsigned int disable = tpl + 2;
 
       const unsigned int reply = tpl + 3;
-      const unsigned int email = tpl + 6;
-
+      // const unsigned int email = tpl + 6;
       const unsigned int status = tpl + 7;
-      const unsigned int autoAway = tpl + 8;
     }
 
     namespace reply {
@@ -181,14 +196,15 @@ namespace kAway2 {
       const unsigned int minInterval = reply + 5;
       const unsigned int useHtml = reply + 6;
 
-      const unsigned int magicKey = reply + 7;
-      const unsigned int magicKeyNotifyMethod = reply + 8;
+      // const unsigned int magicKey = reply + 7;
+      // const unsigned int magicKeyNotifyMethod = reply + 8;
 
       const unsigned int netChange = reply + 9;
       const unsigned int showInWnd = reply + 10;
       const unsigned int minIntervalType = reply + 11;
     }
 
+    /* just a prototype
     namespace email {
       const unsigned int email = cfg + 400;
 
@@ -206,6 +222,7 @@ namespace kAway2 {
         const unsigned int password = smtp + 4;
       }
     }
+    */
 
     namespace status {
       const unsigned int status = cfg + 600;
@@ -219,6 +236,14 @@ namespace kAway2 {
       const unsigned int onEnableSt = status + 5;
       const unsigned int onAutoAwaySt = status + 6;
       const unsigned int dotsAppend = status + 7;
+      const unsigned int chgOnlyIfOnline = status + 8;
+    }
+
+    namespace extAutoAway {
+      const unsigned int extAutoAway = cfg + 650;
+
+      const unsigned int status = extAutoAway + 1;
+      const unsigned int time = extAutoAway + 2;
     }
   }
 }

@@ -1,17 +1,17 @@
 /**
- *  Status class
- *
- *  Licensed under The GNU Lesser General Public License
- *  Redistributions of files must retain the above copyright notice.
- *
- *  @filesource
- *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
- *  @version      $Revision$
- *  @modifiedby   $LastChangedBy$
- *  @lastmodified $Date$
- *  @license      http://creativecommons.org/licenses/LGPL/2.1/
- */
+  *  Status class
+  *
+  *  Licensed under The GNU Lesser General Public License
+  *  Redistributions of files must retain the above copyright notice.
+  *
+  *  @filesource
+  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
+  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
+  *  @version      $Revision$
+  *  @modifiedby   $LastChangedBy$
+  *  @lastmodified $Date$
+  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  */
 
 #pragma once
 
@@ -21,54 +21,94 @@
 #include "Helpers.h"
 #include "NetList.h"
 
-class Status : public iObject {
+class Status : public SharedObject<iSharedObject> {
 public:
+  /**
+   * Structure holding IMessage id constants
+   */
   static const struct IM {
-    static const unsigned int key = IM_USER + (668 * 1000) + 1;
+    static const unsigned int key = IM_USER + (900 * 1000);
     static const unsigned int infoCharLimit = key + 1;
   };
 
 public:
   /*
-   * Class version
+   * Class version macro
    */
-	STAMINA_OBJECT_CLASS_VERSION(Status, iObject, Version(0,1,0,0));
+	STAMINA_OBJECT_CLASS_VERSION(Status, iSharedObject, Version(0,2,0,0));
 
-  struct sInfo {
-    unsigned int net;
-    unsigned int st;
-    String info;
+  class Item {
+  public:
+    friend class Status;
 
-    sInfo(int _net, int _st, const StringRef& _info = "") : 
-      net(_net), st(_st), info(_info) { }
-    sInfo() { }
+    /**
+     * Constructs a new Item.
+     *
+     * @param int net id
+     * @param int status code
+     * @param String status info message
+     */
+    Item(tNet net, tStatus status, const StringRef& info = "") : 
+      _net(net), _status(status), _info(info) { }
+
+    /**
+     * Constructs an empty Item.
+     */
+    Item() { }
+
+  public:
+    /**
+     * Returns net id
+     *
+     * @return int
+     */
+    inline tNet getNet() const {
+      return _net;
+    }
+
+    /**
+     * Returns status code
+     *
+     * @return int
+     */
+    inline tStatus getStatus() const {
+      return _status;
+    }
+
+    /**
+     * Returns status info message
+     *
+     * @return String
+     */
+    inline const StringRef& getInfo() const {
+      return _info;
+    }
+
+  protected:
+    tNet _net;
+    tStatus _status;
+    String _info;
   };
 
-  struct sInfoCharLimit {
-    unsigned int net;
-    unsigned int length;
-
-    sInfoCharLimit(int _net, int _length) : 
-      net(_net), length(_length) { }
-    sInfoCharLimit() { }
-  };
-
+  /**
+   * Structure holding status replacements for certain nets
+   */
   struct sStReplacement {
-    unsigned int net;
-    unsigned int before;
-    unsigned int after;
+    tNet net;
+    tStatus before;
+    tStatus after;
 
-    sStReplacement(int _net, int _before, int _after) : 
-      net(_net), before(_before), after(_after) { }
+    sStReplacement(tNet net, tStatus before, tStatus after) : 
+      net(net), before(before), after(after) { }
   };
 
-  typedef std::list<sInfo> tInfos;
-  typedef std::map<int, sInfo> tLastInfos;
-  typedef std::list<sStReplacement> tStReplacements;
-  typedef std::list<sInfoCharLimit> tInfoCharLimits;
+  typedef std::deque<Item> tItems;
+  typedef std::deque<sStReplacement> tStReplacements;
+  typedef stdext::hash_map<tNet, tItems> tOmittedInfos;
+  typedef stdext::hash_map<tNet, int> tNetInfoLimits;
 
 public:
-  Status(NetList *lCtrl, int onHiddenCfgCol = 0, int dotsCfgCol = 0);
+  Status(NetList* netList, int onHiddenCfgCol = 0, int dotsCfgCol = 0);
 
   // Obcina status do maks. d³ugoœci
   String limitChars(StringRef status, int net);
@@ -76,77 +116,28 @@ public:
   // Sprawdza czy sieæ 'nadaje siê do u¿ytku'
   bool isNetValid(int net);
   // Czy zmieniaæ przy statusie 'ukryty' ?
-  bool chgOnHidden();
+  bool changeOnHidden();
   // obs³uga akcji
-  void actionHandle(sIMessage_base *msgBase);
+  void actionHandle(IMEvent& ev);
 
   // tekstowa nazwa statusu
-  inline String labelById(int st) {
-    String name = "?";
-
-    switch (st) {
-      case ST_ONLINE: name = "Dostêpny"; break;
-      case ST_CHAT: name = "Pogadam"; break;
-      case ST_AWAY: name = "Zaraz wracam"; break;
-      case ST_NA: name = "Nieosi¹galny"; break;
-      case ST_DND: name = "Nie przeszkadzaæ"; break;
-      case ST_HIDDEN: name = "Ukryty"; break;
-      case ST_OFFLINE: name = "Niedostêpny"; break;
-    }
-    return name;
-  }
-
+  String getStatusLabel(int status);
   // "..." przy obcinanym opisie
-  inline String getDots() {
-    if (!this->dotsCfgCol) return "";
-
-    if (Ctrl->DTgetType(DTCFG, this->dotsCfgCol) == DT_CT_STR) {
-      return GETSTRA(this->dotsCfgCol);
-    }
-    return GETINT(this->dotsCfgCol) ? "…" : "";
-  }
-
-  inline bool isRemembered(int net = 0) {
-    if (!net) {
-      return this->remember;
-    } else {
-      for (tInfos::iterator it = this->rememberedSt.begin(); it != this->rememberedSt.end(); it++) {
-        if (it->net == net) return true;
-      }
-      return false;
-    }
-  }
-
-  inline int getInfoCharLimit(int net = 0) {
-    for (tInfoCharLimits::iterator it = this->infoCharLimits.begin(); it != this->infoCharLimits.end(); it++) {
-      if (it->net == net) return it->length;
-    }
-
-    int limit = 0;
-    if (net) {
-      Ctrl->IMessage(IM::infoCharLimit, net, limit);
-      if (Ctrl->getError() != IMERROR_NORESULT) {
-        return limit;
-      }
-    }
-    return 0;
-  }
+  String getDots();
+  // zwraca limit znaków opisu dla danej sieci
+  int getInfoCharLimit(int net);
 
   // Formatuje status
-  inline virtual String parseInfo(StringRef info, int net, int st = -1) {
-    info = Helpers::trim(info);
-    info = this->limitChars(info, net);
-
-    return PassStringRef(info);
-  }
+  virtual String parseInfo(StringRef info, int net, int st = -1);
 
   // Zmienia status, txt - opis, st - id statusu
-  void changeStatus(const StringRef& info, int st = -1);
+  void changeStatusInfo(const StringRef& info, int st = -1);
   void changeStatus(int st);
   // Zmienia status na wybranej sieci
-  void changeStatus(int net, const StringRef& info, int st = -1);
+  void changeStatusInfo(int net, const StringRef& info, int st = -1);
   void changeStatus(int net, int st);
 
+  bool isRemembered(int net = 0);
   // Zapamiêtuje aktualny opis na ka¿dej sieci
   void rememberInfo();
   // Zapamiêtuje aktualny opis na wybranej sieci
@@ -172,7 +163,7 @@ public:
   void removeReplacementSt(int net, int before);
 
   // lista z sieciami
-  NetList *lCtrl;
+  NetList* netList;
 
 protected:
   // kolumna konfiguracji ktora odpowiada za opcje 'zmieniaj status przy statusie ukryty'
@@ -180,13 +171,15 @@ protected:
   unsigned int dotsCfgCol;
   bool remember;
 
-  tLastInfos lastSt;
+  tOmittedInfos omittedSt;
   // zapamietane statusy i ich opisy
-  tInfos rememberedSt;
+  tItems rememberedSt;
   // zamienniki nieobs³ugiwanych statusów
   tStReplacements stReplacements;
   // maksymalne d³ugoœci statusów opisowych
-  tInfoCharLimits infoCharLimits;
+  tNetInfoLimits infoCharLimits;
 };
+
+typedef SharedPtr<Status> oStatus;
 
 #endif // __STATUS_H__

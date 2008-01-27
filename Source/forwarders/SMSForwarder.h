@@ -1,17 +1,17 @@
 /**
- *  SMS Forwarder class
- *
- *  Licensed under The GNU Lesser General Public License
- *  Redistributions of files must retain the above copyright notice.
- *
- *  @filesource
- *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
- *  @version      $Revision$
- *  @modifiedby   $LastChangedBy$
- *  @lastmodified $Date$
- *  @license      http://creativecommons.org/licenses/LGPL/2.1/
- */
+  *  SMS Forwarder class
+  *
+  *  Licensed under The GNU Lesser General Public License
+  *  Redistributions of files must retain the above copyright notice.
+  *
+  *  @filesource
+  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
+  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
+  *  @version      $Revision$
+  *  @modifiedby   $LastChangedBy$
+  *  @lastmodified $Date$
+  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  */
 
 #pragma once
 
@@ -19,12 +19,11 @@
 #define __SMSFORWARDER_H__
 
 #include "../kAway2.h"
-#include "../globals.h"
 
-#include "../Helpers.h"
-#include "../FwdControl.h"
 #include "../Forwarder.h"
 #include "../Message.h"
+
+#include "../Events/ActionEvent.h"
 
 namespace kAway2 {
   namespace ui {
@@ -62,7 +61,7 @@ namespace kAway2 {
 
   public:
     inline bool preSummary() {
-      return strlen(GETSTRA(cfg::sms::number)) && strlen(GETSTRA(cfg::sms::gate));
+      return strlen(GETSTR(cfg::sms::number)) && strlen(GETSTR(cfg::sms::gate));
     }
 
     inline bool preForward(int cnt, cMessage *msg) {
@@ -81,7 +80,7 @@ namespace kAway2 {
     void send(const StringRef& msg);
     void onISetCols();
     void onIPrepare();
-    void onAction(int id, int code);
+    void refreshCombo(ActionEvent& ev);
   };
 }
 

@@ -1,17 +1,17 @@
 /**
- *  Contact Forwarder class
- *
- *  Licensed under The GNU Lesser General Public License
- *  Redistributions of files must retain the above copyright notice.
- *
- *  @filesource
- *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
- *  @version      $Revision$
- *  @modifiedby   $LastChangedBy$
- *  @lastmodified $Date$
- *  @license      http://creativecommons.org/licenses/LGPL/2.1/
- */
+  *  Contact Forwarder class
+  *
+  *  Licensed under The GNU Lesser General Public License
+  *  Redistributions of files must retain the above copyright notice.
+  *
+  *  @filesource
+  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
+  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
+  *  @version      $Revision$
+  *  @modifiedby   $LastChangedBy$
+  *  @lastmodified $Date$
+  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  */
 
 #pragma once
 
@@ -19,10 +19,7 @@
 #define __CNTFORWARDER_H__
 
 #include "../kAway2.h"
-#include "../globals.h"
 
-#include "../Helpers.h"
-#include "../FwdControl.h"
 #include "../Forwarder.h"
 #include "../Message.h"
 
@@ -69,14 +66,13 @@ namespace kAway2 {
 
   public:
     CntForwarder();
-    // ~CntForwarder();
 
   public:
     inline bool preSummary() {
       if (GETINT(cfg::forward::type) == toCnt) {
         return GETINT(cfg::forward::cnt);
       } else {
-        return GETINT(cfg::forward::net) && strlen(GETSTRA(cfg::forward::uid));
+        return GETINT(cfg::forward::net) && strlen(GETSTR(cfg::forward::uid));
       }
     }
 
@@ -94,10 +90,11 @@ namespace kAway2 {
     }
 
     void send(const StringRef& msg);
+
     void onISetCols();
     void onIPrepare();
-    void onAction(int id, int code);
-    void onNewMsg(int cnt, cMessage *msg);
+    void onAction(IMEvent& ev);
+    void onNewMsg(IMEvent& ev);
   };
 }
 

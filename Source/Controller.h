@@ -1,36 +1,46 @@
 /**
- *  kAway2 Control class
- *
- *  Licensed under The GNU Lesser General Public License
- *  Redistributions of files must retain the above copyright notice.
- *
- *  @filesource
- *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
- *  @version      $Revision$
- *  @modifiedby   $LastChangedBy$
- *  @lastmodified $Date$
- *  @license      http://creativecommons.org/licenses/LGPL/2.1/
- */
+  *  kAway2 Controller class
+  *
+  *  Licensed under The GNU Lesser General Public License
+  *  Redistributions of files must retain the above copyright notice.
+  *
+  *  @filesource
+  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
+  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
+  *  @version      $Revision$
+  *  @modifiedby   $LastChangedBy$
+  *  @lastmodified $Date$
+  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  */
 
 #pragma once
 
-#ifndef __CONTROL_H__
-#define __CONTROL_H__
+#ifndef __CONTROLLER_H__
+#define __CONTROLLER_H__
 
 #include "kAway2.h"
-#include "globals.h"
 
 #include "Helpers.h"
+#include "PluginController.h"
+#include "FwdController.h"
 #include "MRU.h"
 #include "NetList.h"
 #include "Format.h"
 #include "FormattedStatus.h"
 #include "Message.h"
-#include "FwdControl.h"
+#include "AwayWnd.h"
 
 namespace kAway2 {
-  class Control {
+  class Controller : public PluginController<Controller> {
+  public:
+    friend class PluginController<Controller>;
+
+  public:
+    /**
+     * Class version macro
+     */
+    STAMINA_OBJECT_CLASS_VERSION(Controller, PluginController, Version(1,3,0,0));
+
   public:
     typedef std::deque<cMessage*> tMsgQueue;
 
@@ -38,6 +48,12 @@ namespace kAway2 {
       tplEnable = cfg::tpl::enable,
       tplDisable = cfg::tpl::disable,
       tplReply = cfg::tpl::reply
+    };
+
+    enum enAutoAwayType {
+      typeDisabled,
+      typeBasic,
+      typeExtended
     };
 
     struct sCnt {
@@ -53,9 +69,31 @@ namespace kAway2 {
 
     typedef std::map<tCntId, sCnt> tCnts;
 
-  public:
-    Control();
+  protected:
+    Controller();
 
+  protected:
+    /* IMessage callback methods */
+    void onPrepare(IMEvent& ev);
+    void onAction(IMEvent& ev);
+    void onMsgRcv(IMEvent& ev);
+    void onEnd(IMEvent& ev);
+    void onPluginsLoaded(IMEvent& ev);
+    void onExtAutoAway();
+    void onAutoAway(IMEvent& ev);
+    void onBack(IMEvent& ev);
+
+    /* API callback methods */
+    void apiEnabled(IMEvent& ev);
+    void apiEnable(IMEvent& ev);
+    void apiDisable(IMEvent& ev);
+    void apiIgnored(IMEvent& ev);
+    void apiAutoAway(IMEvent& ev);
+    void apiIgnore(IMEvent& ev);
+    void apiShowAwayWnd(IMEvent& ev);
+
+  public:
+    /* strictly Controller methods */
     bool enable(const StringRef& msg = "", int status = 0, bool silent = false);
     bool disable(const StringRef& msg = "", bool silent = false);
 
@@ -79,10 +117,10 @@ namespace kAway2 {
     }
 
     inline bool isAutoAway() {
-      return this->autoAway;
+      return this->autoAway != typeDisabled;
     }
 
-    inline void setAutoAway(bool state) {
+    inline void setAutoAway(enAutoAwayType state) {
       this->autoAway = state;
     }
 
@@ -94,7 +132,7 @@ namespace kAway2 {
       return this->awayMsg;
     }
 
-    inline Stamina::Date64 getAwayTime() {
+    inline Date64 getAwayTime() {
       return this->awayTime;
     }
 
@@ -117,16 +155,26 @@ namespace kAway2 {
   protected:
     bool isOn;
     bool muteStateSwitched;
-    bool autoAway;
+    enAutoAwayType autoAway;
     bool isFromWnd;
     int pluginsGroup;
 
+    shared_ptr<TimerDynamic> extAutoAwayTimer;
     tCnts cntProps;
     String awayMsg;
-    Stamina::Date64 awayTime;
+    Date64 awayTime;
 
     void switchBtns(bool state);
+    void changeStatus(int status, bool changeInfo = false);
+
+  public:
+    oNetList autoReplyList;
+    oNetList statusList;
+    oFormattedStatus statusCtrl;
+    // oFwdController fwdCtrl;
+    oAwayWnd wnd;
+    oMRU mruList;
   };
 }
 
-#endif // __CONTROL_H__
+#endif // __CONTROLLER_H__

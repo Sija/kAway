@@ -1,53 +1,20 @@
 /**
- *  Format class
- *
- *  Licensed under The GNU Lesser General Public License
- *  Redistributions of files must retain the above copyright notice.
- *
- *  @filesource
- *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
- *  @version      $Revision$
- *  @modifiedby   $LastChangedBy$
- *  @lastmodified $Date$
- *  @license      http://creativecommons.org/licenses/LGPL/2.1/
- */
+  *  Format class
+  *
+  *  Licensed under The GNU Lesser General Public License
+  *  Redistributions of files must retain the above copyright notice.
+  *
+  *  @filesource
+  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
+  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
+  *  @version      $Revision$
+  *  @modifiedby   $LastChangedBy$
+  *  @lastmodified $Date$
+  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  */
 
 #include "stdafx.h"
 #include "Format.h"
-
-std::string __stdcall fCallback(Stamina::RegEx* reg, void* param) {
-  Format* fCtrl = static_cast<Format*>(param);
-
-  String value, prefix, suffix;
-  String result, buff;
-
-  if (fCtrl->getVar(reg->getSub(fCtrl->partsPos["var"]), buff)) {
-    if (!buff.length() && reg->getSub(fCtrl->partsPos["altVar"]).length()) {
-      buff = reg->getSub(fCtrl->partsPos["altVar"]);
-      buff = (buff.substr(0, 1) == "(") ? buff.substr(2, buff.length() - 4) : fCtrl->getVar(buff);
-    }
-
-    if (buff.length()) {
-      prefix = reg->getSub(fCtrl->partsPos["prefixString"]);
-      prefix = prefix.length() ? prefix.substr(2, prefix.length() - 4) : reg->getSub(fCtrl->partsPos["prefix"]);
-
-      suffix = reg->getSub(fCtrl->partsPos["suffixString"]);
-      suffix = suffix.length() ? suffix.substr(2, suffix.length() - 4) : reg->getSub(fCtrl->partsPos["suffix"]);
-
-      value = buff;
-      int modsApplied = fCtrl->applyModifiers(value, prefix, suffix);
-
-      logDebug("[Format<%i>::fCallback()]: prefix = %s, value = %s, suffix = %s, modifiers applied = %i",
-        fCtrl, nullChk(prefix), nullChk(value), nullChk(suffix), modsApplied);
-
-      result = prefix + value + suffix;
-    }
-  } else {
-    result = reg->getSub(0);
-  }
-  return result;
-}
 
 Format::Format(const StringRef& ldelim, const StringRef& rdelim) {
   this->pattern = 
@@ -87,12 +54,12 @@ void Format::clearVars() {
 String Format::parse(const StringRef& txt) {
   if (!this->vars.size() || !txt.length()) return txt;
 
-  Stamina::RegEx reg;
+  RegEx reg;
 
   reg.setPattern(this->pattern);
   reg.setSubject(txt);
 
-  String result = reg.replace(fCallback, NULL, this);
+  String result = reg.replace(&Format::parseCallback, NULL, this);
 
   logDebug("[Format<%i>::parse()]: before = %s, after = %s",
     this, txt.c_str(), nullChk(result));
@@ -100,15 +67,48 @@ String Format::parse(const StringRef& txt) {
   return result;
 }
 
+std::string __stdcall Format::parseCallback(RegEx* reg, void* param) {
+  Format* fCtrl = static_cast<Format*>(param);
+
+  String value, prefix, suffix;
+  String result, buff;
+
+  if (fCtrl->getVar(reg->getSub(fCtrl->partsPos["var"]), buff)) {
+    if (!buff.length() && reg->getSub(fCtrl->partsPos["altVar"]).length()) {
+      buff = reg->getSub(fCtrl->partsPos["altVar"]);
+      buff = (buff.substr(0, 1) == "(") ? buff.substr(2, buff.length() - 4) : fCtrl->getVar(buff);
+    }
+
+    if (buff.length()) {
+      prefix = reg->getSub(fCtrl->partsPos["prefixString"]);
+      prefix = prefix.length() ? prefix.substr(2, prefix.length() - 4) : reg->getSub(fCtrl->partsPos["prefix"]);
+
+      suffix = reg->getSub(fCtrl->partsPos["suffixString"]);
+      suffix = suffix.length() ? suffix.substr(2, suffix.length() - 4) : reg->getSub(fCtrl->partsPos["suffix"]);
+
+      value = buff;
+      int modsApplied = fCtrl->applyModifiers(value, prefix, suffix);
+
+      logDebug("[Format<%i>::fCallback()]: prefix = %s, value = %s, suffix = %s, modifiers applied = %i",
+        fCtrl, nullChk(prefix), nullChk(value), nullChk(suffix), modsApplied);
+
+      result = prefix + value + suffix;
+    }
+  } else {
+    result = reg->getSub(0);
+  }
+  return result;
+}
+
 void Format::UIDrawHelpBtn(int cfgGroup, int ico) {
   String val = this->buildVarsList();
-  if (ico) val += AP_ICO + itos(ico);
+  if (ico) val += AP_ICO + inttostr(ico);
   UIActionCfgAdd(cfgGroup, 0, ACTT_TIPBUTTON | ACTSBUTTON_ALIGNRIGHT | ACTSC_INLINE, val.a_str());
 }
 
 void Format::UIDrawHelpBtn(const tHelpVars& vars, int cfgGroup, int ico) {
-  String val = this->buildVarsList(vars);
-  if (ico) val += AP_ICO + itos(ico);
+  String val = Format::buildVarsList(vars);
+  if (ico) val += AP_ICO + inttostr(ico);
   UIActionCfgAdd(cfgGroup, 0, ACTT_TIPBUTTON | ACTSBUTTON_ALIGNRIGHT | ACTSC_INLINE, val.a_str());
 }
 
@@ -147,8 +147,8 @@ int Format::applyModifiers(StringRef& value, StringRef& prefix, StringRef& suffi
   int howMany = 0;
 
   for (tModifiers::iterator it = this->modifiers.begin(); it != this->modifiers.end(); it++) {
-    Stamina::RegEx pReg, sReg;
     sModifier* mod = *it;
+    RegEx pReg, sReg;
 
     if (mod->prefix.length())
       pReg.match(mod->prefix.a_str(), prefix.a_str());

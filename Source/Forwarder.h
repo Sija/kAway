@@ -1,32 +1,31 @@
 /**
- *  Forwarder Base class
- *
- *  Licensed under The GNU Lesser General Public License
- *  Redistributions of files must retain the above copyright notice.
- *
- *  @filesource
- *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
- *  @version      $Revision$
- *  @modifiedby   $LastChangedBy$
- *  @lastmodified $Date$
- *  @license      http://creativecommons.org/licenses/LGPL/2.1/
- */
+  *  Forwarder Base class
+  *
+  *  Licensed under The GNU Lesser General Public License
+  *  Redistributions of files must retain the above copyright notice.
+  *
+  *  @filesource
+  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
+  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
+  *  @version      $Revision$
+  *  @modifiedby   $LastChangedBy$
+  *  @lastmodified $Date$
+  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  */
 
 #pragma once
 
 #ifndef __FORWARDER_H__
 #define __FORWARDER_H__
 
-#include <boost/bind.hpp>
-#include <stamina/timer.h>
-
 #include "kAway2.h"
 #include "Helpers.h"
 #include "Format.h"
 
+#include "Events/IMEvent.h"
+
 namespace kAway2 {
-  class Forwarder {
+  class Forwarder : public signals::trackable {
   public:
     class Summary;
     class Forward;
@@ -62,7 +61,10 @@ namespace kAway2 {
         this->oForward->cfgTplDraw();
       }
     }
-    virtual void onNewMsg(int cnt, cMessage *msg) {
+    virtual void onNewMsg(IMEvent& ev) {
+      cMessage* msg = (cMessage*) ev.getIMessage()->p1;
+      int cnt = 0; // baaad
+
       if (this->isSummarizable) {
         this->oSummary->onNewMsg(cnt, msg);
       }
@@ -104,7 +106,6 @@ namespace kAway2 {
 
     public:
       Summary(Forwarder *fwd);
-      ~Summary();
 
     public:
       inline void clear() {
@@ -127,7 +128,7 @@ namespace kAway2 {
       String getBody();
 
     protected:
-      boost::shared_ptr<Stamina::TimerDynamic> timer;
+      shared_ptr<TimerDynamic> timer;
       unsigned int receivedMsgCount;
       String lastMsgFrom;
       tMsgSenders msgSenders;

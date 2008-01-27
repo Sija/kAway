@@ -1,40 +1,44 @@
 /**
- *  Forwarders Control class
- *
- *  Licensed under The GNU Lesser General Public License
- *  Redistributions of files must retain the above copyright notice.
- *
- *  @filesource
- *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
- *  @version      $Revision$
- *  @modifiedby   $LastChangedBy$
- *  @lastmodified $Date$
- *  @license      http://creativecommons.org/licenses/LGPL/2.1/
- */
+  *  Forwarders Controller class
+  *
+  *  Licensed under The GNU Lesser General Public License
+  *  Redistributions of files must retain the above copyright notice.
+  *
+  *  @filesource
+  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
+  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
+  *  @version      $Revision$
+  *  @modifiedby   $LastChangedBy$
+  *  @lastmodified $Date$
+  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  */
 
 #include "stdafx.h"
-#include "FwdControl.h"
+
+#include "FwdController.h"
+#include "Controller.h"
 
 namespace kAway2 {
-  FwdControl::FwdControl() : summarizableCount(0), forwardableCount(0) {
-    this->setEvtOnIPrepare(boost::bind(&FwdControl::registerCfgGroups, this));
+  FwdController::FwdController() : summarizableCount(0), forwardableCount(0) {
+    Controller* pCtrl = Controller::getInstance();
+
+    pCtrl->getIMessageDispatcher().connect(IM_UI_PREPARE, bind(&FwdController::registerCfgGroups, this, _1));
   }
 
-  FwdControl::~FwdControl() {
+  FwdController::~FwdController() {
     for (tForwarders::iterator it = this->forwarders.begin(); it != this->forwarders.end(); it++) {
       delete *it; *it = NULL;
     }
     this->forwarders.clear();
   }
 
-  void FwdControl::registerCfgGroups() {
+  void FwdController::registerCfgGroups(IMEvent &ev) {
     for (tForwarders::iterator it = this->forwarders.begin(); it != this->forwarders.end(); it++) {
       UIGroupAdd(ui::cfgGroup, (*it)->cfgCols["cfgGroup"], ACTR_SAVE, (*it)->title.a_str(), (*it)->ico);
     }
   }
 
-  void FwdControl::UIDrawActiveSum() {
+  void FwdController::UIDrawActiveSum() {
     int i = 0, col = 0, colCount = 3, fwdCount = this->summarizableCount;
 
     // UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUP, "Aktywne raporty");
@@ -50,7 +54,7 @@ namespace kAway2 {
     // UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
   }
 
-  void FwdControl::UIDrawActiveFwd() {
+  void FwdController::UIDrawActiveFwd() {
     int i = 0, col = 0, colCount = 3, fwdCount = this->forwardableCount;
 
     // UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUP, "Aktywne przekierowania");
@@ -66,7 +70,7 @@ namespace kAway2 {
     // UIActionCfgAdd(ui::cfgGroup, 0, ACTT_GROUPEND);
   }
 
-  void FwdControl::fwdRegister(Forwarder *f) {
+  void FwdController::fwdRegister(Forwarder *f) {
     this->forwarders.push_back(f);
 
     if (f->isSummarizable) {
@@ -77,7 +81,7 @@ namespace kAway2 {
     }
   }
 
-  Forwarder* FwdControl::getById(const StringRef& id) {
+  Forwarder* FwdController::getById(const StringRef& id) {
     for (tForwarders::iterator it = this->forwarders.begin(); it != this->forwarders.end(); it++) {
       if ((*it)->id == id) return *it;
     }

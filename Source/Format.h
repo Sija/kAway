@@ -1,17 +1,17 @@
 /**
- *  Format class
- *
- *  Licensed under The GNU Lesser General Public License
- *  Redistributions of files must retain the above copyright notice.
- *
- *  @filesource
- *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
- *  @version      $Revision$
- *  @modifiedby   $LastChangedBy$
- *  @lastmodified $Date$
- *  @license      http://creativecommons.org/licenses/LGPL/2.1/
- */
+  *  Format class
+  *
+  *  Licensed under The GNU Lesser General Public License
+  *  Redistributions of files must retain the above copyright notice.
+  *
+  *  @filesource
+  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
+  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
+  *  @version      $Revision$
+  *  @modifiedby   $LastChangedBy$
+  *  @lastmodified $Date$
+  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  */
 
 #pragma once
 
@@ -30,26 +30,27 @@ public:
   FormatException(const StringRef& reason) : ExceptionString(reason) { }
 };
 
-class Format : public iObject {
+class Format : public SharedObject<iSharedObject> {
 public:
-  /*
-   * Class version
-   */
-	STAMINA_OBJECT_CLASS_VERSION(Format, iObject, Version(0,1,0,0));
+  /* Class version */
+	STAMINA_OBJECT_CLASS_VERSION(Format, iSharedObject, Version(0,1,0,0));
 
-  typedef boost::function<void(StringRef& value, StringRef& prefix, StringRef& suffix, 
-    Stamina::RegEx& pRegEx, Stamina::RegEx& sRegEx)> ModifierCallback;
-  typedef boost::signal<void(StringRef& value, StringRef& prefix, StringRef& suffix, 
-    Stamina::RegEx& pRegEx, Stamina::RegEx& sRegEx)> ModifierSig;
+  /* Callback and signal definitions for Modifiers */
+  typedef function<void(StringRef& value, StringRef& prefix, StringRef& suffix, 
+    RegEx& pRegEx, RegEx& sRegEx)> ModifierCallback;
+  typedef signal<void(StringRef& value, StringRef& prefix, StringRef& suffix, 
+    RegEx& pRegEx, RegEx& sRegEx)> ModifierSig;
 
-  typedef boost::function<String(Format* fCtrl)> VarProcessCallback;
-  typedef boost::signal<String(Format* fCtrl)> VarProcessSig;
+  typedef function<String(Format* fCtrl)> VarProcessCallback;
+  typedef signal<String(Format* fCtrl)> VarProcessSig;
 
+  /* Modifier matching operator */
   enum enOperator {
     opAnd,
     opOr
   };
 
+  /* Variable type */
   enum enType {
     typeCallback,
     typeString
@@ -74,6 +75,7 @@ public:
     }
   };
 
+  /* Help variable structure */
   struct sHelpVar {
     String name;
     String desc;
@@ -81,6 +83,7 @@ public:
     sHelpVar(const StringRef& _name, const StringRef& _desc) : name(_name), desc(_desc) { }
   };
 
+  /* Variable structure */
   struct sVar {
     VarProcessSig callback;
     enType type;
@@ -113,16 +116,17 @@ public:
 
 public:
   String parse(const StringRef& txt);
+  static std::string __stdcall parseCallback(RegEx* reg, void* param);
 
   inline void setPattern(const StringRef& pattern) {
     this->pattern = pattern;
   }
 
   String buildVarsList();
-  String buildVarsList(const tHelpVars& vars);
+  static String buildVarsList(const tHelpVars& vars);
 
   void UIDrawHelpBtn(int cfgGroup, int ico = 0);
-  void UIDrawHelpBtn(const tHelpVars& vars, int cfgGroup, int ico = 0);
+  static void UIDrawHelpBtn(const tHelpVars& vars, int cfgGroup, int ico = 0);
 
   void clearModifiers();
   void clearVars();
@@ -148,5 +152,7 @@ protected:
   tModifiers modifiers;
   tVars vars;
 };
+
+typedef SharedPtr<Format> oFormat;
 
 #endif // __FORMAT_H__

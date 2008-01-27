@@ -1,21 +1,21 @@
 /**
- *  kAway2 stdafx
- *
- *  Include file for standard system include files,
- *  or project specific include files that are used frequently,
- *  but are changed infrequently.
- *
- *  Licensed under The GNU Lesser General Public License
- *  Redistributions of files must retain the above copyright notice.
- *
- *  @filesource
- *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
- *  @version      $Revision$
- *  @modifiedby   $LastChangedBy$
- *  @lastmodified $Date$
- *  @license      http://creativecommons.org/licenses/LGPL/2.1/
- */
+  *  kAway2 stdafx
+  *
+  *  Include file for standard system include files,
+  *  or project specific include files that are used frequently,
+  *  but are changed infrequently.
+  *
+  *  Licensed under The GNU Lesser General Public License
+  *  Redistributions of files must retain the above copyright notice.
+  *
+  *  @filesource
+  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
+  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
+  *  @version      $Revision$
+  *  @modifiedby   $LastChangedBy$
+  *  @lastmodified $Date$
+  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  */
 
 #pragma once
 
@@ -45,6 +45,7 @@
 #include <process.h>
 #include <commctrl.h>
 #include <map>
+#include <hash_map>
 #include <list>
 #include <deque>
 #include <stdstring.h>
@@ -59,6 +60,10 @@
   #pragma comment(lib, "stamina.lib")
 #endif
 
+#include <boost/signal.hpp>
+#include <boost/function.hpp>
+#include <boost/bind.hpp>
+
 /*
 #include <stamina/threadrun.h>
 #include <stamina/thread.h>
@@ -67,10 +72,13 @@
 */
 
 #include <stamina/helpers.h>
-#include <stamina/regex.h>
-#include <stamina/time64.h>
 #include <stamina/object.h>
+#include <stamina/objectimpl.h>
+#include <stamina/exception.h>
 #include <stamina/string.h>
+#include <stamina/time64.h>
+#include <stamina/regex.h>
+#include <stamina/timer.h>
 
 using namespace Stamina;
 using namespace std;
@@ -84,6 +92,29 @@ using namespace std;
 #include <konnekt/tabletka.h>
 #include <konnekt/ui_message_controls.h>
 #include <konnekt/lib.h>
+#include <konnekt/plugsNET.h>
+
+using namespace Konnekt;
+using namespace boost;
 
 #include "../Project/resource.h"
-#include "plugsNET.h"
+
+/*
+ * Konnekt::ShowBits helpers
+ */
+#define ifPRO if (Konnekt::ShowBits::checkLevel(Konnekt::ShowBits::levelPro))
+#define ifADV if (Konnekt::ShowBits::checkLevel(Konnekt::ShowBits::levelAdvanced))
+#define ifNORM if (Konnekt::ShowBits::checkLevel(Konnekt::ShowBits::levelNormal))
+#define ifINT if (Konnekt::ShowBits::checkLevel(Konnekt::ShowBits::levelIntermediate))
+
+#define ifToolTipADV if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showTooltipsAdvanced))
+#define ifToolTipNORM if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showTooltipsNormal))
+#define ifToolTipBEG if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showTooltipsBeginner))
+
+#define ifInfoADV if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showInfoAdvanced))
+#define ifInfoNORM if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showInfoNormal))
+#define ifInfoBEG if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showInfoBeginner))
+
+#define ifWizardsADV if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showWizardsAdvanced))
+#define ifWizardsNORM if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showWizardsNormal))
+#define ifWizardsBEG if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showWizardsBeginner))

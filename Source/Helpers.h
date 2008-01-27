@@ -1,17 +1,17 @@
 /**
- *  Helpers
- *
- *  Licensed under The GNU Lesser General Public License
- *  Redistributions of files must retain the above copyright notice.
- *
- *  @filesource
- *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
- *  @version      $Revision$
- *  @modifiedby   $LastChangedBy$
- *  @lastmodified $Date$
- *  @license      http://creativecommons.org/licenses/LGPL/2.1/
- */
+  *  Helpers
+  *
+  *  Licensed under The GNU Lesser General Public License
+  *  Redistributions of files must retain the above copyright notice.
+  *
+  *  @filesource
+  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
+  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
+  *  @version      $Revision$
+  *  @modifiedby   $LastChangedBy$
+  *  @lastmodified $Date$
+  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  */
 
 #pragma once
 
@@ -19,10 +19,24 @@
 #define __HELPERS_H__
 
 /*
- *  Integer -> String conversion
+ * Casting helpers
  */
 
-String itos(int i, int radix = 10);
+template<typename TC, typename TR>
+TR (TC::* resolve_cast0(TR (TC::* pFunc)(void)))(void) {
+  return pFunc;
+}
+
+template<typename TP, typename TC, typename TR>
+TR (TC::* resolve_cast1(TR (TC::* pFunc)(TP)))(TP) {
+  return pFunc;
+}
+
+/*
+ * Int64 to string conversion
+ */
+
+std::string i64tostr(__int64 value, int radix = 10);
 
 /*
  *  Bool -> Human readable string
@@ -55,28 +69,28 @@ namespace Helpers {
   String icon32(int ico);
 
   String trunc(StringRef txt, int limit, const StringRef& suffix = "...");
-  String trim(const StringRef& txt);
 
-  int altCfgVal(int cntId, int colId, bool isBool = true);
-  const char * altCfgStrVal(int cntId, int colId);
+  string rtrim(string txt, const string& chars = " ");
+  string ltrim(string txt, const string& chars = " ");
+  string trim(string txt, const string& chars = " ");
 
   int getPluginsGroup();
   int pluginExists(int net, int type = IMT_ALL);
   const char * getPlugName(int plugID);
 
   void UIActionCall(int group, int act, int cntID = 0);
+  void touchConfigWnd();
 
   #ifdef SHARED_TABLETKA_H
   bool isMsgWndOpen(int cntID);
   #endif
 
   #ifdef __STAMINA_TIME64__
-  bool isToday(Stamina::Date64 date);
+  bool isToday(Date64 date);
   #endif
 
   void showKNotify(char * text, int ico);
   int findParentAction(int group, int id);
-  int subclassAction(int group, int id, int mask = UIAIM_ALL);
 
   void addItemToHistory(cMessage* msg, int cnt, const char * dir, const StringRef& name, int session = 0);
 

@@ -1,19 +1,19 @@
 /**
- *  kAway2 Away Window class
- *
- *  Licensed under The GNU Lesser General Public License
- *  Redistributions of files must retain the above copyright notice.
- *
- *  @filesource
- *  @copyright    Copyright (c) 2005-2006 Sijawusz Pur Rahnama
- *  @copyright    Copyright (c) 2004 Kuba 'nix' Niegowski
- *  @copyright    Copyright (c) 2003-2004 Kamil 'Olórin' Figiela
- *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
- *  @version      $Revision$
- *  @modifiedby   $LastChangedBy$
- *  @lastmodified $Date$
- *  @license      http://creativecommons.org/licenses/LGPL/2.1/
- */
+  *  kAway2 Away Window class
+  *
+  *  Licensed under The GNU Lesser General Public License
+  *  Redistributions of files must retain the above copyright notice.
+  *
+  *  @filesource
+  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
+  *  @copyright    Copyright (c) 2004 Kuba 'nix' Niegowski
+  *  @copyright    Copyright (c) 2003-2004 Kamil 'Olórin' Figiela
+  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
+  *  @version      $Revision$
+  *  @modifiedby   $LastChangedBy$
+  *  @lastmodified $Date$
+  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  */
 
 #pragma once
 
@@ -21,15 +21,19 @@
 #define __AWAYWND_H__
 
 #include "kAway2.h"
-#include "globals.h"
 
 #include "Helpers.h"
 #include "MRU.h"
-#include "Control.h"
 #include "EditFix.h"
 
 namespace kAway2 {
-  class AwayWnd {
+  class AwayWnd : public SharedObject<iSharedObject> {
+  public:
+    /*
+     * Class version
+     */
+	  STAMINA_OBJECT_CLASS_VERSION(AwayWnd, iSharedObject, Version(0,1,0,0));
+
   public:
     struct sWndData {
       unsigned int net;
@@ -55,21 +59,19 @@ namespace kAway2 {
 
     struct sStatus {
       unsigned int id;
-      String name;
+      const char* name;
       HIMAGELIST img;
 
-      sStatus(int _id, const StringRef& _name, HIMAGELIST _img) : id(_id), name(_name), img(_img) { }
+      sStatus(int _id, const char* _name, HIMAGELIST _img) : id(_id), name(_name), img(_img) { }
     };
 
     typedef std::list<sStatus> tStats;
 
   public:
-    AwayWnd() {
-      this->classRegister();
-    }
-    ~AwayWnd() {
-      this->classUnRegister();
-    }
+    AwayWnd();
+    ~AwayWnd();
+
+    static LRESULT CALLBACK wndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
 
     void prepareButtonImage(HIMAGELIST &hIml, HWND hWnd, int net, int status);
 
@@ -89,13 +91,13 @@ namespace kAway2 {
       this->instances.erase(key);
     }
 
-    void classRegister();
-    void classUnRegister();
     void show();
 
   protected:
     std::map<int, HWND> instances;
   };
+
+  typedef SharedPtr<AwayWnd> oAwayWnd;
 }
 
 #endif // __AWAYWND_H__
