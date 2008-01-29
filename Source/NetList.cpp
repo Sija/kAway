@@ -163,7 +163,7 @@ NetList::Item& NetList::getItem(tNet net) {
   for (tItems::iterator it = _items.begin(); it != _items.end(); it++) {
     if (it->getNet() == net) return *it;
   }
-  throw new ExceptionString("Item was not found");
+  throw ExceptionString("Item was not found");
 }
 
 bool NetList::isIgnored(tNet net) const {

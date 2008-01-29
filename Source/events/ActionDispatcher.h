@@ -29,6 +29,12 @@ namespace Konnekt {
      */
     STAMINA_OBJECT_CLASS_VERSION(ActionDispatcher, EventDispatcher<ActionEvent>, Version(0,1,0,0));
 
+  protected:
+    class NotSubclassedException : public ExceptionString {
+    public:
+      NotSubclassedException() : ExceptionString("Action is not subclassed") { }
+    };
+
   public:
     class SubclassInfo {
     public:
@@ -161,7 +167,7 @@ namespace Konnekt {
       for (tSubclassed::iterator it = _subclassed.begin(); it != _subclassed.end(); it++) {
         if (it->getID() == id && it->getParent() == parent) return *it;
       }
-      throw new ExceptionString("Action is not subclassed");
+      throw NotSubclassedException();
     }
 
     /**

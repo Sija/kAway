@@ -68,7 +68,7 @@ public:
       id(_id), prefix(_prefix), suffix(_suffix), op(_op) { 
 
       if (f.empty()) {
-        throw new FormatException("Error! Callback function passed for Format variable modifier '" + _id + "' is empty.");
+        throw FormatException("Error! Callback function passed for Format variable modifier '" + _id + "' is empty.");
       } else {
         callback.connect(f);
       }
@@ -94,7 +94,7 @@ public:
     sVar(const StringRef& _name, const StringRef& _value) : name(_name), value(_value), type(typeString) { }
     sVar(const StringRef& _name, VarProcessCallback f) : name(_name), type(typeCallback) { 
       if (f.empty()) {
-        throw new FormatException("Error! Callback function passed for Format variable '" + _name + "' is empty.");
+        throw FormatException("Error! Callback function passed for Format variable '" + _name + "' is empty.");
       } else {
         callback.connect(f);
       }

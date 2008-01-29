@@ -32,6 +32,11 @@ using namespace std;
 using namespace stdext;
 
 namespace Konnekt {
+  class StopEventNotifyException : public ExceptionString {
+  public:
+    StopEventNotifyException() : ExceptionString("Event notification was interrupted") { }
+  };
+
   template <class E>
   class EventDispatcher : public SharedObject<iSharedObject> {
   public:
@@ -82,7 +87,7 @@ namespace Konnekt {
      */
     inline signals::connection connect(int id, const fListener& f, int priority = 0, signals::connect_position pos = signals::at_back) {
       if (f.empty()) {
-        throw new ExceptionString("Empty functor was given.");
+        throw ExceptionString("Empty functor was given.");
       }
 
       if (_listeners.find(id) == _listeners.end()) {
@@ -91,7 +96,7 @@ namespace Konnekt {
 
       signals::connection c = _listeners[id]->signal.connect(priority, f, pos);
       if (!c.connected()) {
-        throw new ExceptionString("Listener was not connected.");
+        throw ExceptionString("Listener was not connected.");
       }
 
       _listeners[id]->connections.push_back(c);
@@ -125,7 +130,9 @@ namespace Konnekt {
       int id = ev.getID();
 
       if (hasListeners(id)) {
-        _listeners[id]->signal(ev);
+        try {
+          _listeners[id]->signal(ev);
+        } catch (StopEventNotifyException&) { }
       }
       return ev;
     }

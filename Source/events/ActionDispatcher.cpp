@@ -37,7 +37,7 @@ namespace Konnekt {
       if (ev->getSubclassInfo().autoForward()) {
         ev->forward(); // forward to previous owner
       }
-    } catch (...) { }
+    } catch (NotSubclassedException&) { }
 
     // log IMessage
     IMLOG("[ActionDispatcher::dispatch()]: %s", ev->toString().c_str());
