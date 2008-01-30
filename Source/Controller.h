@@ -74,8 +74,17 @@ namespace kAway2 {
 
   protected:
     /* IMessage callback methods */
-    void onPrepare(IMEvent& ev);
-    void onAction(IMEvent& ev);
+    void _prepare(IMEvent& ev);
+    void _prepareUI(IMEvent& ev);
+
+    // actions
+    void _handleCntGroup(ActionEvent& ev);
+    void _handleMsgTb(ActionEvent& ev);
+    void _handlePowerBtns(ActionEvent& ev);
+    void _handleIgnoreBtn(ActionEvent& ev);
+    void _clearMRU(ActionEvent& ev);
+    void _resetSettings(ActionEvent& ev);
+
     void onMsgRcv(IMEvent& ev);
     void onEnd(IMEvent& ev);
     void onPluginsLoaded(IMEvent& ev);
@@ -166,6 +175,7 @@ namespace kAway2 {
 
     void switchBtns(bool state);
     void changeStatus(int status, bool changeInfo = false);
+    int _parseMsg(cMessage* m);
 
   public:
     oNetList autoReplyList;

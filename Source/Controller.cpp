@@ -21,8 +21,9 @@
 
 namespace kAway2 {
   Controller::Controller() : isOn(false), muteStateSwitched(false), autoAway(typeDisabled), pluginsGroup(0) {
-    // get IMessage dispatcher object
+    // get dispatchers
     IMessageDispatcher& dispatcher = getIMessageDispatcher();
+    ActionDispatcher& action_dispatcher = getActionDispatcher();
 
     /* Static values like net, type or version */
     dispatcher.setStaticValue(IM_PLUG_TYPE, IMT_UI | IMT_CONFIG | IMT_ALLMESSAGES);
@@ -32,8 +33,9 @@ namespace kAway2 {
     dispatcher.setStaticValue(IM_PLUG_NET, net);
 
     /* Callbacks */
-    dispatcher.connect(IM_UI_PREPARE, bind(&Controller::onPrepare, this, _1));
-    dispatcher.connect(IM_UIACTION, bind(&Controller::onAction, this, _1));
+    dispatcher.connect(IM_UI_PREPARE, bind(&Controller::_prepare, this, _1));
+    dispatcher.connect(IM_UI_PREPARE, bind(&Controller::_prepareUI, this, _1));
+
     dispatcher.connect(IM_MSG_RCV, bind(&Controller::onMsgRcv, this, _1));
     dispatcher.connect(IM_BEFOREEND, bind(&Controller::onEnd, this, _1));
     dispatcher.connect(IM_ALLPLUGINSINITIALIZED, bind(&Controller::onPluginsLoaded, this, _1));
@@ -48,6 +50,17 @@ namespace kAway2 {
     dispatcher.connect(api::isAutoAway, bind(&Controller::apiAutoAway, this, _1));
     dispatcher.connect(api::ignore, bind(&Controller::apiIgnore, this, _1));
     dispatcher.connect(api::showAwayWnd, bind(&Controller::apiShowAwayWnd, this, _1));
+
+    // actions
+    action_dispatcher.connect(ui::cntCfgGroup, bind(&Controller::_handleCntGroup, this, _1));
+    action_dispatcher.connect(ui::msgTbGrp, bind(&Controller::_handleMsgTb, this, _1));
+    action_dispatcher.connect(ui::powerInMainWnd, bind(&Controller::_handlePowerBtns, this, _1));
+    action_dispatcher.connect(ui::powerInCntWnd, bind(&Controller::_handlePowerBtns, this, _1));
+    action_dispatcher.connect(ui::powerInTrayMenu, bind(&Controller::_handlePowerBtns, this, _1));
+    action_dispatcher.connect(ui::ignoreBtn, bind(&Controller::_handleIgnoreBtn, this, _1));
+    action_dispatcher.connect(act::clearMru, bind(&Controller::_clearMRU, this, _1));
+    action_dispatcher.connect(act::resetCntSettings, bind(&Controller::_resetSettings, this, _1));
+    action_dispatcher.connect(act::resetSettings, bind(&Controller::_resetSettings, this, _1));
 
     // bind extended away timer
     extAutoAwayTimer.reset(timerTmplCreate(bind(&Controller::onExtAutoAway, this)));
@@ -130,7 +143,7 @@ namespace kAway2 {
 
   /* IMessage callback methods */
 
-  void Controller::onPrepare(IMEvent& ev) {
+  void Controller::_prepare(IMEvent& ev) {
     // get ActionDispatcher object
     ActionDispatcher& action_dispatcher = getActionDispatcher();
 
@@ -167,9 +180,11 @@ namespace kAway2 {
     // connect status listener
     getIMessageDispatcher().connect(IM_STATUSCHANGE, bind(&Status::actionHandle, statusCtrl, _1));
 
-    log("[Controller::onPrepare()]: Ctrl = %i, sCtrl = %i, wnd = %i", 
+    log("[Controller::prepare()]: Ctrl = %i, sCtrl = %i, wnd = %i", 
       Ctrl, statusCtrl, wnd);
+  }
 
+  void Controller::_prepareUI(IMEvent& ev) {
     /* Defining help variables */
     Format::tHelpVars stVars, rVars;
 
@@ -603,76 +618,18 @@ namespace kAway2 {
 
     // we're searchin' for contact id
     int cnt = Ctrl->ICMessage(IMC_CNT_FIND, m->net, (int) (strlen(m->fromUid) ? m->fromUid : m->toUid));
-    bool userMsg = !strlen(m->fromUid) && !GetExtParam(m->ext, cfg::extParamName).length() && (m->type == MT_MESSAGE);
+    bool fromUser = !strlen(m->fromUid) && !GetExtParam(m->ext, cfg::extParamName).length() && (m->type == MT_MESSAGE);
 
-    if (userMsg && (m->body[0] == '/' && strlen(m->body) > 1) && config->getInheritedBValue(cfg::ircCmds, cnt)) {
-      tStringVector params;
-      std::string body(m->body); 
-      body = body.substr(1, body.length());
-
-      Stamina::split(body, " ", params);
-      String cmd = params[0];
-      String awayMsg = (params.size() > 1) ? body.substr(params[0].length() + 1, body.length()) : "";
-
-      bool del = false, set = false; // irc-type command like
-      int st = 0; // default status
-
-      RegEx reg;
-      reg.match("/^(away|brb)\\[(.+)\\]$/", cmd.a_str());
-
-      if (reg.isMatched()) {
-        cmd = reg[1];
-
-        if (reg[2] == "away") st = ST_AWAY;
-        else if (reg[2] == "xa") st = ST_NA;
-        else if (reg[2] == "dnd") st = ST_DND;
-        else if (reg[2] == "hidden") st = ST_HIDDEN;
-        else if (reg[2] == "-") st = -1;
-      }
-
-      if (cmd == "away") {
-        del = true; set = this->enable(awayMsg, st);
-      } else if (cmd == "brb") {
-        del = true; set = this->enable(awayMsg, st, true);
-      } else if (cmd == "back") {
-        del = true; set = this->disable(awayMsg);
-      } else if (cmd == "re") {
-        del = true; set = this->disable(awayMsg, true);
-      }
-
-      if (del) {
-        logDebug("{IM_MSG_RCV}: cmd = %s, reason = %s, params = %i",
-          cmd.c_str(), nullChk(awayMsg), params.size());
-
-        if (!set) {
-          return ev.setReturnValue(IM_MSG_delete);
-        }
-
-        String body, ext(m->ext);
-        body += "<u>";
-        body += (cmd == "away" || cmd == "brb") ? "W³¹czono" : "Wy³¹czono";
-        body += "</u> tryb away";
-        body += awayMsg.length() ? " (<b>" + awayMsg + "</b>)" : (String) "";
-
-        ext = SetExtParam(ext, MEX_ADDINFO, "kAway2");
-        ext = SetExtParam(ext, MEX_NOSOUND, "1");
-
-        char * newBody = (char*) Ctrl->GetTempBuffer(body.length() + 1 + ext.length() + 1);
-        strcpy(newBody, body.a_str());
-        char * newExt = newBody + body.length() + 2;
-        strcpy(newExt, ext.a_str());
-
-        m->body = newBody;
-        m->ext = newExt;
-        m->flag |= (m->flag & MF_HTML) ? 0 : MF_HTML;
-        m->flag |= MF_DONTADDTOHISTORY;
-
-        return ev.setReturnValue(IM_MSG_update | IM_MSG_delete);
+    // parse and return message in case irc-like commands
+    if (fromUser) {
+      int retValue = _parseMsg(m);
+      if (retValue) {
+        return ev.setReturnValue(retValue);
       }
     }
 
     if (this->isEnabled() && !this->cntProp(cnt)->ignored) {
-      if (userMsg && config->getInheritedBValue(cfg::disableOnMsgSend, cnt)) {
+      if (fromUser && config->getInheritedBValue(cfg::disableOnMsgSend, cnt)) {
         this->disable(); return ev.setReturnValue(0);
       }
 
@@ -706,66 +663,51 @@ namespace kAway2 {
     }
   }
 
-  void Controller::onAction(IMEvent& ev) {
-    sUIActionNotify* an = ActionEvent(ev.getIMessage(), _action_dispatcher).getActionNotify();
-    int id = an->act.id, cnt = an->act.cnt;
+  void Controller::_handleCntGroup(ActionEvent& ev) {
+    if (ev.getCode() == ACTN_CREATE) {
+      UIActionSetStatus(ev.getAction(), !Ctrl->DTgetPos(DTCNT, ev.getCnt()) ? -1 : 0, ACTS_HIDDEN);
+    }
+  }
 
-    // statusList->actionHandle(id, an->code);
-    // autoReplyList->actionHandle(id, an->code);
+  void Controller::_handleMsgTb(ActionEvent& ev) {
+    if (ev.getCode() == ACTN_CREATEGROUP) {
+      bool isIgnored = this->cntProp(ev.getCnt())->ignored;
 
-    switch (id) {
-      case ui::msgTbGrp:
-      case ui::powerInMainWnd:
-      case ui::powerInCntWnd:
-      case ui::powerInTrayMenu: {
-        if (id == ui::msgTbGrp && an->code == ACTN_CREATEGROUP) {
-          bool isIgnored = this->cntProp(cnt)->ignored;
+      Helpers::chgBtn(ui::msgTbGrp, ui::ignoreBtn, AC_CURRENT, 
+        isIgnored ? "Wy³¹cz ignorowanie" : "W³¹cz ignorowanie", isIgnored ? ico::unIgnore : ico::ignore,
+        isEnabled() ? 0 : ACTS_DISABLED);
+      Helpers::chgBtn(ui::msgTbGrp, ui::powerInCntWnd, AC_CURRENT, 
+        isEnabled() ? "Wy³¹cz tryb away" : "W³¹cz tryb away", isEnabled() ? ico::disable : ico::enable);
+    }
+  }
 
-          Helpers::chgBtn(ui::msgTbGrp, ui::ignoreBtn, AC_CURRENT, 
-            isIgnored ? "Wy³¹cz ignorowanie" : "W³¹cz ignorowanie", isIgnored ? ico::unIgnore : ico::ignore,
-            isEnabled() ? 0 : ACTS_DISABLED);
-          Helpers::chgBtn(ui::msgTbGrp, ui::powerInCntWnd, AC_CURRENT, 
-            isEnabled() ? "Wy³¹cz tryb away" : "W³¹cz tryb away", isEnabled() ? ico::disable : ico::enable);
-          break;
-        } else if (an->code != ACTN_ACTION) break;
+  void Controller::_handlePowerBtns(ActionEvent& ev) {
+    if (ev.getCode() != ACTN_ACTION) return;
 
-        if (isEnabled()) {
-          if (!config->getInt(cfg::confirmation) || Ctrl->ICMessage(IMI_CONFIRM, (int) "Na pewno chcesz wy³¹czyæ tryb away?")) 
-            this->disable();
-        } else {
-          wnd->show();
-        }
-        break;
+    if (isEnabled()) {
+      if (!config->getInt(cfg::confirmation) || Ctrl->ICMessage(IMI_CONFIRM, (int) "Na pewno chcesz wy³¹czyæ tryb away?")) {
+        this->disable();
       }
+    } else {
+      wnd->show();
+    }
+  }
 
-      case ui::cntCfgGroup: {
-        if (an->code == ACTN_CREATE) {
-          UIActionSetStatus(an->act, !Ctrl->DTgetPos(DTCNT, cnt) ? -1 : 0, ACTS_HIDDEN);
-        }
-        break;
-      }
+  void Controller::_handleIgnoreBtn(ActionEvent& ev) {
+    if (ev.getCode() == ACTN_ACTION && this->isEnabled()) {
+      this->cntProp(ev.getCnt())->ignored = !this->cntProp(ev.getCnt())->ignored;
+    }
+  }
 
-      case ui::ignoreBtn: {
-        if (an->code == ACTN_ACTION && this->isEnabled()) {
-          this->cntProp(cnt)->ignored = !this->cntProp(cnt)->ignored;
-        }
-        break;
-      }
+  void Controller::_clearMRU(ActionEvent& ev) {
+    if (ev.getCode() == ACTN_ACTION) {
+      mruList->clear();
+    }
+  }
 
-      case act::clearMru: {
-        if (an->code == ACTN_ACTION) {
-          mruList->clear();
-        }
-        break;
-      }
-
-      case act::resetCntSettings:
-      case act::resetSettings: {
-        if (an->code == ACTN_ACTION) {
-          config->resetColumns(id == act::resetSettings ? DTCFG : DTCNT);
-        }
-        break;
-      }
+  void Controller::_resetSettings(ActionEvent& ev) {
+    if (ev.getCode() == ACTN_ACTION) {
+      config->resetColumns(ev.getID() == act::resetSettings ? DTCFG : DTCNT);
     }
   }
 
@@ -1024,6 +966,80 @@ namespace kAway2 {
         statusCtrl->changeStatus(it->getNet(), status);
       }
     }
+  }
+
+  int Controller::_parseMsg(cMessage* m) {
+    int cnt = Ctrl->ICMessage(IMC_CNT_FIND, m->net, (int) (strlen(m->fromUid) ? m->fromUid : m->toUid));
+
+    if (strlen(m->body) <= 1 || m->body[0] != '/' || !config->getInheritedBValue(cfg::ircCmds, cnt)) {
+      return 0;
+    }
+
+    tStringVector params;
+    std::string body(m->body); 
+    body = body.substr(1, body.length());
+
+    Stamina::split(body, " ", params);
+    String cmd = params[0];
+    String awayMsg = (params.size() > 1) ? body.substr(params[0].length() + 1, body.length()) : "";
+
+    bool del = false, set = false; // irc-type command like
+    int st = 0; // default status
+
+    RegEx reg;
+    reg.match("/^(away|brb)\\[(.+)\\]$/", cmd.a_str());
+
+    if (reg.isMatched()) {
+      cmd = reg[1];
+
+      if      (reg[2] == "away")    st = ST_AWAY;
+      else if (reg[2] == "xa")      st = ST_NA;
+      else if (reg[2] == "dnd")     st = ST_DND;
+      else if (reg[2] == "hidden")  st = ST_HIDDEN;
+      else if (reg[2] == "-")       st = -1;
+    }
+
+    if (cmd == "away") {
+      del = true; set = this->enable(awayMsg, st);
+    } else if (cmd == "brb") {
+      del = true; set = this->enable(awayMsg, st, true);
+    } else if (cmd == "back") {
+      del = true; set = this->disable(awayMsg);
+    } else if (cmd == "re") {
+      del = true; set = this->disable(awayMsg, true);
+    }
+
+    if (del) {
+      logDebug("{IM_MSG_RCV}: cmd = %s, reason = %s, params = %i",
+        cmd.c_str(), nullChk(awayMsg), params.size());
+
+      if (!set) {
+        return IM_MSG_delete;
+      }
+
+      String body, ext(m->ext);
+
+      body = stringf("<u>%s</u> tryb away", (cmd == "away" || cmd == "brb") ? "W³¹czono" : "Wy³¹czono");
+      if (!awayMsg.empty()) {
+        body += stringf(" (<b>%s</b>)", awayMsg.c_str());
+      }
+
+      ext = SetExtParam(ext, MEX_ADDINFO, "kAway2");
+      ext = SetExtParam(ext, MEX_NOSOUND, "1");
+
+      char * newBody = (char*) Ctrl->GetTempBuffer(body.length() + 1 + ext.length() + 1);
+      strcpy(newBody, body.a_str());
+      char * newExt = newBody + body.length() + 2;
+      strcpy(newExt, ext.a_str());
+
+      m->body = newBody;
+      m->ext = newExt;
+      m->flag |= (m->flag & MF_HTML) ? 0 : MF_HTML;
+      m->flag |= MF_DONTADDTOHISTORY;
+
+      return IM_MSG_update | IM_MSG_delete;
+    }
+    return 0;
   }
 
   void Controller::sendMsgTpl(int cnt, enAutoMsgTpl tpl, const StringRef& msgVal) {

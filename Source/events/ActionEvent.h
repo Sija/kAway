@@ -76,6 +76,15 @@ namespace Konnekt {
     }
 
     /**
+     * Returns attached action
+     *
+     * @return sUIAction
+     */
+    inline const sUIAction& getAction() const {
+      return _an->act;
+    }
+
+    /**
      * Returns contact id
      *
      * @return int
