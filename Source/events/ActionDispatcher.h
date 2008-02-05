@@ -43,9 +43,9 @@ namespace Konnekt {
       /**
        * Constructs a new SubclassInfo.
        *
-       * @param int action id
-       * @param int parent action id
-       * @param bool automatically forwards action to it's parent if set to true
+       * @param int   action id
+       * @param int   parent action id
+       * @param bool  automatically forwards action to it's parent if set to true
        */
       SubclassInfo(int id, int parent, bool auto_forward):
         _id(id), _parent(parent), _prev_owner(-1), _auto_forward(auto_forward), _registered(false) { }

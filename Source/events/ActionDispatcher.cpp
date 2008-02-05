@@ -28,7 +28,7 @@ namespace Konnekt {
    */
   oEvent ActionDispatcher::dispatch(sIMessage_base* msgBase) {
     // create event object
-    SharedPtr<ActionEvent> ev = new ActionEvent(msgBase, *this);
+    oActionEvent ev = new ActionEvent(msgBase, *this);
 
     // notify action listeners
     notify(*ev);

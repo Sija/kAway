@@ -33,12 +33,12 @@ namespace Konnekt {
     /**
      * Constructs a new ActionEvent.
      *
-     * @param sIMessage_base* sUIActionNotify_base structure
+     * @param sIMessage_base*   sUIActionNotify_base structure
      * @param ActionDispatcher& ActionDispatcher object reference
      */
     ActionEvent(sIMessage_base* msgBase, ActionDispatcher& dispatcher): IMEvent(msgBase), _dispatcher(dispatcher) {
       // get pointer to sUIActionNotify structure
-      sUIActionNotify* an = static_cast<sUIActionNotify*>((sUIActionNotify_base*) getIMessage()->p1);
+      sUIActionNotify* an = static_cast<sUIActionNotify*>((sUIActionNotify_base*) getP1());
 
       // set pointer to sUIActionNotify (for performance reasons)
       setActionNotify(an);
@@ -81,7 +81,7 @@ namespace Konnekt {
      * @return sUIAction
      */
     inline const sUIAction& getAction() const {
-      return _an->act;
+      return getActionNotify()->act;
     }
 
     /**
@@ -90,7 +90,7 @@ namespace Konnekt {
      * @return int
      */
     inline int getCnt() const {
-      return _an->act.cnt;
+      return getAction().cnt;
     }
 
     /**
@@ -99,7 +99,7 @@ namespace Konnekt {
      * @return int
      */
     inline int getParent() const {
-      return _an->act.parent;
+      return getAction().parent;
     }
 
     /**
@@ -108,7 +108,16 @@ namespace Konnekt {
      * @return int
      */
     inline int getCode() const {
-      return _an->code;
+      return getActionNotify()->code;
+    }
+
+    /**
+     * Returns true if given code is the same as action's
+     *
+     * @return bool
+     */
+    inline bool isCode(int code) const {
+      return getCode() == code;
     }
 
     /**
@@ -135,7 +144,7 @@ namespace Konnekt {
      * @return ActionDispatcher::SubclassInfo&
      */
     inline ActionDispatcher::SubclassInfo& getSubclassInfo() {
-      return _dispatcher.getSublassInfo(getID(), getParent());
+      return getDispatcher().getSublassInfo(getID(), getParent());
     }
 
     /**
@@ -168,6 +177,9 @@ namespace Konnekt {
     ActionDispatcher& _dispatcher;
     sUIActionNotify* _an;
   };
+
+  // smart pointer type
+  typedef SharedPtr<ActionEvent> oActionEvent;
 }
 
 #endif // __ACTIONEVENT_H__

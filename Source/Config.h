@@ -150,7 +150,7 @@ namespace Konnekt {
       SETCNTC(cnt, col, val.a_str());
     }
 
-    /*
+    /**
      * TODO: find some better way to handle it
      */
     inline int getInheritedIValue(tColId col, tCntId cnt) const {

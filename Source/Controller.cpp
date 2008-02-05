@@ -20,7 +20,7 @@
 #include "Forwarders/SMSForwarder.h"
 
 namespace kAway2 {
-  Controller::Controller() : isOn(false), muteStateSwitched(false), autoAway(typeDisabled), pluginsGroup(0) {
+  Controller::Controller() : _active(false), muteStateSwitched(false), autoAway(typeDisabled), _plugins_group(0) {
     // get dispatchers
     IMessageDispatcher& dispatcher = getIMessageDispatcher();
     ActionDispatcher& action_dispatcher = getActionDispatcher();
@@ -65,80 +65,83 @@ namespace kAway2 {
     // bind extended away timer
     extAutoAwayTimer.reset(timerTmplCreate(bind(&Controller::onExtAutoAway, this)));
 
+    // get instance of Config object
+    Config& config = getConfig();
+
     /* Configuration columns */
-    config->setColumn(DTCFG, cfg::autoAwaySync, DT_CT_INT, syncExtended, "kAway2/autoAwaySync");
-    config->setColumn(DTCFG, cfg::useKNotify, DT_CT_INT, 1, "kAway2/useKNotify");
-    config->setColumn(DTCFG, cfg::ircCmds, DT_CT_INT, 1, "kAway2/ircCmds");
-    config->setColumn(DTCFG, cfg::disableOnMsgSend, DT_CT_INT, 0, "kAway2/disableOnMsgSend");
-    config->setColumn(DTCFG, cfg::saveToHistory, DT_CT_INT, 1, "kAway2/saveToHistory");
-    config->setColumn(DTCFG, cfg::mruSize, DT_CT_INT, 20, "kAway2/mruSize");
-    config->setColumn(DTCFG, cfg::muteOnEnable, DT_CT_INT, 0, "kAway2/muteOnEnable");
-    config->setColumn(DTCFG, cfg::confirmation, DT_CT_INT, 0, "kAway2/confirmation");
-    config->setColumn(DTCFG, cfg::autoAwayMsg, DT_CT_STR, "auto-away", "kAway2/autoAwayMsg");
+    config.setColumn(DTCFG, cfg::autoAwaySync, DT_CT_INT, syncExtended, "kAway2/autoAwaySync");
+    config.setColumn(DTCFG, cfg::useKNotify, DT_CT_INT, 1, "kAway2/useKNotify");
+    config.setColumn(DTCFG, cfg::ircCmds, DT_CT_INT, 1, "kAway2/ircCmds");
+    config.setColumn(DTCFG, cfg::disableOnMsgSend, DT_CT_INT, 0, "kAway2/disableOnMsgSend");
+    config.setColumn(DTCFG, cfg::saveToHistory, DT_CT_INT, 1, "kAway2/saveToHistory");
+    config.setColumn(DTCFG, cfg::mruSize, DT_CT_INT, 20, "kAway2/mruSize");
+    config.setColumn(DTCFG, cfg::muteOnEnable, DT_CT_INT, 0, "kAway2/muteOnEnable");
+    config.setColumn(DTCFG, cfg::confirmation, DT_CT_INT, 0, "kAway2/confirmation");
+    config.setColumn(DTCFG, cfg::autoAwayMsg, DT_CT_STR, "auto-away", "kAway2/autoAwayMsg");
 
-    config->setColumn(DTCFG, cfg::btnInMainWindow, DT_CT_INT, 1, "kAway2/btnInMainWindow");
-    config->setColumn(DTCFG, cfg::btnInCntWindow, DT_CT_INT, 1, "kAway2/btnInCntWindow");
-    config->setColumn(DTCFG, cfg::btnInTrayMenu, DT_CT_INT, 1, "kAway2/btnInTrayMenu");
+    config.setColumn(DTCFG, cfg::btnInMainWindow, DT_CT_INT, 1, "kAway2/btnInMainWindow");
+    config.setColumn(DTCFG, cfg::btnInCntWindow, DT_CT_INT, 1, "kAway2/btnInCntWindow");
+    config.setColumn(DTCFG, cfg::btnInTrayMenu, DT_CT_INT, 1, "kAway2/btnInTrayMenu");
 
-    config->setColumn(DTCFG, cfg::dateFormat, DT_CT_STR, "%d/%m/%Y", "kAway2/dateFormat");
-    config->setColumn(DTCFG, cfg::timeFormat, DT_CT_STR, "%H:%M", "kAway2/timeFormat");
+    config.setColumn(DTCFG, cfg::dateFormat, DT_CT_STR, "%d/%m/%Y", "kAway2/dateFormat");
+    config.setColumn(DTCFG, cfg::timeFormat, DT_CT_STR, "%H:%M", "kAway2/timeFormat");
 
-    config->setColumn(DTCFG, cfg::wnd::changeInfoOnEnable, DT_CT_INT, 1, "kAway2/wnd/changeInfoOnEnable");
-    config->setColumn(DTCFG, cfg::wnd::changeOnEnable, DT_CT_INT, 1, "kAway2/wnd/changeOnEnable");
-    config->setColumn(DTCFG, cfg::wnd::muteOnEnable, DT_CT_INT, 0, "kAway2/wnd/muteOnEnable");
-    config->setColumn(DTCFG, cfg::wnd::onEnableSt, DT_CT_INT, ST_NA, "kAway2/wnd/onEnableSt");
+    config.setColumn(DTCFG, cfg::wnd::changeInfoOnEnable, DT_CT_INT, 1, "kAway2/wnd/changeInfoOnEnable");
+    config.setColumn(DTCFG, cfg::wnd::changeOnEnable, DT_CT_INT, 1, "kAway2/wnd/changeOnEnable");
+    config.setColumn(DTCFG, cfg::wnd::muteOnEnable, DT_CT_INT, 0, "kAway2/wnd/muteOnEnable");
+    config.setColumn(DTCFG, cfg::wnd::onEnableSt, DT_CT_INT, ST_NA, "kAway2/wnd/onEnableSt");
 
-    config->setColumn(DTCFG, cfg::summary::interval, DT_CT_INT, 60, "kAway2/summary/interval");
-    config->setColumn(DTCFG, cfg::summary::inAutoAway, DT_CT_INT, 0, "kAway2/summary/inAutoAway");
-    config->setColumn(DTCFG, cfg::summary::minMsgCount, DT_CT_INT, 0, "kAway2/summary/minMsgCount");
+    config.setColumn(DTCFG, cfg::summary::interval, DT_CT_INT, 60, "kAway2/summary/interval");
+    config.setColumn(DTCFG, cfg::summary::inAutoAway, DT_CT_INT, 0, "kAway2/summary/inAutoAway");
+    config.setColumn(DTCFG, cfg::summary::minMsgCount, DT_CT_INT, 0, "kAway2/summary/minMsgCount");
 
-    config->setColumn(DTCFG, cfg::fwd::inAutoAway, DT_CT_INT, 0, "kAway2/fwd/inAutoAway");
+    config.setColumn(DTCFG, cfg::fwd::inAutoAway, DT_CT_INT, 0, "kAway2/fwd/inAutoAway");
 
-    config->setColumn(DTCFG, cfg::tpl::enable, DT_CT_STR, "brb/afk {[msg]}", "kAway2/tpl/enable");
-    config->setColumn(DTCFG, cfg::tpl::disable, DT_CT_STR, "i'm back {[msg] }:>", "kAway2/tpl/disable");
-    config->setColumn(DTCFG, cfg::tpl::reply, DT_CT_STR, 
+    config.setColumn(DTCFG, cfg::tpl::enable, DT_CT_STR, "brb/afk {[msg]}", "kAway2/tpl/enable");
+    config.setColumn(DTCFG, cfg::tpl::disable, DT_CT_STR, "i'm back {[msg] }:>", "kAway2/tpl/disable");
+    config.setColumn(DTCFG, cfg::tpl::reply, DT_CT_STR, 
       "Hello <b>{display|uid}</b>, i'm away from {date, }<b>{time}</b> {[msg]}.\r\n"
       "Leave a message after the beep. Byeee.", "kAway2/tpl/reply");
-    config->setColumn(DTCFG, cfg::tpl::status, DT_CT_STR, "{status |} {{msg} }{[time]}", "kAway2/tpl/status");
+    config.setColumn(DTCFG, cfg::tpl::status, DT_CT_STR, "{status |} {{msg} }{[time]}", "kAway2/tpl/status");
 
-    config->setColumn(DTCFG, cfg::reply::onEnable, DT_CT_INT, 0, "kAway2/reply/onEnable");
-    config->setColumn(DTCFG, cfg::reply::onDisable, DT_CT_INT, 0, "kAway2/reply/onDisable");
-    config->setColumn(DTCFG, cfg::reply::onMsg, DT_CT_INT, 1, "kAway2/reply/onMsg");
-    config->setColumn(DTCFG, cfg::reply::whenInvisible, DT_CT_INT, 0, "kAway2/reply/whenInvisible");
-    config->setColumn(DTCFG, cfg::reply::showInWnd, DT_CT_INT, 1, "kAway2/reply/showInWnd");
-    config->setColumn(DTCFG, cfg::reply::minInterval, DT_CT_INT, 900, "kAway2/reply/minInterval");
-    config->setColumn(DTCFG, cfg::reply::minIntervalType, DT_CT_INT, typeBoth, "kAway2/reply/minIntervalType");
-    config->setColumn(DTCFG, cfg::reply::useHtml, DT_CT_INT, 1, "kAway2/reply/useHtml");
-    config->setColumn(DTCFG, cfg::reply::netChange, DT_CT_STR, "", "kAway2/reply/netChange");
+    config.setColumn(DTCFG, cfg::reply::onEnable, DT_CT_INT, 0, "kAway2/reply/onEnable");
+    config.setColumn(DTCFG, cfg::reply::onDisable, DT_CT_INT, 0, "kAway2/reply/onDisable");
+    config.setColumn(DTCFG, cfg::reply::onMsg, DT_CT_INT, 1, "kAway2/reply/onMsg");
+    config.setColumn(DTCFG, cfg::reply::whenInvisible, DT_CT_INT, 0, "kAway2/reply/whenInvisible");
+    config.setColumn(DTCFG, cfg::reply::showInWnd, DT_CT_INT, 1, "kAway2/reply/showInWnd");
+    config.setColumn(DTCFG, cfg::reply::minInterval, DT_CT_INT, 900, "kAway2/reply/minInterval");
+    config.setColumn(DTCFG, cfg::reply::minIntervalType, DT_CT_INT, typeBoth, "kAway2/reply/minIntervalType");
+    config.setColumn(DTCFG, cfg::reply::useHtml, DT_CT_INT, 1, "kAway2/reply/useHtml");
+    config.setColumn(DTCFG, cfg::reply::netChange, DT_CT_STR, "", "kAway2/reply/netChange");
 
-    config->setColumn(DTCFG, cfg::status::onEnableSt, DT_CT_INT, ST_NA, "kAway2/status/onEnableSt");
-    config->setColumn(DTCFG, cfg::status::onAutoAwaySt, DT_CT_INT, ST_AWAY, "kAway2/status/onAutoAwaySt");
-    config->setColumn(DTCFG, cfg::status::whenInvisible, DT_CT_INT, 0, "kAway2/status/whenInvisible");
-    config->setColumn(DTCFG, cfg::status::changeOnEnable, DT_CT_INT, 1, "kAway2/status/changeOnEnable");
-    config->setColumn(DTCFG, cfg::status::changeInfoOnEnable, DT_CT_INT, 1, "kAway2/status/changeInfoOnEnable");
-    config->setColumn(DTCFG, cfg::status::netChange, DT_CT_STR, "", "kAway2/status/netChange");
-    config->setColumn(DTCFG, cfg::status::dotsAppend, DT_CT_INT, 1, "kAway2/status/dotsAppend");
-    config->setColumn(DTCFG, cfg::status::chgOnlyIfOnline, DT_CT_INT, 1, "kAway2/status/chgOnlyIfOnline");
+    config.setColumn(DTCFG, cfg::status::onEnableSt, DT_CT_INT, ST_NA, "kAway2/status/onEnableSt");
+    config.setColumn(DTCFG, cfg::status::onAutoAwaySt, DT_CT_INT, ST_AWAY, "kAway2/status/onAutoAwaySt");
+    config.setColumn(DTCFG, cfg::status::whenInvisible, DT_CT_INT, 0, "kAway2/status/whenInvisible");
+    config.setColumn(DTCFG, cfg::status::changeOnEnable, DT_CT_INT, 1, "kAway2/status/changeOnEnable");
+    config.setColumn(DTCFG, cfg::status::changeInfoOnEnable, DT_CT_INT, 1, "kAway2/status/changeInfoOnEnable");
+    config.setColumn(DTCFG, cfg::status::netChange, DT_CT_STR, "", "kAway2/status/netChange");
+    config.setColumn(DTCFG, cfg::status::dotsAppend, DT_CT_INT, 1, "kAway2/status/dotsAppend");
+    config.setColumn(DTCFG, cfg::status::chgOnlyIfOnline, DT_CT_INT, 1, "kAway2/status/chgOnlyIfOnline");
 
-    config->setColumn(DTCFG, cfg::extAutoAway::status, DT_CT_INT, ST_NA, "kAway2/extAutoAway/status");
-    config->setColumn(DTCFG, cfg::extAutoAway::time, DT_CT_INT, 1800, "kAway2/extAutoAway/time");
+    config.setColumn(DTCFG, cfg::extAutoAway::status, DT_CT_INT, ST_NA, "kAway2/extAutoAway/status");
+    config.setColumn(DTCFG, cfg::extAutoAway::time, DT_CT_INT, 1800, "kAway2/extAutoAway/time");
 
-    config->setColumn(DTCNT, cfg::tpl::enable, DT_CT_STR, "", "kAway2/tpl/enable");
-    config->setColumn(DTCNT, cfg::tpl::disable, DT_CT_STR, "", "kAway2/tpl/disable");
-    config->setColumn(DTCNT, cfg::tpl::reply, DT_CT_STR, "", "kAway2/tpl/reply");
+    config.setColumn(DTCNT, cfg::tpl::enable, DT_CT_STR, "", "kAway2/tpl/enable");
+    config.setColumn(DTCNT, cfg::tpl::disable, DT_CT_STR, "", "kAway2/tpl/disable");
+    config.setColumn(DTCNT, cfg::tpl::reply, DT_CT_STR, "", "kAway2/tpl/reply");
 
-    config->setColumn(DTCNT, cfg::saveToHistory, DT_CT_INT, 0, "kAway2/saveToHistory");
-    config->setColumn(DTCNT, cfg::disableOnMsgSend, DT_CT_INT, 0, "kAway2/disableOnMsgSend");
-    config->setColumn(DTCNT, cfg::ircCmds, DT_CT_INT, 0, "kAway2/ircCmds");
+    config.setColumn(DTCNT, cfg::saveToHistory, DT_CT_INT, 0, "kAway2/saveToHistory");
+    config.setColumn(DTCNT, cfg::disableOnMsgSend, DT_CT_INT, 0, "kAway2/disableOnMsgSend");
+    config.setColumn(DTCNT, cfg::ircCmds, DT_CT_INT, 0, "kAway2/ircCmds");
 
-    config->setColumn(DTCNT, cfg::reply::onEnable, DT_CT_INT, 0, "kAway2/reply/onEnable");
-    config->setColumn(DTCNT, cfg::reply::onDisable, DT_CT_INT, 0, "kAway2/reply/onDisable");
-    config->setColumn(DTCNT, cfg::reply::onMsg, DT_CT_INT, 0, "kAway2/reply/onMsg");
-    config->setColumn(DTCNT, cfg::reply::whenInvisible, DT_CT_INT, 0, "kAway2/reply/whenInvisible");
-    config->setColumn(DTCNT, cfg::reply::showInWnd, DT_CT_INT, 0, "kAway2/reply/showInWnd");
-    config->setColumn(DTCNT, cfg::reply::minInterval, DT_CT_INT, -1, "kAway2/reply/minInterval");
-    config->setColumn(DTCNT, cfg::reply::minIntervalType, DT_CT_INT, -1, "kAway2/reply/minIntervalType");
-    config->setColumn(DTCNT, cfg::reply::useHtml, DT_CT_INT, 0, "kAway2/reply/useHtml");
+    config.setColumn(DTCNT, cfg::reply::onEnable, DT_CT_INT, 0, "kAway2/reply/onEnable");
+    config.setColumn(DTCNT, cfg::reply::onDisable, DT_CT_INT, 0, "kAway2/reply/onDisable");
+    config.setColumn(DTCNT, cfg::reply::onMsg, DT_CT_INT, 0, "kAway2/reply/onMsg");
+    config.setColumn(DTCNT, cfg::reply::whenInvisible, DT_CT_INT, 0, "kAway2/reply/whenInvisible");
+    config.setColumn(DTCNT, cfg::reply::showInWnd, DT_CT_INT, 0, "kAway2/reply/showInWnd");
+    config.setColumn(DTCNT, cfg::reply::minInterval, DT_CT_INT, -1, "kAway2/reply/minInterval");
+    config.setColumn(DTCNT, cfg::reply::minIntervalType, DT_CT_INT, -1, "kAway2/reply/minIntervalType");
+    config.setColumn(DTCNT, cfg::reply::useHtml, DT_CT_INT, 0, "kAway2/reply/useHtml");
   }
 
   /* IMessage callback methods */
@@ -148,7 +151,7 @@ namespace kAway2 {
     ActionDispatcher& action_dispatcher = getActionDispatcher();
 
     // set plugins group id
-    this->pluginsGroup = Helpers::getPluginsGroup();
+    this->_plugins_group = Helpers::getPluginsGroup();
 
     // set up MRU list and away window
     this->mruList = new MRUConfigurable(cfg::mruName, cfg::mruSize);
@@ -233,8 +236,8 @@ namespace kAway2 {
     char header[400];
     sprintf(header, "<span class='note'>Powered by: <b>%s</b></span><br/>"
       "<span class='note'>Skompilowano: <b>%s</b> [<b>%s</b>]</span><br/>"
-      "Informacje o wtyczce na stronie projektu "
-      "<b>KPlugins</b> (http://kplugins.net/)<br/><br/>"
+      "Informacje o wtyczce na forum Konnekta "
+      "(http://konnekt.info/forum/)<br/><br/>"
       "Copyright © 2004-2008 <b>Sijawusz Pur Rahnama</b><br/>"
       "Copyright © 2004-2008 <b>KPlugins Team</b>",
       poweredBy, __DATE__, __TIME__);
@@ -585,15 +588,15 @@ namespace kAway2 {
     UIActionCfgAdd(ui::cntCfgGroup, 0, ACTT_GROUPEND);
 
     /* Buttons */
-    if (config->getInt(cfg::btnInMainWindow)) {
-      UIActionAdd(this->pluginsGroup, ui::powerInMainWnd, 0, "W³¹cz tryb away", ico::enable);
+    if (getConfig().getInt(cfg::btnInMainWindow)) {
+      UIActionAdd(this->_plugins_group, ui::powerInMainWnd, 0, "W³¹cz tryb away", ico::enable);
     }
-    if (config->getInt(cfg::btnInCntWindow)) {
+    if (getConfig().getInt(cfg::btnInCntWindow)) {
       UIGroupAdd(IMIG_MSGTB, ui::msgTbGrp, ACTR_INIT, "kAway2", ico::logoSmall);
       UIActionAdd(ui::msgTbGrp, ui::powerInCntWnd, ACTSC_BOLD, "W³¹cz tryb away", ico::enable);
       UIActionAdd(ui::msgTbGrp, ui::ignoreBtn, ACTS_DISABLED, "W³¹cz ignorowanie", ico::ignore);
     }
-    if (config->getInt(cfg::btnInTrayMenu)) {
+    if (getConfig().getInt(cfg::btnInTrayMenu)) {
       UIActionInsert(IMIG_TRAY, 0, 0, ACTT_SEP);
       UIActionInsert(IMIG_TRAY, ui::powerInTrayMenu, 0, 0, "W³¹cz tryb away", ico::enable);
     }
@@ -609,7 +612,7 @@ namespace kAway2 {
   }
 
   void Controller::onMsgRcv(IMEvent& ev) {
-    cMessage* m = (cMessage*) ev.getIMessage()->p1;
+    cMessage* m = (cMessage*) ev.getP1();
 
     // hmmm, i have to remove it some sunny day...
     if ((m->type != MT_MESSAGE) || (m->flag & MF_AUTOMATED)) {
@@ -629,11 +632,11 @@ namespace kAway2 {
     }
 
     if (this->isEnabled() && !this->cntProp(cnt)->ignored) {
-      if (fromUser && config->getInheritedBValue(cfg::disableOnMsgSend, cnt)) {
+      if (fromUser && getConfig().getInheritedBValue(cfg::disableOnMsgSend, cnt)) {
         this->disable(); return ev.setReturnValue(0);
       }
 
-      if (config->getInheritedBValue(cfg::saveToHistory, cnt)) {
+      if (getConfig().getInheritedBValue(cfg::saveToHistory, cnt)) {
         Helpers::addItemToHistory(m, cnt, cfg::historyFolder, "", this->cntProp(cnt)->historySess);
         this->cntProp(cnt)->historySess = 1;
       }
@@ -641,12 +644,12 @@ namespace kAway2 {
       // this->addMsg2CntQueue(cnt, m);
       // fCtrl->onNewMsg(cnt, m);
 
-      if (config->getInheritedBValue(cfg::reply::onMsg, cnt)) {
-        int intType = config->getInheritedIValue(cfg::reply::minIntervalType, cnt);
+      if (getConfig().getInheritedBValue(cfg::reply::onMsg, cnt)) {
+        int intType = getConfig().getInheritedIValue(cfg::reply::minIntervalType, cnt);
 
         if (strlen(m->fromUid)) {
           int lastMsgTime = this->cntProp(cnt)->lastMsgTime;
-          int interval = config->getInheritedIValue(cfg::reply::minInterval, cnt);
+          int interval = getConfig().getInheritedIValue(cfg::reply::minInterval, cnt);
 
           if ((!interval && !lastMsgTime) || (interval && ((interval + lastMsgTime) < m->time))) {
             this->sendMsgTpl(cnt, Controller::tplReply);
@@ -664,13 +667,13 @@ namespace kAway2 {
   }
 
   void Controller::_handleCntGroup(ActionEvent& ev) {
-    if (ev.getCode() == ACTN_CREATE) {
+    if (ev.isCode(ACTN_CREATE)) {
       UIActionSetStatus(ev.getAction(), !Ctrl->DTgetPos(DTCNT, ev.getCnt()) ? -1 : 0, ACTS_HIDDEN);
     }
   }
 
   void Controller::_handleMsgTb(ActionEvent& ev) {
-    if (ev.getCode() == ACTN_CREATEGROUP) {
+    if (ev.isCode(ACTN_CREATEGROUP)) {
       bool isIgnored = this->cntProp(ev.getCnt())->ignored;
 
       Helpers::chgBtn(ui::msgTbGrp, ui::ignoreBtn, AC_CURRENT, 
@@ -685,7 +688,7 @@ namespace kAway2 {
     if (ev.getCode() != ACTN_ACTION) return;
 
     if (isEnabled()) {
-      if (!config->getInt(cfg::confirmation) || Ctrl->ICMessage(IMI_CONFIRM, (int) "Na pewno chcesz wy³¹czyæ tryb away?")) {
+      if (!getConfig().getInt(cfg::confirmation) || Ctrl->ICMessage(IMI_CONFIRM, (int) "Na pewno chcesz wy³¹czyæ tryb away?")) {
         this->disable();
       }
     } else {
@@ -694,20 +697,20 @@ namespace kAway2 {
   }
 
   void Controller::_handleIgnoreBtn(ActionEvent& ev) {
-    if (ev.getCode() == ACTN_ACTION && this->isEnabled()) {
+    if (ev.isCode(ACTN_ACTION) && this->isEnabled()) {
       this->cntProp(ev.getCnt())->ignored = !this->cntProp(ev.getCnt())->ignored;
     }
   }
 
   void Controller::_clearMRU(ActionEvent& ev) {
-    if (ev.getCode() == ACTN_ACTION) {
+    if (ev.isCode(ACTN_ACTION)) {
       mruList->clear();
     }
   }
 
   void Controller::_resetSettings(ActionEvent& ev) {
-    if (ev.getCode() == ACTN_ACTION) {
-      config->resetColumns(ev.getID() == act::resetSettings ? DTCFG : DTCNT);
+    if (ev.isCode(ACTN_ACTION)) {
+      getConfig().resetColumns(ev.getID() == act::resetSettings ? DTCFG : DTCNT);
     }
   }
 
@@ -729,10 +732,10 @@ namespace kAway2 {
   void Controller::onExtAutoAway() {
     this->setAutoAway(typeExtended);
 
-    if (config->getInt(cfg::autoAwaySync) == syncExtended && !this->isEnabled()) {
-      this->enable(config->getChar(cfg::autoAwayMsg), config->getInt(cfg::extAutoAway::status), true);
+    if (getConfig().getInt(cfg::autoAwaySync) == syncExtended && !this->isEnabled()) {
+      this->enable(getConfig().getChar(cfg::autoAwayMsg), getConfig().getInt(cfg::extAutoAway::status), true);
     } else {
-      this->changeStatus(config->getInt(cfg::extAutoAway::status), true);
+      this->changeStatus(getConfig().getInt(cfg::extAutoAway::status), true);
     }
     Ctrl->IMessage(im::extendedAutoAway, NET_BROADCAST);
   }
@@ -740,19 +743,19 @@ namespace kAway2 {
   void Controller::onAutoAway(IMEvent& ev) {
     if (this->isEnabled()) return;
 
-    int status = config->getInt(cfg::status::onAutoAwaySt);
-    int syncType = config->getInt(cfg::autoAwaySync);
+    int status = getConfig().getInt(cfg::status::onAutoAwaySt);
+    int syncType = getConfig().getInt(cfg::autoAwaySync);
 
     this->setAutoAway(typeBasic);
     this->awayTime.now();
 
-    if (syncType == syncExtended || config->getInt(cfg::extAutoAway::status) != -1) {
-      this->extAutoAwayTimer->start((config->getInt(cfg::extAutoAway::time) - config->getInt(CFG_AUTOAWAY)) * 1000);
+    if (syncType == syncExtended || getConfig().getInt(cfg::extAutoAway::status) != -1) {
+      this->extAutoAwayTimer->start((getConfig().getInt(cfg::extAutoAway::time) - getConfig().getInt(CFG_AUTOAWAY)) * 1000);
     }
     if (syncType == syncBasic) {
-      this->enable(config->getChar(cfg::autoAwayMsg), status, true);
+      this->enable(getConfig().getChar(cfg::autoAwayMsg), status, true);
     } else {
-      statusCtrl->stringFormatter->addVar("msg", config->getChar(cfg::autoAwayMsg));
+      statusCtrl->stringFormatter->addVar("msg", getConfig().getChar(cfg::autoAwayMsg));
       statusCtrl->rememberInfo();
       this->changeStatus(status, true);
     }
@@ -796,7 +799,7 @@ namespace kAway2 {
   }
 
   void Controller::apiIgnored(IMEvent& ev) {
-    ev.setReturnValue(this->cntProp(ev.getIMessage()->p1)->ignored);
+    ev.setReturnValue(this->cntProp(ev.getP1())->ignored);
   }
 
   void Controller::apiAutoAway(IMEvent& ev) {
@@ -822,27 +825,27 @@ namespace kAway2 {
   /* strictly Controller methods */
 
   bool Controller::enable(const StringRef& msg, int status, bool silent) {
-    if (this->isOn) return false;
+    if (this->_active) return false;
 
     if (!this->isAutoAway()) {
       this->awayTime.now();
     }
     this->awayMsg = msg;
-    this->isOn = true;
+    this->_active = true;
 
     if (this->autoAway) {
-      // this->awayTime = this->awayTime.getTime64() - config->getInt(CFG_AUTOAWAY);
+      // this->awayTime = this->awayTime.getTime64() - getConfig().getInt(CFG_AUTOAWAY);
     }
 
-    bool chgStatus = config->getInt(this->isFromWnd ? cfg::wnd::changeOnEnable : cfg::status::changeOnEnable);
-    bool chgInfo = config->getInt(this->isFromWnd ? cfg::wnd::changeInfoOnEnable : cfg::status::changeInfoOnEnable);
+    bool chgStatus = getConfig().getInt(this->isFromWnd ? cfg::wnd::changeOnEnable : cfg::status::changeOnEnable);
+    bool chgInfo = getConfig().getInt(this->isFromWnd ? cfg::wnd::changeInfoOnEnable : cfg::status::changeInfoOnEnable);
 
     if (chgInfo) {
       statusCtrl->stringFormatter->addVar("msg", msg);
     }
 
     if (chgStatus || chgInfo) {
-      int defStatus = config->getInt(this->isFromWnd ? cfg::wnd::onEnableSt : cfg::status::onEnableSt);
+      int defStatus = getConfig().getInt(this->isFromWnd ? cfg::wnd::onEnableSt : cfg::status::onEnableSt);
       status = !chgStatus ? (this->autoAway ? status : -1) : (status ? status : defStatus);
 
       if (!statusCtrl->isRemembered()) {
@@ -851,8 +854,8 @@ namespace kAway2 {
       this->changeStatus(status, chgInfo);
     }
 
-    if (config->getInt(this->isFromWnd ? cfg::wnd::muteOnEnable : cfg::muteOnEnable) && !config->getInt(kSound::Cfg::mute)) {
-      Helpers::UIActionCall(this->pluginsGroup, kSound::action::mute);
+    if (getConfig().getInt(this->isFromWnd ? cfg::wnd::muteOnEnable : cfg::muteOnEnable) && !getConfig().getInt(kSound::Cfg::mute)) {
+      Helpers::UIActionCall(this->_plugins_group, kSound::action::mute);
       this->muteStateSwitched = true;
     }
 
@@ -862,7 +865,7 @@ namespace kAway2 {
     int count = Ctrl->IMessage(IMC_CNT_COUNT);
     for (int i = 1; i < count; i++) {
       if (Helpers::isMsgWndOpen(i)) {
-        if (config->getInheritedBValue(cfg::reply::onEnable, i) && !silent && !this->cntProp(i)->ignored) {
+        if (getConfig().getInheritedBValue(cfg::reply::onEnable, i) && !silent && !this->cntProp(i)->ignored) {
           this->sendMsgTpl(i, tplEnable);
         }
       }
@@ -876,13 +879,13 @@ namespace kAway2 {
   }
 
   bool Controller::disable(const StringRef& msg, bool silent) {
-    if (!this->isOn) return false;
+    if (!this->_active) return false;
 
     statusCtrl->stringFormatter->clearVars();
     statusCtrl->restoreInfo();
 
-    if (this->muteStateSwitched && config->getInt(kSound::Cfg::mute)) {
-      Helpers::UIActionCall(this->pluginsGroup, kSound::action::mute);
+    if (this->muteStateSwitched && getConfig().getInt(kSound::Cfg::mute)) {
+      Helpers::UIActionCall(this->_plugins_group, kSound::action::mute);
     }
 
     this->switchBtns(false);
@@ -890,7 +893,7 @@ namespace kAway2 {
     int count = Ctrl->IMessage(IMC_CNT_COUNT);
     for (int i = 1; i < count; i++) {
       if (Helpers::isMsgWndOpen(i)) {
-        if (config->getInheritedBValue(cfg::reply::onDisable, i) && !silent && !this->cntProp(i)->ignored) {
+        if (getConfig().getInheritedBValue(cfg::reply::onDisable, i) && !silent && !this->cntProp(i)->ignored) {
           this->sendMsgTpl(i, tplDisable, msg);
         }
       }
@@ -908,7 +911,7 @@ namespace kAway2 {
     this->awayTime.clear();
     this->cntProps.clear();
 
-    this->isOn = false;
+    this->_active = false;
     this->muteStateSwitched = false;
 
     this->showKNotify("Tryb away zosta³ <b>wy³¹czony<b>", ico::disable);
@@ -919,7 +922,7 @@ namespace kAway2 {
   }
 
   void Controller::showKNotify(const char * text, int ico) {
-    if (!config->getInt(cfg::useKNotify) || !Helpers::pluginExists(plugsNET::knotify)) return;
+    if (!getConfig().getInt(cfg::useKNotify) || !Helpers::pluginExists(plugsNET::knotify)) return;
     Helpers::showKNotify((char*) text, ico);
   }
 
@@ -928,8 +931,8 @@ namespace kAway2 {
     int ico = (state) ? ico::disable : ico::enable;
 
     Helpers::chgBtn(IMIG_TRAY, ui::powerInTrayMenu, name.a_str(), ico);
-    Helpers::chgBtn(this->pluginsGroup, ui::powerInMainWnd, name.a_str(), ico, 
-      (state && (Helpers::findParentAction(IMIG_MAINWND, this->pluginsGroup) != IMIG_MAINTB)) ? ACTS_CHECKED : 0);
+    Helpers::chgBtn(this->_plugins_group, ui::powerInMainWnd, name.a_str(), ico, 
+      (state && (Helpers::findParentAction(IMIG_MAINWND, this->_plugins_group) != IMIG_MAINTB)) ? ACTS_CHECKED : 0);
     Helpers::chgBtn(IMIG_MSGTB, ui::msgTbGrp, "kAway2", ico::logoSmall, ACTR_INIT | ACTS_GROUP | (state ? ACTS_CHECKED : 0));
 
     int count = Ctrl->IMessage(IMC_CNT_COUNT);
@@ -946,8 +949,8 @@ namespace kAway2 {
     NetList::tItems& nets = statusList->getItems();
 
     if (changeInfo) {
-      statusCtrl->stringFormatter->addVar("date", this->awayTime.strftime(config->getChar(cfg::dateFormat)));
-      statusCtrl->stringFormatter->addVar("time", this->awayTime.strftime(config->getChar(cfg::timeFormat)));
+      statusCtrl->stringFormatter->addVar("date", this->awayTime.strftime(getConfig().getChar(cfg::dateFormat)));
+      statusCtrl->stringFormatter->addVar("time", this->awayTime.strftime(getConfig().getChar(cfg::timeFormat)));
     }
 
     for (NetList::tItems::iterator it = nets.begin(); it != nets.end(); it++) {
@@ -961,7 +964,7 @@ namespace kAway2 {
         status = -1;
       }
       if (changeInfo) {
-        statusCtrl->changeStatusInfo(it->getNet(), config->getChar(cfg::tpl::status), status);
+        statusCtrl->changeStatusInfo(it->getNet(), getConfig().getChar(cfg::tpl::status), status);
       } else if (status != -1) {
         statusCtrl->changeStatus(it->getNet(), status);
       }
@@ -971,7 +974,7 @@ namespace kAway2 {
   int Controller::_parseMsg(cMessage* m) {
     int cnt = Ctrl->ICMessage(IMC_CNT_FIND, m->net, (int) (strlen(m->fromUid) ? m->fromUid : m->toUid));
 
-    if (strlen(m->body) <= 1 || m->body[0] != '/' || !config->getInheritedBValue(cfg::ircCmds, cnt)) {
+    if (strlen(m->body) <= 1 || m->body[0] != '/' || !getConfig().getInheritedBValue(cfg::ircCmds, cnt)) {
       return 0;
     }
 
@@ -1043,31 +1046,31 @@ namespace kAway2 {
   }
 
   void Controller::sendMsgTpl(int cnt, enAutoMsgTpl tpl, const StringRef& msgVal) {
-    int session, net = config->getInt(CNT_NET, cnt);
+    int session, net = getConfig().getInt(CNT_NET, cnt);
 
-    if (((statusCtrl->getActualStatus(net) == ST_HIDDEN) && !config->getInheritedBValue(cfg::reply::whenInvisible, cnt)) || 
+    if (((statusCtrl->getActualStatus(net) == ST_HIDDEN) && !getConfig().getInheritedBValue(cfg::reply::whenInvisible, cnt)) || 
       !autoReplyList->getItem(net).isActive() || !autoReplyList->getItem(net).isConnected())
       return;
 
-    String ext, uid(config->getChar(CNT_UID, cnt));
+    String ext, uid(getConfig().getChar(CNT_UID, cnt));
     ext = SetExtParam(ext, cfg::extParamName, inttostr(tpl));
     ext = SetExtParam(ext, MEX_ADDINFO, "kAway2");
     ext = SetExtParam(ext, MEX_NOSOUND, "1");
 
     Format format;
     format.addVar("uid", uid);
-    format.addVar("display", config->getChar(CNT_DISPLAY, cnt));
-    format.addVar("name", config->getChar(CNT_NAME, cnt));
-    format.addVar("nick", config->getChar(CNT_NICK, cnt));
-    format.addVar("surname", config->getChar(CNT_SURNAME, cnt));
-    format.addVar("date", Helpers::isToday(this->awayTime) ? "" : this->awayTime.strftime(config->getChar(cfg::dateFormat)));
-    format.addVar("time", this->awayTime.strftime(config->getChar(cfg::timeFormat)));
+    format.addVar("display", getConfig().getChar(CNT_DISPLAY, cnt));
+    format.addVar("name", getConfig().getChar(CNT_NAME, cnt));
+    format.addVar("nick", getConfig().getChar(CNT_NICK, cnt));
+    format.addVar("surname", getConfig().getChar(CNT_SURNAME, cnt));
+    format.addVar("date", Helpers::isToday(this->awayTime) ? "" : this->awayTime.strftime(getConfig().getChar(cfg::dateFormat)));
+    format.addVar("time", this->awayTime.strftime(getConfig().getChar(cfg::timeFormat)));
     format.addVar("msg", (tpl == tplDisable) ? msgVal : this->awayMsg);
 
     /*
-    String body = Helpers::trim(format.parse(config->getInheritedCValue(tpl, cnt)));
+    String body = Helpers::trim(format.parse(getConfig().getInheritedCValue(tpl, cnt)));
     cMessage msg = Message::prepare(uid, "", net, body, MT_MESSAGE, ext, 
-      MF_SEND | (config->getInheritedBValue(cfg::reply::useHtml, cnt) ? MF_HTML : 0));
+      MF_SEND | (getConfig().getInheritedBValue(cfg::reply::useHtml, cnt) ? MF_HTML : 0));
 
     HWND hwndMsg = (HWND) UIGroupHandle(sUIAction(0, IMIG_MSGWND, cnt));
     if (!(session = (int) GetProp(hwndMsg, "MsgSession"))) {
@@ -1077,12 +1080,12 @@ namespace kAway2 {
     Helpers::addItemToHistory(&msg, cnt, "messages", "", session);
     Message::send(&msg);
 
-    if (config->getInheritedBValue(cfg::reply::showInWnd, cnt)) {
+    if (getConfig().getInheritedBValue(cfg::reply::showInWnd, cnt)) {
       Message::inject(&msg, cnt);
     }
     */
-    Message::send(cnt, Helpers::trim(format.parse(config->getInheritedCValue(tpl, cnt))), 
-      MT_MESSAGE, ext, config->getInheritedBValue(cfg::reply::useHtml, cnt));
+    Message::send(cnt, Helpers::trim(format.parse(getConfig().getInheritedCValue(tpl, cnt))), 
+      MT_MESSAGE, ext, getConfig().getInheritedBValue(cfg::reply::useHtml, cnt));
 
     logDebug("[Controller::sendMsgTpl()]: msg.tpl = %i", tpl);
   }

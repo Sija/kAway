@@ -375,6 +375,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Source\Context.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Source\EditFix.h"
 				>
 			</File>

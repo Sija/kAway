@@ -78,9 +78,9 @@ namespace Konnekt {
     /**
      * Connects a listener to a given event id.
      *
-     * @param int An event id
+     * @param int       An event id
      * @param fListener Listener callback
-     * @param int Listener priority
+     * @param int       Listener priority
      * @param signals::connect_position
      *
      * @return signals::connection 
@@ -107,7 +107,7 @@ namespace Konnekt {
      * Disconnects a listener for a given event id.
      * TODO: jak to obsluzyc ?
      *
-     * @param int An event id
+     * @param int       An event id
      * @param fListener Listener callback
      *
      * @return bool 

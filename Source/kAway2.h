@@ -19,7 +19,7 @@
 #define __KAWAY2_H__
 
 namespace kAway2 {
-  /*
+  /**
    *  Values for {cfg::reply::minIntervalType} col
    */
   enum enIntervalType {
@@ -28,7 +28,7 @@ namespace kAway2 {
     typeBoth
   };
 
-  /*
+  /**
    *  Values for {cfg::autoAwaySync} col
    */
   enum enAutoAwaySync {
@@ -37,7 +37,7 @@ namespace kAway2 {
     syncExtended
   };
 
-  const char poweredBy[] = "Astrobotnia";
+  const char poweredBy[] = "amorphous androgynous";
   const unsigned int net = 667;
   const char sig[] = "KAWAY2";
 

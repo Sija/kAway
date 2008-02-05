@@ -93,17 +93,17 @@ public:
   /**
    * Structure holding status replacements for certain nets
    */
-  struct sStReplacement {
+  struct sReplacement {
     tNet net;
     tStatus before;
     tStatus after;
 
-    sStReplacement(tNet net, tStatus before, tStatus after) : 
+    sReplacement(tNet net, tStatus before, tStatus after) : 
       net(net), before(before), after(after) { }
   };
 
   typedef std::deque<Item> tItems;
-  typedef std::deque<sStReplacement> tStReplacements;
+  typedef std::deque<sReplacement> tReplacements;
   typedef stdext::hash_map<tNet, tItems> tOmittedInfos;
   typedef stdext::hash_map<tNet, int> tNetInfoLimits;
 
@@ -175,7 +175,7 @@ protected:
   // zapamietane statusy i ich opisy
   tItems rememberedSt;
   // zamienniki nieobs³ugiwanych statusów
-  tStReplacements stReplacements;
+  tReplacements _replacements;
   // maksymalne d³ugoœci statusów opisowych
   tNetInfoLimits infoCharLimits;
 };

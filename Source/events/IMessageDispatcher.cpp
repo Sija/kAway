@@ -28,7 +28,7 @@ namespace Konnekt {
    */
   oEvent IMessageDispatcher::dispatch(sIMessage_base* msgBase) {
     // create event object
-    SharedPtr<IMEvent> ev = new IMEvent(msgBase);
+    oIMEvent ev = new IMEvent(msgBase);
 
     // get imessage id
     int id = ev->getID();

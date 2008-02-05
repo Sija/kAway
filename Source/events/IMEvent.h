@@ -47,6 +47,24 @@ namespace Konnekt {
     }
 
     /**
+     * Returns param 1
+     *
+     * @return int
+     */
+    inline int getP1() const {
+      return getIMessage()->p1;
+    }
+
+    /**
+     * Returns param 2
+     *
+     * @return int
+     */
+    inline int getP2() const {
+      return getIMessage()->p2;
+    }
+
+    /**
      * Sets the return value to success (1)
      */
     inline void setSuccess() {
@@ -106,6 +124,9 @@ namespace Konnekt {
   protected:
     sIMessage* _im;
   };
+
+  // smart pointer type
+  typedef SharedPtr<IMEvent> oIMEvent;
 }
 
 #endif // __IMEVENT_H__

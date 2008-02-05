@@ -20,9 +20,7 @@
 
 namespace kAway2 {
   FwdController::FwdController() : summarizableCount(0), forwardableCount(0) {
-    Controller* pCtrl = Controller::getInstance();
-
-    pCtrl->getIMessageDispatcher().connect(IM_UI_PREPARE, bind(&FwdController::registerCfgGroups, this, _1));
+    Context::getInstance()->getIMessageDispatcher().connect(IM_UI_PREPARE, bind(&FwdController::registerCfgGroups, this, _1));
   }
 
   FwdController::~FwdController() {

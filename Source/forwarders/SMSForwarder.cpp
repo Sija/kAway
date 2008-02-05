@@ -20,8 +20,8 @@
 
 namespace kAway2 {
   SMSForwarder::SMSForwarder() : Forwarder("sms", "SMS", 501, true, true) {
-    Controller* pCtrl = Controller::getInstance();
-    IMessageDispatcher& dispatcher = pCtrl->getIMessageDispatcher();
+    IMessageDispatcher& dispatcher = Context::getInstance()->getIMessageDispatcher();
+    ActionDispatcher& action_dispatcher = Context::getInstance()->getActionDispatcher();
 
     dispatcher.connect(IM_SETCOLS, bind(resolve_cast0(&SMSForwarder::onISetCols), this));
     dispatcher.connect(IM_UI_PREPARE, bind(resolve_cast0(&SMSForwarder::onIPrepare), this));
@@ -29,7 +29,7 @@ namespace kAway2 {
     dispatcher.connect(im::away, bind(resolve_cast0(&SMSForwarder::onEnable), this));
     dispatcher.connect(im::back, bind(resolve_cast0(&SMSForwarder::onDisable), this));
 
-    pCtrl->getActionDispatcher().connect(ui::sms::number, bind(&SMSForwarder::refreshCombo, this, _1));
+    action_dispatcher.connect(ui::sms::number, bind(&SMSForwarder::refreshCombo, this, _1));
   }
 
   void SMSForwarder::send(const StringRef& msg) {

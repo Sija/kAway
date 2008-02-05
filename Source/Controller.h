@@ -77,6 +77,13 @@ namespace kAway2 {
     void _prepare(IMEvent& ev);
     void _prepareUI(IMEvent& ev);
 
+    void onMsgRcv(IMEvent& ev);
+    void onEnd(IMEvent& ev);
+    void onPluginsLoaded(IMEvent& ev);
+    void onExtAutoAway();
+    void onAutoAway(IMEvent& ev);
+    void onBack(IMEvent& ev);
+
     // actions
     void _handleCntGroup(ActionEvent& ev);
     void _handleMsgTb(ActionEvent& ev);
@@ -84,13 +91,6 @@ namespace kAway2 {
     void _handleIgnoreBtn(ActionEvent& ev);
     void _clearMRU(ActionEvent& ev);
     void _resetSettings(ActionEvent& ev);
-
-    void onMsgRcv(IMEvent& ev);
-    void onEnd(IMEvent& ev);
-    void onPluginsLoaded(IMEvent& ev);
-    void onExtAutoAway();
-    void onAutoAway(IMEvent& ev);
-    void onBack(IMEvent& ev);
 
     /* API callback methods */
     void apiEnabled(IMEvent& ev);
@@ -118,7 +118,7 @@ namespace kAway2 {
     }
 
     inline bool isEnabled() {
-      return this->isOn;
+      return this->_active;
     }
 
     inline bool isAwayMsgSet() {
@@ -134,7 +134,7 @@ namespace kAway2 {
     }
 
     inline int getPluginsGroup() {
-      return this->pluginsGroup;
+      return this->_plugins_group;
     }
 
     const StringRef& getAwayMsg() const {
@@ -162,11 +162,11 @@ namespace kAway2 {
     }
 
   protected:
-    bool isOn;
+    bool _active;
     bool muteStateSwitched;
     enAutoAwayType autoAway;
     bool isFromWnd;
-    int pluginsGroup;
+    int _plugins_group;
 
     shared_ptr<TimerDynamic> extAutoAwayTimer;
     tCnts cntProps;

@@ -25,7 +25,7 @@ Status::Status(NetList* _netList, int _onHiddenCfgCol, int _dotsCfgCol) : netLis
 }
 
 tStatus Status::applyReplacementSt(int net, int st) {
-  for (tStReplacements::iterator it = this->stReplacements.begin(); it != this->stReplacements.end(); it++) {
+  for (tReplacements::iterator it = this->_replacements.begin(); it != this->_replacements.end(); it++) {
     if (it->net == net && it->before == st) {
       st = it->after; break;
     }
@@ -34,13 +34,13 @@ tStatus Status::applyReplacementSt(int net, int st) {
 }
 
 void Status::addReplacementSt(int net, int before, int after) {
-  this->stReplacements.push_back(sStReplacement(net, before, after));
+  this->_replacements.push_back(sReplacement(net, before, after));
 }
 
 void Status::removeReplacementSt(int net, int before) {
-  for (tStReplacements::iterator it = this->stReplacements.begin(); it != this->stReplacements.end(); it++) {
+  for (tReplacements::iterator it = this->_replacements.begin(); it != this->_replacements.end(); it++) {
     if ((it->net == net) && (it->before == before)) {
-      it = this->stReplacements.erase(it); break;
+      it = this->_replacements.erase(it); break;
     }
   }
 }

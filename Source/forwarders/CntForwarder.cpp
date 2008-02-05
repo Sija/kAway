@@ -20,8 +20,7 @@
 
 namespace kAway2 {
   CntForwarder::CntForwarder() : Forwarder("forward", "Lustereczko", ico::forward, true, true) {
-    Controller* pCtrl = Controller::getInstance();
-    IMessageDispatcher& dispatcher = pCtrl->getIMessageDispatcher();
+    IMessageDispatcher& dispatcher = Context::getInstance()->getIMessageDispatcher();
 
     dispatcher.connect(IM_SETCOLS, bind(resolve_cast0(&CntForwarder::onISetCols), this));
     dispatcher.connect(IM_UI_PREPARE, bind(resolve_cast0(&CntForwarder::onIPrepare), this));

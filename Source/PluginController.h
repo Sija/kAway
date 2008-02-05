@@ -18,13 +18,10 @@
 #ifndef __PLUGINCONTROLLER_H__
 #define __PLUGINCONTROLLER_H__
 
-#include "Events/IMessageDispatcher.h"
+#include "Context.h"
+
 #include "Events/IMEvent.h"
-
-#include "Events/ActionDispatcher.h"
 #include "Events/ActionEvent.h"
-
-#include "Config.h"
 
 using namespace Stamina;
 using namespace boost;
@@ -46,15 +43,15 @@ namespace Konnekt {
      * Creates new PluginController object.
      */
     inline PluginController() {
+      IMessageDispatcher& dispatcher = getIMessageDispatcher();
+      ActionDispatcher& action_dispatcher = getActionDispatcher();
+
       // setting/unsetting Ctrl global pointer
-      _dispatcher.connect(IM_PLUG_INIT, bind(&PluginController::_onPlugInit, this, _1));
-      _dispatcher.connect(IM_PLUG_DEINIT, bind(&PluginController::_onPlugDeInit, this, _1));
+      dispatcher.connect(IM_PLUG_INIT, bind(&PluginController::_onPlugInit, this, _1));
+      dispatcher.connect(IM_PLUG_DEINIT, bind(&PluginController::_onPlugDeInit, this, _1));
 
       // actions subclassing
-      _dispatcher.connect(IM_UI_PREPARE, bind(&ActionDispatcher::doSubclass, &_action_dispatcher, _1));
-
-      // initialize configuration
-      config = new Config(_dispatcher);
+      dispatcher.connect(IM_UI_PREPARE, bind(&ActionDispatcher::doSubclass, &action_dispatcher, _1));
     }
 
   public:
@@ -75,8 +72,8 @@ namespace Konnekt {
      *
      * @return Config*
      */
-    inline static Config* getConfig() {
-      return getInstance()->config;
+    inline Config& getConfig() {
+      return Context::getInstance()->getConfig();
     }
 
     /**
@@ -85,7 +82,7 @@ namespace Konnekt {
      * @return IMessageDispatcher&
      */
     inline IMessageDispatcher& getIMessageDispatcher() {
-      return _dispatcher;
+      return Context::getInstance()->getIMessageDispatcher();
     }
 
     /**
@@ -94,7 +91,7 @@ namespace Konnekt {
      * @return IMActionDispatcher&
      */
     inline ActionDispatcher& getActionDispatcher() {
-      return _action_dispatcher;
+      return Context::getInstance()->getActionDispatcher();
     }
 
   public:
@@ -105,11 +102,11 @@ namespace Konnekt {
      */
     inline int dispatch(sIMessage_base* msgBase) {
       // dispatch IMessage
-      oEvent ev = _dispatcher.dispatch(msgBase);
+      oEvent ev = getIMessageDispatcher().dispatch(msgBase);
 
       // dispatch action
       if (ev->getID() == IM_UIACTION) {
-        ev = _action_dispatcher.dispatch(msgBase);
+        ev = getActionDispatcher().dispatch(msgBase);
       }
       return ev->getReturnValue();
     }
@@ -121,9 +118,7 @@ namespace Konnekt {
      * @param IMEvent&
      */
     inline void _onPlugInit(IMEvent& ev) {
-      sIMessage* im = ev.getIMessage();
-      Plug_Init(im->p1, im->p2);
-
+      Plug_Init(ev.getP1(), ev.getP2());
       ev.setSuccess();
     }
 
@@ -133,18 +128,12 @@ namespace Konnekt {
      * @param IMEvent&
      */
     inline void _onPlugDeInit(IMEvent& ev) {
-      sIMessage* im = ev.getIMessage();
-      Plug_Deinit(im->p1, im->p2);
-
+      Plug_Deinit(ev.getP1(), ev.getP2());
       ev.setSuccess();
     }
 
   protected:
-    IMessageDispatcher _dispatcher;
-    ActionDispatcher _action_dispatcher;
-
     static oInstance _instance;
-    oConfig config;
   };
 
   template <class T>

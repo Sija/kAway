@@ -62,7 +62,7 @@ namespace kAway2 {
       }
     }
     virtual void onNewMsg(IMEvent& ev) {
-      cMessage* msg = (cMessage*) ev.getIMessage()->p1;
+      cMessage* msg = (cMessage*) ev.getP1();
       int cnt = 0; // baaad
 
       if (this->isSummarizable) {
