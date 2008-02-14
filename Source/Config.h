@@ -31,31 +31,173 @@ namespace Konnekt {
     /**
      * Class version macro
      */
-    STAMINA_OBJECT_CLASS_VERSION(Config, iSharedObject, Version(0,2,0,0));
+    STAMINA_OBJECT_CLASS_VERSION(Config, iSharedObject, Version(0,3,0,0));
+
+  public:
+    class Item {
+    public:
+      Item(tTable table, tColId col, tRowId row = 0): _table(table), _col(col), _row(row) { }
+
+    public:
+      inline operator String () const {
+        return to_s();
+      }
+
+    public:
+      inline Item& operator << (int value) {
+        set(value);
+        return *this;
+      }
+
+      inline Item& operator << (__int64 value) {
+        set(value);
+        return *this;
+      }
+
+      inline Item& operator << (const StringRef& value) {
+        set(value);
+        return *this;
+      }
+
+      inline Item& operator << (const Item& value) {
+        switch (value.getType()) {
+          case ctypeInt:
+            set(value.to_i());
+            break;
+          case ctypeInt64:
+            set(value.to_i64());
+            break;
+          case ctypeString:
+            set(value.to_s());
+            break;
+        }
+        return *this;
+      }
+
+    public:
+      inline tColId getID() const {
+        return _col;
+      }
+
+      inline int getTable() const {
+        return _table;
+      }
+
+      inline tRowId getRow() const {
+        return _row;
+      }
+
+    public:
+      inline tColType getType() const {
+        return (tColType) Ctrl->DTgetType(_table, _col);
+      }
+
+      inline string getName() const {
+        return Ctrl->DTgetName(_table, _col);
+      }
+
+    public:
+      inline int to_i(tRowId row) const {
+        return Ctrl->DTgetInt(_table, row, _col);
+      }
+      inline int to_i() const {
+        return to_i(getRow());
+      }
+
+      inline __int64 to_i64(tRowId row) const {
+        return Ctrl->DTgetInt64(_table, row, _col);
+      }
+      inline __int64 to_i64() const {
+        return to_i64(getRow());
+      }
+
+      inline String to_s(tRowId row) const {
+        return Ctrl->DTgetStr(_table, row, _col);
+      }
+      inline String to_s() const {
+        return to_s(getRow());
+      }
+
+    public:
+      inline bool set(int value, tRowId row) {
+        return Ctrl->DTsetInt(_table, row, _col, value);
+      }
+      inline bool set(int value) {
+        return set(value, getRow());
+      }
+
+      inline bool set(__int64 value, tRowId row) {
+        return Ctrl->DTsetInt64(_table, row, _col, value);
+      }
+      inline bool set(__int64 value) {
+        return set(value, getRow());
+      }
+
+      inline bool set(const StringRef& value, tRowId row) {
+        return Ctrl->DTsetStr(_table, row, _col, value.a_str());
+      }
+      inline bool set(const StringRef& value) {
+        return set(value, getRow());
+      }
+
+    protected:
+      tTable _table;
+      tColId _col;
+      tRowId _row;
+    };
 
   public:
     typedef std::deque<sIMessage_setColumn*> tColumns;
 
   public:
+    /**
+     * Creates new instance of Config.
+     *
+     * @param IMessageDispatcher& dispatcher object
+     */
     inline Config(IMessageDispatcher& dispatcher) {
-      attachObservers(dispatcher);
+      attachListeners(dispatcher);
     }
     inline Config() { }
 
-    inline virtual ~Config() { 
+    inline ~Config() { 
       for (tColumns::iterator it = _cols.begin(); it != _cols.end(); it++) {
         delete *it;
       }
     }
 
+    public:
+      static Item get(tTable table, tColId col, tRowId row) {
+        return Item(table, col, row);
+      }
+      static Item get(tColId col) {
+        return get(tableConfig, col, 0);
+      }
+      static Item get(tColId col, tCntId cnt) {
+        return get(tableContacts, col, cnt);
+      }
+
   public:
     /**
-     * automagical registration of configuration columns (set via setColumn())
+     * Connects listeners to the IM_SETCOLS IMessage id.
+     *
+     * @see setColumn
+     *
+     * @param IMessageDispatcher&
      */
-    inline void attachObservers(IMessageDispatcher& dispatcher) {
-      dispatcher.connect(IM_SETCOLS, bind(&Config::_setColumns, this, _1));
+    inline void attachListeners(IMessageDispatcher& dispatcher) {
+      dispatcher.connect(IM_SETCOLS, bind(&Config::_registerColumns, this, _1));
     }
 
+    /**
+     * Registers column in the given table
+     *
+     * @param tTable      Table id
+     * @param tColId      Column id
+     * @param int         Column type
+     * @param const char* Column default value
+     * @param const char* Column name
+     */
     inline void setColumn(tTable table, tColId id, int type, const char* def, const char* name) {
       _cols.push_back(new sIMessage_setColumn(table, id, type, def, name));
     }
@@ -63,150 +205,76 @@ namespace Konnekt {
       _cols.push_back(new sIMessage_setColumn(table, id, type, def, name));
     }
 
-    inline void resetColumns(tTable table = tableNotFound) {
-      if (!_cols.size()) return;
-
-      bool resetCnt = table == tableContacts;
-      bool resetCfg = table == tableConfig;
-
-      if (table == tableNotFound) {
-        resetCfg = resetCnt = true;
-      }
-
-      if (!resetCnt && !resetCfg) {
+    /**
+     * Sets all registered columns to their's default values.
+     *
+     * @param tTable Table id to reset
+     */
+    inline void resetColumns(tTable table) {
+      if (_cols.empty()) {
         return;
       }
+      int count = Ctrl->DTgetCount(table);
+      tColumns list;
 
-      tColumns dtCnt;
       for (tColumns::iterator it = _cols.begin(); it != _cols.end(); it++) {
-        if ((*it)->_table == tableConfig && resetCfg) {
-          _resetColumn(*it);
-        }
-        if ((*it)->_table == tableContacts && resetCnt) {
-          dtCnt.push_back(*it);
-        }
-      }
-
-      if (dtCnt.size()) {
-        int count = Ctrl->IMessage(IMC_CNT_COUNT);
-        for (int i = 1; i < count; i++) {
-          for (tColumns::iterator it = dtCnt.begin(); it != dtCnt.end(); it++) {
-            _resetColumn(*it, i);
+        if ((*it)->_table == table) {
+          if (count > 1) {
+            list.push_back(*it);
+          } else {
+            _resetColumn(*it);
           }
         }
       }
-    }
-
-    inline void resetColumn(tColId id, tCntId cnt = 0, sUIAction* an = 0) {
-      if (!_cols.size()) return;
-
-      tTable table = !cnt ? tableConfig : tableContacts;
-      for (tColumns::iterator it = _cols.begin(); it != _cols.end(); it++) {
-        if ((*it)->_id == id && (*it)->_table == table) {
-          _resetColumn(*it, cnt, an); break;
+      if (list.empty()) {
+        return;
+      }
+      for (int i = 0; i < count; i++) {
+        for (tColumns::iterator it = list.begin(); it != list.end(); it++) {
+          _resetColumn(*it, i);
         }
       }
-    }
-
-    /* Helpers accessors */
-    inline int getInt(tColId col) const {
-      return GETINT(col);
-    }
-    inline int getInt(tColId col, tCntId cnt) const {
-      return GETCNTI(cnt, col);
-    }
-    inline __int64 getInt64(tColId col, tCntId cnt) const {
-      return GETCNTI64(cnt, col);
-    }
-
-    inline const char* getChar(tColId col) const {
-      return GETSTR(col);
-    }
-    inline const char* getChar(tColId col, tCntId cnt) const {
-      return GETCNTC(cnt, col);
-    }
-
-    inline String getString(tColId col) const {
-      return getChar(col);
-    }
-    inline String getString(tColId col, tCntId cnt) const {
-      return getChar(col, cnt);
-    }
-
-    inline void set(tColId col, int val) {
-      SETINT(col, val);
-    }
-    inline void set(tColId col, tCntId cnt, int val) {
-      SETCNTI(cnt, col, val);
-    }
-    inline void set(tColId col, tCntId cnt, __int64 val) {
-      SETCNTI64(cnt, col, val);
-    }
-
-    inline void set(tColId col, const StringRef& val) {
-      SETSTR(col, val.a_str());
-    }
-    inline void set(tColId col, tCntId cnt, const StringRef& val) {
-      SETCNTC(cnt, col, val.a_str());
     }
 
     /**
-     * TODO: find some better way to handle it
+     * Sets the given column to it's default value.
+     *
+     * @param tTable      Table id
+     * @param tColId      Column id
+     * @param tRowId      Row id
+     * @param sUIAction*
      */
-    inline int getInheritedIValue(tColId col, tCntId cnt) const {
-      return getInt(col, cnt) >= 0 ? getInt(col, cnt) : getInt(col);
-    }
-
-    inline bool getInheritedBValue(tColId col, tCntId cnt) const {
-      return (getInt(col) && (getInt(col, cnt) < 2)) || (!getInt(col) && (getInt(col, cnt) == 1));
-    }
-
-    inline const char* getInheritedCValue(tColId col, tCntId cnt) const {
-      const char* val = getChar(col, cnt);
-
-      return strlen(val) ? val : getChar(col);
+    inline void resetColumn(tTable table, tColId id, tRowId row = 0, sUIAction* an = 0) {
+      if (_cols.empty()) {
+        return;
+      }
+      for (tColumns::iterator it = _cols.begin(); it != _cols.end(); it++) {
+        if ((*it)->_table == table && (*it)->_id == id) {
+          _resetColumn(*it, row, an); break;
+        }
+      }
     }
 
   protected:
-    inline void _resetColumn(sIMessage_setColumn* it, tCntId cnt = 0, sUIAction* an = 0) {
-      bool isCnt = it->_table == tableContacts && cnt;
-      bool isConfig = it->_table == tableConfig;
+    inline void _resetColumn(sIMessage_setColumn* it, tRowId row = 0, sUIAction* an = 0) {
+      Item item = get(it->_table, it->_id, row);
 
-      if (!isCnt && !isConfig) {
-        return;
-      }
-
-      bool convert = true;
       String val;
+      bool convert = true;
 
       switch (it->_type) {
         case ctypeInt: {
-          if (isConfig) {
-            set(it->_id, it->_def);
-          }
-          if (isCnt) {
-            set(it->_id, cnt, it->_def);
-          }
+          item.set(it->_def);
           val = inttostr(it->_def);
           break;
         }
         case ctypeInt64: {
-          if (isConfig) {
-            // set(it->_id, *it->_def_p64);
-          }
-          if (isCnt) {
-            set(it->_id, cnt, *it->_def_p64);
-          }
+          item.set(*it->_def_p64);
           val = i64tostr(*it->_def_p64);
           break;
         }
         case ctypeString: {
-          if (isConfig) {
-            set(it->_id, it->_def_ch);
-          }
-          if (isCnt) {
-            set(it->_id, cnt, it->_def_ch);
-          }
+          item.set(it->_def_ch);
           val = it->_def_ch;
           convert = false;
           break;
@@ -217,7 +285,7 @@ namespace Konnekt {
       }
     }
 
-    inline void _setColumns(IMEvent& ev) {
+    inline void _registerColumns(IMEvent& ev) {
       for (tColumns::iterator it = _cols.begin(); it != _cols.end(); it++) {
         Ctrl->IMessage(*it);
       }

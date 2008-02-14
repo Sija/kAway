@@ -39,7 +39,7 @@ namespace Konnekt {
      * Creates new Context object.
      */
     inline Context() {
-      _config.attachObservers(getIMessageDispatcher());
+      _config.attachListeners(getIMessageDispatcher());
     }
 
   public:

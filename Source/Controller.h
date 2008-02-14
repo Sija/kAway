@@ -31,6 +31,54 @@
 #include "AwayWnd.h"
 
 namespace kAway2 {
+  class ItemFallback : public Config::Item {
+  public:
+    ItemFallback(tColId col, tRowId row): Item(tableContacts, col, row) { }
+
+  public:
+    inline Item getParentItem() const {
+      return Item(tableConfig, getID());
+    }
+
+  public:
+    inline int to_i(tRowId row) const {
+      int value = Item::to_i(row);
+
+      if (value < 0) {
+        return getParentItem().to_i();
+      }
+      return value;
+    }
+    inline int to_i() const {
+      return to_i(getRow());
+    }
+
+    inline bool to_b(tRowId row) const {
+      int parent_value = getParentItem().to_i();
+      int value = Item::to_i(row);
+
+      if ((parent_value && value < 2) || value == 1) {
+        return true;
+      }
+      return false;
+    }
+    inline bool to_b() const {
+      return to_b(getRow());
+    }
+
+    inline String to_s(tRowId row) const {
+      String value = Item::to_s(row);
+
+      if (value.empty()) {
+        return getParentItem().to_s();
+      }
+      return value;
+    }
+    inline String to_s() const {
+      return to_s(getRow());
+    }
+  };
+
   class Controller : public PluginController<Controller> {
   public:
     friend class PluginController<Controller>;
@@ -90,7 +138,8 @@ namespace kAway2 {
     void _handlePowerBtns(ActionEvent& ev);
     void _handleIgnoreBtn(ActionEvent& ev);
     void _clearMRU(ActionEvent& ev);
-    void _resetSettings(ActionEvent& ev);
+    void _resetGlobalSettings(ActionEvent& ev);
+    void _resetContactSettings(ActionEvent& ev);
 
     /* API callback methods */
     void apiEnabled(IMEvent& ev);
