@@ -19,7 +19,7 @@
 #define __CONFIG_H__
 
 #include "Events/IMessageDispatcher.h"
-#include "Helpers.h"
+#include "Events/IMEvent.h"
 
 using namespace Konnekt::Tables;
 using namespace Stamina;
@@ -166,16 +166,40 @@ namespace Konnekt {
       }
     }
 
-    public:
-      static Item get(tTable table, tColId col, tRowId row) {
-        return Item(table, col, row);
-      }
-      static Item get(tColId col) {
-        return get(tableConfig, col, 0);
-      }
-      static Item get(tColId col, tCntId cnt) {
-        return get(tableContacts, col, cnt);
-      }
+  public:
+    /**
+     * Gets configuration item
+     *
+     * @param tTable   table id
+     * @param tColId   column id
+     * @param tRowId   row id
+     *
+     * @return Item
+     */
+    static Item get(tTable table, tColId col, tRowId row) {
+      return Item(table, col, row);
+    }
+    /**
+     * Gets configuration item from global configuration table
+     *
+     * @param tColId column id
+     *
+     * @return Item
+     */
+    static Item get(tColId col) {
+      return get(tableConfig, col, 0);
+    }
+    /**
+     * Gets configuration item from contact table
+     *
+     * @param tColId column id
+     * @param tCntId contact id
+     *
+     * @return Item
+     */
+    static Item get(tColId col, tCntId cnt) {
+      return get(tableContacts, col, cnt);
+    }
 
   public:
     /**
@@ -270,7 +294,7 @@ namespace Konnekt {
         }
         case ctypeInt64: {
           item.set(*it->_def_p64);
-          val = i64tostr(*it->_def_p64);
+          // val = i64tostr(*it->_def_p64);
           break;
         }
         case ctypeString: {

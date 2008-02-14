@@ -18,8 +18,6 @@
 #ifndef __MRU_H__
 #define __MRU_H__
 
-#include "Helpers.h"
-
 class MRU : public SharedObject<iSharedObject> {
 public:
   typedef std::deque<String> tItems;
@@ -30,8 +28,7 @@ public:
 	STAMINA_OBJECT_CLASS_VERSION(MRU, iSharedObject, Version(0,1,0,0));
 
 public:
-  MRU(const string& name, int count = 100) : 
-    _name(name), _count(count) { }
+  MRU(const string& name, int count = 100) : _name(name), _count(count) { }
 
 public:
   tItems get(bool rev = true, const char * buff = 0, int buffSize = 1024);
@@ -61,8 +58,7 @@ protected:
 
 class MRUConfigurable : public MRU {
 public:
-  MRUConfigurable(const string& name, int cfg_column) : MRU(name),
-    _cfg_column(cfg_column) { }
+  MRUConfigurable(const string& name, int cfg_column) : MRU(name), _cfg_column(cfg_column) { }
 
 public:
   inline int getCount() {
