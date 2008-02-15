@@ -151,15 +151,21 @@ namespace Konnekt {
 
   public:
     /**
-     * Creates new instance of Config.
+     * Creates new instance of Config class with column registration listeners attached.
      *
      * @param IMessageDispatcher& dispatcher object
      */
     inline Config(IMessageDispatcher& dispatcher) {
       attachListeners(dispatcher);
     }
+    /**
+     * Creates new instance of Config class.
+     */
     inline Config() { }
 
+    /**
+     * Destroys Config object.
+     */
     inline ~Config() { 
       for (tColumns::iterator it = _cols.begin(); it != _cols.end(); it++) {
         delete *it;
@@ -168,11 +174,11 @@ namespace Konnekt {
 
   public:
     /**
-     * Gets configuration item
+     * Gets configuration item.
      *
-     * @param tTable   table id
-     * @param tColId   column id
-     * @param tRowId   row id
+     * @param tTable table id
+     * @param tColId column id
+     * @param tRowId row id
      *
      * @return Item
      */
@@ -180,7 +186,7 @@ namespace Konnekt {
       return Item(table, col, row);
     }
     /**
-     * Gets configuration item from global configuration table
+     * Gets configuration item from global configuration table.
      *
      * @param tColId column id
      *
@@ -190,7 +196,7 @@ namespace Konnekt {
       return get(tableConfig, col, 0);
     }
     /**
-     * Gets configuration item from contact table
+     * Gets configuration item from contact table.
      *
      * @param tColId column id
      * @param tCntId contact id
@@ -214,7 +220,7 @@ namespace Konnekt {
     }
 
     /**
-     * Registers column in the given table
+     * Registers column in the given table.
      *
      * @param tTable      Table id
      * @param tColId      Column id
@@ -235,27 +241,15 @@ namespace Konnekt {
      * @param tTable Table id to reset
      */
     inline void resetColumns(tTable table) {
-      if (_cols.empty()) {
+      int count = Ctrl->DTgetCount(table);
+      if (!count || _cols.empty()) {
         return;
       }
-      int count = Ctrl->DTgetCount(table);
-      tColumns list;
-
       for (tColumns::iterator it = _cols.begin(); it != _cols.end(); it++) {
         if ((*it)->_table == table) {
-          if (count > 1) {
-            list.push_back(*it);
-          } else {
-            _resetColumn(*it);
+          for (int i = 0; i < count; i++) {
+            _resetColumn(*it, i);
           }
-        }
-      }
-      if (list.empty()) {
-        return;
-      }
-      for (int i = 0; i < count; i++) {
-        for (tColumns::iterator it = list.begin(); it != list.end(); it++) {
-          _resetColumn(*it, i);
         }
       }
     }
@@ -269,9 +263,6 @@ namespace Konnekt {
      * @param sUIAction*
      */
     inline void resetColumn(tTable table, tColId id, tRowId row = 0, sUIAction* an = 0) {
-      if (_cols.empty()) {
-        return;
-      }
       for (tColumns::iterator it = _cols.begin(); it != _cols.end(); it++) {
         if ((*it)->_table == table && (*it)->_id == id) {
           _resetColumn(*it, row, an); break;

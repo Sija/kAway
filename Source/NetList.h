@@ -232,6 +232,7 @@ public:
    * Returns true if given net is ignored
    *
    * @param int
+   *
    * @return bool
    */
   bool isIgnored(tNet net) const;
