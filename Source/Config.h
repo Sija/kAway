@@ -15,8 +15,8 @@
 
 #pragma once
 
-#ifndef __CONFIG_H__
-#define __CONFIG_H__
+#ifndef __KONNEKT_CONFIG_H__
+#define __KONNEKT_CONFIG_H__
 
 #include "Events/IMessageDispatcher.h"
 #include "Events/IMEvent.h"
@@ -315,4 +315,4 @@ namespace Konnekt {
   typedef SharedPtr<Config> oConfig;
 }
 
-#endif // __CONFIG_H__
+#endif // __KONNEKT_CONFIG_H__

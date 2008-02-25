@@ -17,27 +17,16 @@
   *  @license      http://creativecommons.org/licenses/LGPL/2.1/
   */
 
+// include just once
 #pragma once
 
-// Modify the following defines if you have to target a platform prior to the ones specified below.
-// Refer to MSDN for the latest info on corresponding values for different platforms.
-#ifndef WINVER				// Allow use of features specific to Windows XP or later.
-  #define WINVER 0x0501		// Change this to the appropriate value to target other versions of Windows.
+// allow use of features specific to Windows XP or later.
+#ifndef _WIN32_WINNT
+  #define _WIN32_WINNT 0x0501
 #endif
 
-#ifndef _WIN32_WINNT		// Allow use of features specific to Windows XP or later.                   
-  #define _WIN32_WINNT 0x0501	// Change this to the appropriate value to target other versions of Windows.
-#endif						
-
-#ifndef _WIN32_WINDOWS		// Allow use of features specific to Windows 98 or later.
-  #define _WIN32_WINDOWS 0x0410 // Change this to the appropriate value to target Windows Me or later.
-#endif
-
-#ifndef _WIN32_IE			// Allow use of features specific to IE 6.0 or later.
-  #define _WIN32_IE 0x0600	// Change this to the appropriate value to target other versions of IE.
-#endif
-
-#define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
+// exclude rarely-used stuff from Windows headers
+#define WIN32_LEAN_AND_MEAN
 
 // Windows Header Files:
 #include <windows.h>
@@ -54,16 +43,19 @@
 
 #pragma comment(lib, "comctl32.lib")
 
+// hapsamy Stamina::Lib
 #ifdef _DEBUG
   #pragma comment(lib, "stamina_d.lib")
 #else
   #pragma comment(lib, "stamina.lib")
 #endif
 
+// nag³ówki boosta
 #include <boost/signal.hpp>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 
+// nag³ówki S.L
 /*
 #include <stamina/threadrun.h>
 #include <stamina/thread.h>
@@ -83,6 +75,7 @@
 using namespace Stamina;
 using namespace std;
 
+// nag³ówki Konnekta
 #include <konnekt/plug_export.h>
 #include <konnekt/ui.h>
 #include <konnekt/plug_func.h>
@@ -97,24 +90,25 @@ using namespace std;
 using namespace Konnekt;
 using namespace boost;
 
+// plik z definicjami zasobów
 #include "../Project/resource.h"
 
-/*
+/**
  * Konnekt::ShowBits helpers
  */
-#define ifPRO if (Konnekt::ShowBits::checkLevel(Konnekt::ShowBits::levelPro))
-#define ifADV if (Konnekt::ShowBits::checkLevel(Konnekt::ShowBits::levelAdvanced))
-#define ifNORM if (Konnekt::ShowBits::checkLevel(Konnekt::ShowBits::levelNormal))
-#define ifINT if (Konnekt::ShowBits::checkLevel(Konnekt::ShowBits::levelIntermediate))
+#define ifPRO         if (Konnekt::ShowBits::checkLevel(Konnekt::ShowBits::levelPro))
+#define ifADV         if (Konnekt::ShowBits::checkLevel(Konnekt::ShowBits::levelAdvanced))
+#define ifNORM        if (Konnekt::ShowBits::checkLevel(Konnekt::ShowBits::levelNormal))
+#define ifINT         if (Konnekt::ShowBits::checkLevel(Konnekt::ShowBits::levelIntermediate))
 
-#define ifToolTipADV if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showTooltipsAdvanced))
+#define ifToolTipADV  if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showTooltipsAdvanced))
 #define ifToolTipNORM if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showTooltipsNormal))
-#define ifToolTipBEG if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showTooltipsBeginner))
+#define ifToolTipBEG  if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showTooltipsBeginner))
 
-#define ifInfoADV if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showInfoAdvanced))
-#define ifInfoNORM if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showInfoNormal))
-#define ifInfoBEG if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showInfoBeginner))
+#define ifInfoADV     if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showInfoAdvanced))
+#define ifInfoNORM    if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showInfoNormal))
+#define ifInfoBEG     if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showInfoBeginner))
 
-#define ifWizardsADV if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showWizardsAdvanced))
+#define ifWizardsADV  if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showWizardsAdvanced))
 #define ifWizardsNORM if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showWizardsNormal))
-#define ifWizardsBEG if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showWizardsBeginner))
+#define ifWizardsBEG  if (Konnekt::ShowBits::checkBits(Konnekt::ShowBits::showWizardsBeginner))

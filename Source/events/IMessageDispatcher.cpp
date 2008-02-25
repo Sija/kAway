@@ -41,12 +41,14 @@ namespace Konnekt {
       notify(*ev);
     }
 
-    if (ev->isProcessed()) {
-      // log IMessage
-      IMLOG("[IMessageDispatcher::dispatch()]: %s", ev->toString().c_str());
-    } else {
-      // set error if no result
-      if (Ctrl) Ctrl->setError(IMERROR_NORESULT);
+    if (Ctrl) {
+      if (ev->isProcessed()) {
+        // log IMessage
+        Ctrl->logMsg(logEvent, "IMessageDispatcher", "dispatch", ev->toString().c_str());
+      } else {
+        // set error if no result
+        Ctrl->setError(errorNoResult);
+      }
     }
     // return event
     return ev;

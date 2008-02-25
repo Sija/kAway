@@ -33,8 +33,8 @@ namespace Konnekt {
     /**
      * Constructs a new ActionEvent.
      *
-     * @param sIMessage_base*   sUIActionNotify_base structure
-     * @param ActionDispatcher& ActionDispatcher object reference
+     * @param sIMessage_base*
+     * @param ActionDispatcher&
      */
     ActionEvent(sIMessage_base* msgBase, ActionDispatcher& dispatcher): IMEvent(msgBase), _dispatcher(dispatcher) {
       // get pointer to sUIActionNotify structure
@@ -47,7 +47,7 @@ namespace Konnekt {
     }
 
     /**
-     * Returns string represantation of the event
+     * Returns string represantation of the event.
      *
      * @return string 
      */
@@ -76,7 +76,7 @@ namespace Konnekt {
     }
 
     /**
-     * Returns attached action
+     * Returns attached action.
      *
      * @return sUIAction
      */
@@ -85,7 +85,7 @@ namespace Konnekt {
     }
 
     /**
-     * Returns contact id
+     * Returns contact id.
      *
      * @return int
      */
@@ -94,7 +94,7 @@ namespace Konnekt {
     }
 
     /**
-     * Returns parent action id
+     * Returns parent action id.
      *
      * @return int
      */
@@ -103,7 +103,7 @@ namespace Konnekt {
     }
 
     /**
-     * Returns action code
+     * Returns action code.
      *
      * @return int
      */
@@ -112,7 +112,7 @@ namespace Konnekt {
     }
 
     /**
-     * Returns true if given code is the same as action's
+     * Returns true if given code is the same as action's.
      *
      * @return bool
      */
@@ -139,7 +139,7 @@ namespace Konnekt {
     }
 
     /**
-     * Returns SubclassInfo action info
+     * Returns SubclassInfo action info.
      *
      * @return ActionDispatcher::SubclassInfo&
      */
@@ -151,12 +151,16 @@ namespace Konnekt {
      * Forwards action to it's previous owner.
      */
     inline void forward() {
-      setReturnValue(Ctrl->IMessageDirect(getIMessage()->id, getSubclassInfo().getPrevOwner(), (int) getActionNotify()));
+      tPluginId previous_owner = getSubclassInfo().getPrevOwner();
+      if (previous_owner == pluginNotFound) {
+        throw new ExceptionString("Previous owner plugin not found");
+      }
+      setReturnValue(Ctrl->IMessageDirect(getIMessage()->id, previous_owner, (int) getActionNotify()));
     }
 
   protected:
     /**
-     * Sets action dispatcher for this event
+     * Sets action dispatcher for this event.
      *
      * @param ActionDispatcher&
      */

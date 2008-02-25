@@ -40,8 +40,9 @@ namespace Konnekt {
     } catch (NotSubclassedException&) { }
 
     // log IMessage
-    IMLOG("[ActionDispatcher::dispatch()]: %s", ev->toString().c_str());
-
+    if (Ctrl) {
+      Ctrl->logMsg(logEvent, "ActionDispatcher", "dispatch", ev->toString().c_str());
+    }
     // return event
     return ev;
   }

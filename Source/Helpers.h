@@ -53,14 +53,6 @@ char * nullChk(const StringRef& value);
 char * nullChk(char * value);
 
 /*
- *  Logging helpers, just a little short cut ;>
- */
-
-void log(enDebugLevel level, const char * format, va_list ap);
-void log(const char * format, ...);
-void logDebug(const char * format, ...);
-
-/*
  *  Various helpers
  */
 
@@ -75,7 +67,7 @@ namespace Helpers {
   string trim(string txt, const string& chars = " ");
 
   int getPluginsGroup();
-  int pluginExists(int net, int type = IMT_ALL);
+  int pluginExists(int net, int type = imtAll);
   const char * getPlugName(int plugID);
 
   void UIActionCall(int group, int act, int cntID = 0);

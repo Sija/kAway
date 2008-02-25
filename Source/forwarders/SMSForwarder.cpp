@@ -33,21 +33,21 @@ namespace kAway2 {
   }
 
   void SMSForwarder::send(const StringRef& msg) {
-    Message::sms(inttostr(GETINT(cfg::sms::number)), msg, GETSTR(cfg::sms::gate), GETSTR(cfg::sms::sig));
+    MessageEx::sms(inttostr(GETINT(cfg::sms::number)), msg, GETSTR(cfg::sms::gate), GETSTR(cfg::sms::sig));
   }
 
   void SMSForwarder::onISetCols() {
-    Ctrl->SetColumn(DTCFG, cfg::tpl::smsForward, DT_CT_STR, 
+    Ctrl->SetColumn(tableConfig, cfg::tpl::smsForward, ctypeString, 
       "Wiadomoœæ od kontaktu [{msgFrom}] wys³ana o {msgTime}{, msgDate}:"
       "\r\n\r\n{msgBody}", "kAway2/tpl/smsForward");
 
-    Ctrl->SetColumn(DTCFG, cfg::tpl::smsSummary, DT_CT_STR, 
+    Ctrl->SetColumn(tableConfig, cfg::tpl::smsSummary, ctypeString, 
       "Od czasu w³¹czenia away'a, dosta³eœ {msgCount} wiadomoœci od {userCount} osób ({userList}).\r\n"
       "Ostatnia otrzymana wiadomoœæ jest od {lastMsgFrom}.", "kAway2/tpl/smsSummary");
 
-    Ctrl->SetColumn(DTCFG, cfg::sms::gate, DT_CT_STR, "", "kAway2/sms/gate");
-    Ctrl->SetColumn(DTCFG, cfg::sms::number, DT_CT_INT, 0, "kAway2/sms/number");
-    Ctrl->SetColumn(DTCFG, cfg::sms::sig, DT_CT_STR, "kAway2", "kAway2/sms/sig");
+    Ctrl->SetColumn(tableConfig, cfg::sms::gate, ctypeString, "", "kAway2/sms/gate");
+    Ctrl->SetColumn(tableConfig, cfg::sms::number, ctypeInt, 0, "kAway2/sms/number");
+    Ctrl->SetColumn(tableConfig, cfg::sms::sig, ctypeString, "kAway2", "kAway2/sms/sig");
 
     Forwarder::onISetCols();
   }
@@ -71,7 +71,7 @@ namespace kAway2 {
   void SMSForwarder::refreshCombo(ActionEvent& ev) {
     int code = ev.getCode();
     if (code == ACTN_CHECK || code == ACTN_CREATE) {
-      UIActionSetText(ui::sms::cfgGroup, ui::sms::gates, (char*) Ctrl->IMessage(Sms::IM::getGatewaysComboText, NET_SMS, IMT_ALL, (int) UIActionCfgGetValue(sUIAction(ui::sms::cfgGroup, ui::sms::number), 0, 0)));
+      UIActionSetText(ui::sms::cfgGroup, ui::sms::gates, (char*) Ctrl->IMessage(Sms::IM::getGatewaysComboText, NET_SMS, imtAll, (int) UIActionCfgGetValue(sUIAction(ui::sms::cfgGroup, ui::sms::number), 0, 0)));
     }
   }
 }

@@ -1,5 +1,5 @@
 /**
-  *  Message class
+  *  MessageEx class
   *
   *  Licensed under The GNU Lesser General Public License
   *  Redistributions of files must retain the above copyright notice.
@@ -16,63 +16,66 @@
 #include "stdafx.h"
 #include "Message.h"
 
-void Message::reply(cMessage *msg, const StringRef& body, const StringRef& ext, bool html) {
-  Message::send(msg->fromUid, "", msg->net, body, msg->type, ext, html);
+#include <konnekt/sms.h>
+
+void MessageEx::reply(Message& msg, const StringRef& body, const StringRef& ext, bool html) {
+  MessageEx::send(msg.getFromUid(), "", msg.getNet(), body, msg.getType(), ext, html);
 }
 
-cMessage Message::prepare(const StringRef& to, const StringRef& from, int net, const StringRef& body, 
-  int type, const StringRef& ext, int flag) {
-  cMessage msg;
+Message MessageEx::prepare(const StringRef& to, const StringRef& from, tNet net, const StringRef& body, Message::enType type, const StringRef& ext, Message::enFlags flags) {
+  Message msg;
 
-  msg.flag = flag;
-  msg.fromUid = (char*) from.a_str();
-  msg.toUid = (char*) to.a_str();
-  msg.net = net;
-  msg.time = _time64(0);
-  msg.type = type;
-  msg.body = (char*) body.a_str();
-  msg.ext = (char*) ext.a_str();
+  msg.setFlags(flags);
+  msg.setFromUid(from);
+  msg.setToUid(to);
+  msg.setNet(net);
+  msg.setTime(_time64(0));
+  msg.setType(type);
+  msg.setBody(body);
+  msg.setExt(ext);
 
   return msg;
 }
 
-void Message::send(cMessage *msg) {
-  sMESSAGESELECT ms;
-  if ((ms.id = Ctrl->ICMessage(IMC_NEWMESSAGE, (int)msg)) > 0) {
-    Ctrl->ICMessage(IMC_MESSAGEQUEUE, (int)&ms);
+void MessageEx::send(Message& msg) {
+  int id = 0;
+  if (!msg.isBeingSent()) {
+    id = msg.addToQueue(true);
   }
-  logDebug("[Message::send().msg]: id = %i, net = %i, fromUid = %s, toUid = %s, body = %s", 
-    ms.id, msg->net, nullChk(msg->fromUid), nullChk(msg->toUid), msg->body);
+  Ctrl->log(logMisc, "Message", "send", "id = %i, net = %i, fromUid = %s, toUid = %s, body = %s", 
+    id, msg.getNet(), msg.getFromUid().a_str(), msg.getToUid().a_str(), msg.getBody().a_str());
 }
 
-void Message::send(int cnt, const StringRef& from, const StringRef& body, int type, const StringRef& ext, bool html, bool inject) {
+void MessageEx::send(int cnt, const StringRef& from, const StringRef& body, Message::enType type, const StringRef& ext, bool html, bool inject) {
   String to = GETCNTC(cnt, CNT_UID);
-  cMessage msg = Message::prepare(to, from, GETCNTI(cnt, CNT_NET), body, type, ext, MF_SEND | (html ? MF_HTML : 0));
+  Message msg = MessageEx::prepare(to, from, (tNet) GETCNTI(cnt, CNT_NET), body, type, ext, (tMsgFlags) (Message::flagSend | (html ? Message::flagHTML : 0)));
 
   if (inject) {
-    Message::inject(&msg, cnt);
+    MessageEx::inject(msg, cnt);
   }
-  Message::send(&msg);
+  MessageEx::send(msg);
 }
 
-void Message::send(const StringRef& to, const StringRef& from, int net, const StringRef& body, int type, const StringRef& ext, bool html) {
-  cMessage msg = Message::prepare(to, from, net, body, type, ext, MF_SEND | (html ? MF_HTML : 0));
-  Message::send(&msg);
+void MessageEx::send(const StringRef& to, const StringRef& from, tNet net, const StringRef& body, Message::enType type, const StringRef& ext, bool html) {
+  Message msg = MessageEx::prepare(to, from, net, body, type, ext, (tMsgFlags) (Message::flagSend | (Message::flagSend ? Message::flagHTML : 0)));
+  MessageEx::send(msg);
 }
 
-void Message::sms(const StringRef& to, const StringRef& body, const StringRef& gate, const StringRef& from, StringRef ext) {
+void MessageEx::sms(const StringRef& to, const StringRef& body, const StringRef& gate, const StringRef& from, StringRef ext) {
   ext = SetExtParam(ext, Sms::extFrom, from); // nie zawsze wymagany
   ext = SetExtParam(ext, Sms::extGate, gate);  // wymagany!
   // Je¿eli NIE chcemy, ¿eby wtyczka SMS dzieli³a wiadomoœæ, ustawiamy parametr extPart...
   // ext = SetExtParam(ext, Sms::extPart, "0");
 
-  cMessage msg = Message::prepare(to, "", Sms::net, body, MT_SMS, ext, MF_SEND);
-  Message::send(&msg);
+  Message msg = MessageEx::prepare(to, "", Net::sms, body, Message::typeSMS, ext, Message::flagSend);
+  MessageEx::send(msg);
 }
 
-void Message::inject(cMessage *msg, int cntID, const char * display, bool scroll) {
-  Konnekt::UI::Notify::_insertMsg ni(msg, display, scroll);
+void MessageEx::inject(Message& msg, int cntID, const char * display, bool scroll) {
+  /*
+  Konnekt::UI::Notify::_insertMsg ni(&msg, display, scroll);
   ni.act = sUIAction(IMIG_MSGWND, Konnekt::UI::ACT::msg_ctrlview, cntID);
 
   UIActionCall(&ni);
+  */
 }

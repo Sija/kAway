@@ -67,10 +67,8 @@ void Status::changeStatus(int net, int st) {
     this->omittedSt[net].push_back(Item(net, st));
   }
 
-  Ctrl->IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, 0);
-
-  logDebug("[Status<%i>::changeStatus().item]: net = %i, status = %i",
-    this, net, st);
+  Ctrl->IMessage(IM_CHANGESTATUS, (tNet) net, imtProtocol, st, 0);
+  Ctrl->log(logMisc, "Status", "changeStatus", "net = %i, status = %i", net, st);
 }
 
 void Status::changeStatusInfo(int net, const StringRef& info, int st) {
@@ -91,14 +89,14 @@ void Status::changeStatusInfo(int net, const StringRef& info, int st) {
     this->omittedSt[net].push_back(Item(net, st, new_info));
   }
 
-  Ctrl->IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, (int) new_info.c_str());
+  Ctrl->IMessage(IM_CHANGESTATUS, (tNet) net, imtProtocol, st, (int) new_info.c_str());
 
-  logDebug("[Status<%i>::changeStatus().item]: net = %i, status = %i, info = %s",
-    this, net, st, nullChk(new_info));
+  Ctrl->log(logMisc, "Status", "changeStatus", "net = %i, status = %i, info = %s",
+    net, st, nullChk(new_info));
 }
 
 tStatus Status::getActualStatus(int net) {
-  return Ctrl->IMessage(IM_GET_STATUS, net);
+  return Ctrl->IMessage(IM_GET_STATUS, (tNet) net);
 }
 
 int Status::getStatus(int net) {
@@ -109,7 +107,7 @@ int Status::getStatus(int net) {
 }
 
 String Status::getActualInfo(int net) {
-  return (char*) Ctrl->IMessage(IM_GET_STATUSINFO, net);
+  return (char*) Ctrl->IMessage(IM_GET_STATUSINFO, (tNet) net);
 }
 
 String Status::getInfo(int net) {
@@ -138,8 +136,8 @@ void Status::rememberInfo(int net) {
   String info = this->getActualInfo(net);
   this->rememberedSt.push_back(Item(net, st, info));
 
-  logDebug("[Status<%i>::rememberInfo().item]: net = %i, status = %i, info = %s",
-    this, net, st, nullChk(info));
+  Ctrl->log(logMisc, "Status", "rememberInfo", "net = %i, status = %i, info = %s",
+    net, st, nullChk(info));
 }
 
 void Status::rememberInfo() {
@@ -158,10 +156,10 @@ void Status::restoreInfo(int net) {
 
   int st = !this->getActualStatus(net) ? ST_OFFLINE : this->getStatus(net);
   String info = this->getInfo(net);
-  Ctrl->IMessage(IM_CHANGESTATUS, net, IMT_PROTOCOL, st, (int) info.c_str());
+  Ctrl->IMessage(IM_CHANGESTATUS, (tNet) net, imtProtocol, st, (int) info.c_str());
 
-  logDebug("[Status<%i>::restoreInfo().item]: net = %i, status = %i, info = %s",
-    this, net, st, nullChk(info));
+  Ctrl->log(logMisc, "Status", "restoreInfo", "net = %i, status = %i, info = %s",
+    net, st, nullChk(info));
 }
 
 void Status::restoreInfo() {
@@ -195,13 +193,13 @@ void Status::actionHandle(IMEvent& ev) {
       }
     }
 
-    logDebug("[Status<%i>::actionHandle()]: net = %i, status = %i, info = %s", 
-      this, net, st->status, nullChk(st->info));
+    Ctrl->log(logMisc, "Status", "actionHandle", "net = %i, status = %i, info = %s", 
+      net, st->status, nullChk(st->info));
   }
 }
 
 bool Status::changeOnHidden() {
-  return this->onHiddenCfgCol ? GETINT(this->onHiddenCfgCol) : true;
+  return this->onHiddenCfgCol ? Config::get(this->onHiddenCfgCol).to_i() : true;
 }
 
 String Status::getStatusLabel(int status) {
@@ -223,7 +221,7 @@ int Status::getInfoCharLimit(int net) {
   for (tNetInfoLimits::iterator it = this->infoCharLimits.begin(); it != this->infoCharLimits.end(); it++) {
     if (it->first == net) return it->second;
   }
-  return Ctrl->IMessage(IM::infoCharLimit, net);
+  return Ctrl->IMessage(IM::infoCharLimit, (tNet) net);
 }
 
 String Status::limitChars(StringRef status, int net) {
@@ -238,19 +236,20 @@ String Status::parseInfo(StringRef info, int net, int st) {
 }
 
 String Status::getDots() {
-  if (!this->dotsCfgCol) return "";
-
-  if (Ctrl->DTgetType(DTCFG, this->dotsCfgCol) == DT_CT_STR) {
-    return GETSTR(this->dotsCfgCol);
+  if (!this->dotsCfgCol) {
+    return "";
   }
-  return GETINT(this->dotsCfgCol) ? "…" : "";
+  Config::Item dots = Config::get(this->dotsCfgCol);
+
+  if (dots.getType() == ctypeString) {
+    return dots;
+  }
+  return dots.to_i() ? "…" : "";
 }
 
 bool Status::isNetValid(int net) {
   if (this->netList->getItem(net).isActive() && this->netList->getItem(net).isConnected()) {
-    if (!this->changeOnHidden() && (ST_HIDDEN == this->getActualStatus(net))) {
-      return false;
-    } else {
+    if (this->changeOnHidden() || (ST_HIDDEN != this->getActualStatus(net))) {
       return true;
     }
   }

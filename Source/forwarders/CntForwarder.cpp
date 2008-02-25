@@ -37,9 +37,9 @@ namespace kAway2 {
     ext = SetExtParam(ext, MEX_NOSOUND, "1");
 
     if (GETINT(cfg::forward::type) == toCnt) {
-      Message::send(GETINT(cfg::forward::cnt), msg, MT_MESSAGE, ext, true);
+      MessageEx::send(GETINT(cfg::forward::cnt), msg, Message::typeMessage, ext, true);
     } else {
-      Message::send(GETSTR(cfg::forward::uid), GETINT(cfg::forward::net), msg, MT_MESSAGE, ext, true);
+      MessageEx::send(GETSTR(cfg::forward::uid), GETINT(cfg::forward::net), msg, Message::typeMessage, ext, true);
     }
   }
 
@@ -49,18 +49,18 @@ namespace kAway2 {
   }
 
   void CntForwarder::onISetCols() {
-    Ctrl->SetColumn(DTCFG, cfg::tpl::forward, DT_CT_STR, 
+    Ctrl->SetColumn(tableConfig, cfg::tpl::forward, ctypeString, 
       "Wiadomoœæ od kontaktu [<b>{msgFrom}</b>] wys³ana o <b>{msgTime}</b>{, msgDate}:"
       "\r\n\r\n{msgBody}", "kAway2/tpl/forward");
 
-    Ctrl->SetColumn(DTCFG, cfg::tpl::forwardSummary, DT_CT_STR, 
+    Ctrl->SetColumn(tableConfig, cfg::tpl::forwardSummary, ctypeString, 
       "Od czasu w³¹czenia away'a, dosta³eœ <b>{msgCount}</b> wiadomoœci od <b>{userCount}</b> osób ({userList}).\r\n"
       "Ostatnia otrzymana wiadomoœæ jest od <b>{lastMsgFrom}</b>.", "kAway2/tpl/forwardSummary");
 
-    Ctrl->SetColumn(DTCFG, cfg::forward::cnt, DT_CT_INT, 0, "kAway2/forward/cnt");
-    Ctrl->SetColumn(DTCFG, cfg::forward::type, DT_CT_INT, toCnt, "kAway2/forward/type");
-    Ctrl->SetColumn(DTCFG, cfg::forward::uid, DT_CT_STR, "", "kAway2/forward/uid");
-    Ctrl->SetColumn(DTCFG, cfg::forward::net, DT_CT_INT, 0, "kAway2/forward/net");
+    Ctrl->SetColumn(tableConfig, cfg::forward::cnt, ctypeInt, 0, "kAway2/forward/cnt");
+    Ctrl->SetColumn(tableConfig, cfg::forward::type, ctypeInt, toCnt, "kAway2/forward/type");
+    Ctrl->SetColumn(tableConfig, cfg::forward::uid, ctypeString, "", "kAway2/forward/uid");
+    Ctrl->SetColumn(tableConfig, cfg::forward::net, ctypeInt, 0, "kAway2/forward/net");
 
     Forwarder::onISetCols();
   }
@@ -113,7 +113,7 @@ namespace kAway2 {
           id = Ctrl->IMessage(IMC_PLUG_ID, 0, 0, i);
           type = Ctrl->IMessageDirect(IM_PLUG_TYPE, id);
 
-          if ((type & IMT_NET) == IMT_NET) {
+          if ((type & imtNet) == imtNet) {
             net = (int) Ctrl->IMessageDirect(IM_PLUG_NET, id);
             name = (char*) Ctrl->IMessageDirect(IM_PLUG_NETNAME, id);
 

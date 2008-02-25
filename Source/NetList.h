@@ -22,6 +22,7 @@
 #include "Events/ActionEvent.h"
 
 #include "Helpers.h"
+#include "Config.h"
 
 class NetList : public SharedObject<iSharedObject> {
 public:
@@ -51,13 +52,13 @@ public:
      * @param int parent action id
      * @param bool true if net is checked as active
      */
-    Item(tNet net, int action_id, int parent_id, const string& name, bool active = true) :
+    Item(unsigned int net, int action_id, int parent_id, const string& name, bool active = true) :
       _action_id(action_id), _parent_id(parent_id), _net(net), _name(name), _active(active) { }
 
     /**
      * Constructs an empty Item.
      */
-    Item(): _action_id(0), _parent_id(0), _net(0), _active(false) { }
+    Item(): _action_id(0), _parent_id(0), _net(Net::none), _active(false) { }
 
   public:
     /**
@@ -66,7 +67,7 @@ public:
      * @return bool
      */
     inline bool isConnected() const {
-      return (bool) Ctrl->IMessage(IM_ISCONNECTED, getNet(), IMT_PROTOCOL);
+      return Ctrl->IMessage(IM_ISCONNECTED, getNet(), imtProtocol) == 1;
     }
 
     /**
@@ -102,7 +103,7 @@ public:
      * @return int
      */
     inline tNet getNet() const {
-      return _net;
+      return (tNet) _net;
     }
 
     /**
@@ -140,8 +141,8 @@ public:
      * @param int left margin (in px)
      */
     inline void draw(bool draw_inline, int left_margin = 0) {
-      logDebug("[NetList::Item<%i>::draw()]: name = %s, active = %s",
-        this, getName().c_str(), btoa(isActive()));
+      Ctrl->log(logFunc, "NetList::Item", "draw", "name = %s, active = %s",
+        getName().c_str(), btoa(isActive()));
 
       UIActionCfgAdd(getParentID(), 0, ACTT_IMAGE | ACTSC_INLINE, Helpers::icon16(getIconID()).a_str(), 0, left_margin);
       UIActionCfgAdd(getParentID(), getActionID(), ACTT_CHECK | (draw_inline ? ACTSC_INLINE : 0), getName().c_str());
@@ -150,12 +151,12 @@ public:
   protected:
     unsigned int _action_id;
     unsigned int _parent_id;
-    tNet _net;
+    unsigned int _net;
     string _name;
     bool _active;
   };
 
-  typedef deque<tNet> tIgnored;
+  typedef deque<unsigned int> tIgnored;
   typedef deque<Item> tItems;
 
 public:
@@ -208,7 +209,7 @@ public:
    *
    * @return bool
    */
-  bool hasItem(tNet net) const;
+  bool hasItem(unsigned int net) const;
 
   /**
    * Returns reference to Item class for given net id
@@ -217,7 +218,7 @@ public:
    *
    * @return Item&
    */
-  Item& getItem(tNet net);
+  Item& getItem(unsigned int net);
 
   /**
    * Returns reference Items list
@@ -235,21 +236,21 @@ public:
    *
    * @return bool
    */
-  bool isIgnored(tNet net) const;
+  bool isIgnored(unsigned int net) const;
 
   /**
    * Adds fiven net to the ignored list
    *
    * @param int
    */
-  void addIgnored(tNet net);
+  void addIgnored(unsigned int net);
 
   /**
    * Removes given net from the ignored list
    *
    * @param int
    */
-  void removeIgnored(tNet net);
+  void removeIgnored(unsigned int net);
 
 protected:
   /**

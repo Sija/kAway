@@ -20,10 +20,11 @@
 
 #include "kAway2.h"
 
+#include "Config.h"
 #include "Helpers.h"
 #include "PluginController.h"
 #include "FwdController.h"
-#include "MRU.h"
+#include "MRUConfigurable.h"
 #include "NetList.h"
 #include "Format.h"
 #include "FormattedStatus.h"
@@ -31,6 +32,29 @@
 #include "AwayWnd.h"
 
 namespace kAway2 {
+  class MyMessageHandler : public MessageHandler {
+  public:
+    MyMessageHandler(): MessageHandler(mqReceive) { }
+
+  public:
+    inline tMsgResult handleMessage(Message* msg, enMessageQueue queue, enPluginPriority priority) {
+      Ctrl->logMsg(logDebug, "MyMessageHandler", "handleMessage", msg->getBody().a_str());
+      return Message::resultOk;
+    }
+    inline bool handlingMessage(enMessageQueue queue, Message* msg) {
+      Ctrl->logMsg(logDebug, "MessageHandler", "handlingMessage", MessageHandler::handlingMessage(queue, msg) ? "true" : "false");
+      return true;
+    }
+
+  public:
+    inline void attach() {
+      registerHandler(priorityHighest);
+    }
+    inline void detach() {
+      unregisterHandler(priorityHighest);
+    }
+  };
+
   class ItemFallback : public Config::Item {
   public:
     ItemFallback(tColId col, tRowId row): Item(tableContacts, col, row) { }
@@ -90,7 +114,7 @@ namespace kAway2 {
     STAMINA_OBJECT_CLASS_VERSION(Controller, PluginController, Version(1,3,0,0));
 
   public:
-    typedef std::deque<cMessage*> tMsgQueue;
+    typedef std::deque<MessageOld*> tMsgQueue;
 
     enum enAutoMsgTpl {
       tplEnable = cfg::tpl::enable,
@@ -108,7 +132,7 @@ namespace kAway2 {
       bool ignored;
       int historySess;
       __int64 lastMsgTime;
-      tMsgQueue msgQueue;
+      // tMsgQueue msgQueue;
 
       // konstruktor
       sCnt(bool _ignored = false, int _historySess = 0, int _lastMsgTime = 0) : 
@@ -199,12 +223,14 @@ namespace kAway2 {
     }
 
     inline sCnt* cntProp(int id) {
-      return &this->cntProps[Ctrl->DTgetID(DTCNT, id)];
+      return &this->cntProps[Ctrl->DTgetID(tableContacts, id)];
     }
 
-    inline void addMsg2CntQueue(int cnt, cMessage *msg) {
+    /*
+    inline void addMsg2CntQueue(int cnt, Message *msg) {
       this->cntProp(cnt)->msgQueue.push_front(messageDuplicate(msg));
     }
+    */
 
     inline bool isCntSaved(int cnt) {
       return this->cntProps.find(cnt) != this->cntProps.end();
@@ -224,7 +250,7 @@ namespace kAway2 {
 
     void switchBtns(bool state);
     void changeStatus(int status, bool changeInfo = false);
-    int _parseMsg(cMessage* m);
+    int _parseMsg(Message& m);
 
   public:
     oNetList autoReplyList;
@@ -233,6 +259,7 @@ namespace kAway2 {
     // oFwdController fwdCtrl;
     oAwayWnd wnd;
     oMRU mruList;
+    MyMessageHandler mh;
   };
 }
 

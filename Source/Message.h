@@ -1,5 +1,5 @@
 /**
-  *  Message class
+  *  MessageEx class
   *
   *  Licensed under The GNU Lesser General Public License
   *  Redistributions of files must retain the above copyright notice.
@@ -15,46 +15,41 @@
 
 #pragma once
 
-#ifndef __MESSAGE_H__
-#define __MESSAGE_H__
+#ifndef __MESSAGE_EX_H__
+#define __MESSAGE_EX_H__
 
-#include <konnekt/sms.h>
+#include <konnekt/core_message.h>
+
 #include "Helpers.h"
 
-class Message : public iObject {
+class MessageEx : public iObject {
 public:
   /*
    * Class version
    */
-	STAMINA_OBJECT_CLASS_VERSION(Message, iObject, Version(0,1,0,0));
+	STAMINA_OBJECT_CLASS_VERSION(MessageEx, iObject, Version(0,1,0,0));
 
-  static cMessage prepare(const StringRef& to, const StringRef& from, int net, 
-    const StringRef& body, int type, const StringRef& ext, int flag);
-  static void reply(cMessage *msg, const StringRef& body, const StringRef& ext = "", 
-    bool html = false);
+  static Message prepare(const StringRef& to, const StringRef& from, tNet net, const StringRef& body, Message::enType type, const StringRef& ext, Message::enFlags flags);
 
-  static void send(cMessage *msg);
+  static void reply(Message& msg, const StringRef& body, const StringRef& ext = "", bool html = false);
 
-  inline static void send(tCntId cnt, const StringRef& body, int type = MT_MESSAGE, 
-    const StringRef& ext = "", bool html = false, bool inject = false) 
-  {
-    Message::send(cnt, "", body, type, ext, html, inject);
+  static void send(Message& msg);
+
+  inline static void send(tCntId cnt, const StringRef& body, Message::enType type = Message::typeMessage, const StringRef& ext = "", bool html = false, bool inject = false) {
+    MessageEx::send(cnt, "", body, type, ext, html, inject);
   }
-  static void send(int cnt, const StringRef& from, const StringRef& body, int type = MT_MESSAGE, 
-    const StringRef& ext = "", bool html = false, bool inject = false);
 
-  inline static void send(const StringRef& to, int net, const StringRef& body, int type = MT_MESSAGE, 
-    const StringRef& ext = "", bool html = false) 
-  {
-    Message::send(to, "", net, body, type, ext, html);
+  static void send(int cnt, const StringRef& from, const StringRef& body, Message::enType type = Message::typeMessage, const StringRef& ext = "", bool html = false, bool inject = false);
+
+  inline static void send(const StringRef& to, tNet net, const StringRef& body, Message::enType type = Message::typeMessage, const StringRef& ext = "", bool html = false) {
+    MessageEx::send(to, "", net, body, type, ext, html);
   }
-  static void send(const StringRef& to, const StringRef& from, int net, const StringRef& body, 
-    int type = MT_MESSAGE, const StringRef& ext = "", bool html = false);
 
-  static void sms(const StringRef& to, const StringRef& body, const StringRef& gate, 
-    const StringRef& from = "", StringRef ext = "");
-  static void inject(cMessage *msg, int cntID, const char * display = 0, 
-    bool scroll = true);
+  static void send(const StringRef& to, const StringRef& from, tNet net, const StringRef& body, Message::enType type = Message::typeMessage, const StringRef& ext = "", bool html = false);
+
+  static void sms(const StringRef& to, const StringRef& body, const StringRef& gate, const StringRef& from = "", StringRef ext = "");
+
+  static void inject(Message& msg, int cntID, const char * display = 0, bool scroll = true);
 };
 
-#endif // __MESSAGE_H__
+#endif // __MESSAGE_EX_H__

@@ -56,22 +56,6 @@ protected:
   unsigned int _count;
 };
 
-class MRUConfigurable : public MRU {
-public:
-  MRUConfigurable(const string& name, int cfg_column) : MRU(name), _cfg_column(cfg_column) { }
-
-public:
-  inline int getCount() {
-    return GETINT(_cfg_column);
-  }
-  inline void setCount(int count) {
-    SETINT(_cfg_column, count);
-  }
-
-protected:
-  unsigned int _cfg_column;
-};
-
 typedef SharedPtr<MRU> oMRU;
 
 #endif // __MRU_H__

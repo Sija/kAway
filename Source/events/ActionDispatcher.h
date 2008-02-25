@@ -40,6 +40,7 @@ namespace Konnekt {
     public:
       friend class ActionDispatcher;
 
+    protected:
       /**
        * Constructs a new SubclassInfo.
        *
@@ -48,13 +49,14 @@ namespace Konnekt {
        * @param bool  automatically forwards action to it's parent if set to true
        */
       SubclassInfo(int id, int parent, bool auto_forward):
-        _id(id), _parent(parent), _prev_owner(-1), _auto_forward(auto_forward), _registered(false) { }
+        _id(id), _parent(parent), _prev_owner(pluginNotFound), _auto_forward(auto_forward), _registered(false) { }
 
       /**
        * Constructs an empty instance of SubclassInfo.
        */
-      SubclassInfo(): _id(0), _parent(0), _prev_owner(-1), _auto_forward(false), _registered(false) { }
+      SubclassInfo(): _id(0), _parent(0), _prev_owner(pluginNotFound), _auto_forward(false), _registered(false) { }
 
+    public:
       /**
        * Returns action ID
        *
@@ -74,11 +76,24 @@ namespace Konnekt {
       }
 
       /**
+       * Returns actual owner plugin ID
+       *
+       * @return int
+       */
+      inline unsigned int getOwner() const {
+        int owner = Ctrl->ICMessage(IMI_ACTION_GETOWNER, (int) &sUIAction(getParent(), getID()));
+        if (!owner) {
+          owner = Ctrl->ICMessage(IMC_PLUG_ID, 0);
+        }
+        return owner;
+      }
+
+      /**
        * Returns previous owner plugin ID
        *
        * @return int
        */
-      inline int getPrevOwner() const {
+      inline tPluginId getPrevOwner() const {
         return _prev_owner;
       }
 
@@ -87,8 +102,8 @@ namespace Konnekt {
        *
        * @param int
        */
-      inline void setPrevOwner(int prev_owner) {
-        _prev_owner = prev_owner;
+      inline void setPrevOwner(unsigned int prev_owner) {
+        _prev_owner = (tPluginId) prev_owner;
       }
 
       /**
@@ -118,6 +133,48 @@ namespace Konnekt {
         _auto_forward = auto_forward;
       }
 
+      /**
+       * Subclass action in UI.
+       */
+      inline void subclass() {
+        if (isRegistered() || !Ctrl) {
+          // throw new ExceptionString("Already subclassed");
+          return;
+        }
+        if (!getParent()) {
+          _parent = Ctrl->ICMessage(IMI_ACTION_FINDPARENT, (int) &sUIAction(0, getID()));
+        }
+        sUIActionInfo nfo(getParent(), getID());
+        nfo.mask = UIAIM_ALL;
+        nfo.txt = new char[100];
+        nfo.txtSize = 99;
+        UIActionGet(nfo);
+
+        // obtain actual action owner
+        int owner = getOwner();
+        // throw exception if action belongs to the current plugin
+        if (owner == Ctrl->ID()) {
+          // throw new ExceptionString("No need to subclass");
+          return;
+        }
+        // update action info
+        setPrevOwner(owner);
+
+        // log for debug purposes
+        Ctrl->log(logMisc, "ActionDispatcher::SubclassInfo", "subclass", "name = %s, id = %i, parent = %i, owner = %i",
+          nfo.txt, getID(), getParent(), owner);
+
+        // remove old action and register it as ours afterwards
+        Ctrl->ICMessage(IMI_ACTION_REMOVE, (int) &nfo.act);
+        Ctrl->ICMessage(IMI_ACTION, (int) &nfo);
+
+        // mark action as registered
+        setRegistered(true);
+
+        // delete buffer
+        delete [] nfo.txt;
+      }
+
     protected:
       /**
        * Marks action as registered in Core
@@ -131,7 +188,7 @@ namespace Konnekt {
     protected:
       unsigned int _parent;
       unsigned int _id;
-      int _prev_owner;
+      tPluginId _prev_owner;
       bool _auto_forward;
       bool _registered;
     };
@@ -179,17 +236,19 @@ namespace Konnekt {
      * @param bool true if registration of the given action should be deferred
      */
     inline void subclass(int id, int parent, bool auto_forward = false, bool defer = true) {
-      // exit if action is already subclassed
       if (isSublassed(id, parent)) {
         return;
       }
-      // add SublassInfo
-      _subclassed.push_back(SubclassInfo(id, parent, auto_forward));
+      SubclassInfo info(id, parent, auto_forward);
 
-      // register if needed
       if (!defer) {
-        _subclass(getSublassInfo(id, parent));
+        info.subclass();
       }
+      _subclassed.push_back(info);
+    }
+
+    inline void subclass(int id, bool auto_forward = false, bool defer = true) {
+      subclass(id, 0, auto_forward, defer);
     }
 
     /**
@@ -208,52 +267,8 @@ namespace Konnekt {
      */
     inline void doSubclass(IMEvent& ev) {
       for (tSubclassed::iterator it = _subclassed.begin(); it != _subclassed.end(); it++) {
-        _subclass(*it);
+        it->subclass();
       }
-    }
-
-  protected:
-    /**
-     * Subclasses the action from given SubclassInfo
-     *
-     * @param SubclassInfo
-     */
-    inline void _subclass(SubclassInfo& info) {
-      // exit if subclass was already registered
-      if (info.isRegistered()) {
-        return;
-      }
-
-      // craft action info struct, note that nfo.mask = UIAIM_ALL
-      sUIActionInfo nfo(info.getParent(), info.getID());
-      nfo.mask = UIAIM_ALL;
-      nfo.txt = new char[100];
-      nfo.txtSize = 99;
-
-      // get info about the action
-      UIActionGet(nfo);
-
-      // obtain actual action owner
-      int prev_owner = 0;
-      if (!(prev_owner = Ctrl->ICMessage(IMI_ACTION_GETOWNER, (int) &nfo.act))) {
-        prev_owner = Ctrl->ICMessage(IMC_PLUG_ID, 0);
-      }
-      // update action info
-      info.setPrevOwner(prev_owner);
-
-      // log for debug purposes
-      IMLOG("[ActionDispatcher::subclass()]: name = %s, id = %i, parent = %i, prevOwner = %i",
-        nfo.txt, info.getID(), info.getParent(), prev_owner);
-
-      // remove old action and register it as ours afterwards
-      Ctrl->ICMessage(IMI_ACTION_REMOVE, (int) &nfo.act);
-      Ctrl->ICMessage(IMI_ACTION, (int) &nfo);
-
-      // mark action as registered
-      info.setRegistered(true);
-
-      // delete buffer
-      delete [] nfo.txt;
     }
 
   protected:

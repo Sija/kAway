@@ -32,7 +32,7 @@ namespace Konnekt {
     /**
      * Constructs a new IMEvent.
      *
-     * @param sIMessage_base* sIMessage_base structure
+     * @param sIMessage_base*
      */
     IMEvent(sIMessage_base* msgBase): Event(msgBase->id, msgBase), _im(static_cast<sIMessage*>(msgBase)) { }
 
@@ -47,7 +47,25 @@ namespace Konnekt {
     }
 
     /**
-     * Returns param 1
+     * Returns sender plugin ID.
+     *
+     * @return tPluginId
+     */
+    inline tPluginId getSender() const {
+      return getIMessage()->sender;
+    }
+
+    /**
+     * Returns sender plugin name.
+     *
+     * @return String
+     */
+    inline String getSenderName() const {
+      return SAFECHAR((char*) Ctrl->IMessageDirect(IM_PLUG_NAME, getSender()));
+    }
+
+    /**
+     * Returns param 1.
      *
      * @return int
      */
@@ -56,7 +74,7 @@ namespace Konnekt {
     }
 
     /**
-     * Returns param 2
+     * Returns param 2.
      *
      * @return int
      */
@@ -65,17 +83,31 @@ namespace Konnekt {
     }
 
     /**
-     * Sets the return value to success (1)
+     * Sets the return value to success (1).
      */
     inline void setSuccess() {
       setReturnValue(1);
     }
 
     /**
-     * Sets the return value to failure (-1)
+     * Sets the return value to failure (-1).
      */
     inline void setFailure() {
       setReturnValue(-1);
+    }
+
+    /**
+     * Returns true if return value is set to '1'
+     */
+    inline bool isSuccess() {
+      return getReturnValue() == 1;
+    }
+
+    /**
+     * Returns true if return value is set to '-1'
+     */
+    inline bool isFailure() {
+      return getReturnValue() == -1;
     }
 
     /**
@@ -89,13 +121,12 @@ namespace Konnekt {
     }
 
     /**
-     * Sets the return value for this event
+     * Sets the return value for this event.
      *
      * @param const StringRef& The return value
-     * @warning {
-     *   this method uses internal buffer which can be overridden by
-     *   commonly used functions like @c GETSTR in all flavors.
-     * }
+     *
+     * @warning this method uses internal buffer which can be overridden by
+     * commonly used functions like @c GETSTR in all flavors.
      */
     inline void setReturnValue(const StringRef& value) {
       // creating temp buffer

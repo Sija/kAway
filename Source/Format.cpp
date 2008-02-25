@@ -61,8 +61,8 @@ String Format::parse(const StringRef& txt) {
 
   String result = reg.replace(&Format::parseCallback, NULL, this);
 
-  logDebug("[Format<%i>::parse()]: before = %s, after = %s",
-    this, txt.c_str(), nullChk(result));
+  Ctrl->log(logMisc, "Format", "parse", "before = %s, after = %s",
+    txt.c_str(), nullChk(result));
 
   return result;
 }
@@ -89,8 +89,8 @@ std::string __stdcall Format::parseCallback(RegEx* reg, void* param) {
       value = buff;
       int modsApplied = fCtrl->applyModifiers(value, prefix, suffix);
 
-      logDebug("[Format<%i>::fCallback()]: prefix = %s, value = %s, suffix = %s, modifiers applied = %i",
-        fCtrl, nullChk(prefix), nullChk(value), nullChk(suffix), modsApplied);
+      Ctrl->log(logMisc, "Format", "parseCallback", "prefix = %s, value = %s, suffix = %s, modifiers applied = %i",
+        nullChk(prefix), nullChk(value), nullChk(suffix), modsApplied);
 
       result = prefix + value + suffix;
     }
@@ -168,8 +168,8 @@ int Format::applyModifiers(StringRef& value, StringRef& prefix, StringRef& suffi
 bool Format::addModifier(const StringRef& id, ModifierCallback callback, const StringRef& prefix, const StringRef& suffix, enOperator op) {
   if (!prefix.length() && !suffix.length()) return false;
 
-  logDebug("[Format<%i>::addModifier()]: id = %s, prefix = %s, suffix = %s, operator = %s",
-    this, id.c_str(), nullChk(prefix), nullChk(suffix), (op == opAnd) ? "AND" : "OR");
+  Ctrl->log(logMisc, "Format", "addModifier", "id = %s, prefix = %s, suffix = %s, operator = %s",
+    id.c_str(), nullChk(prefix), nullChk(suffix), (op == opAnd) ? "AND" : "OR");
 
   this->modifiers.push_back(new sModifier(id, callback, prefix, suffix, op));
   return true;
@@ -191,7 +191,7 @@ bool Format::addVarCallback(const StringRef& name, VarProcessCallback callback, 
     return false;
   }
 
-  logDebug("[Format<%i>::addVarCallback()]: name = %s", this, name.c_str());
+  Ctrl->log(logMisc, "Format", "addVarCallback", "name = %s", name.c_str());
   this->vars.push_back(new sVar(name, callback));
 
   return true;
@@ -204,7 +204,7 @@ bool Format::addVar(const StringRef& name, const StringRef& value, bool overwrit
     return false;
   }
 
-  logDebug("[Format<%i>::addVar()]: name = %s, value = %s", this, name.c_str(), nullChk(value));
+  Ctrl->log(logMisc, "Format", "addVar", "name = %s, value = %s", name.c_str(), nullChk(value));
   this->vars.push_back(new sVar(name, value));
 
   return true;
@@ -230,8 +230,8 @@ bool Format::getVar(const StringRef& name, StringRef &val) {
           val = var->value;
           break;
       }
-      logDebug("[Format<%i>::getVar()]: name = %s, value = %s",
-        this, name.c_str(), nullChk(val));
+      Ctrl->log(logMisc, "Format", "getVar", "name = %s, value = %s",
+        name.c_str(), nullChk(val));
       return true;
     }
   }

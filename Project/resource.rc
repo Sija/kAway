@@ -44,14 +44,14 @@ BEGIN
         BLOCK "041504b0"
         BEGIN
             VALUE "CompanyName", "Sijawusz Pur Rahnama"
-            VALUE "FileDescription", "Implementacja IRCowej komendy /away"
+            VALUE "FileDescription", "Twoja automagiczna sekretarka"
             VALUE "FileVersion", "1, 3, 0, 109"
             VALUE "InternalName", "kAway2"
             VALUE "LegalCopyright", "Copyright © 2005-2008 Sijawusz Pur Rahnama"
             VALUE "OriginalFilename", "kAway2.dll"
             VALUE "ProductName", "kAway2"
             VALUE "ProductVersion", "1, 3, 0, 109"
-            VALUE "URL", "http://www.kplugins.net/"
+            VALUE "URL", "http://www.konnekt.info/"
         END
     END
     BLOCK "VarFileInfo"

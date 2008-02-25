@@ -52,30 +52,6 @@ char * nullChk(char * value) {
 }
 
 /*
- *  Logging helpers, just a little shortcut ;>
- */
-
-void log(enDebugLevel level, const char * format, va_list ap) {
-  if (Ctrl && Ctrl->DebugLevel(level)) {
-    Ctrl->IMLOG_(level, format, ap);
-  }
-}
-
-void log(const char * format, ...) {
-  va_list ap;
-  va_start(ap, format);
-  log(DBG_LOG, format, ap);
-  va_end(ap);
-}
-
-void logDebug(const char * format, ...) {
-  va_list ap;
-  va_start(ap, format);
-  log(DBG_DEBUG, format, ap);
-  va_end(ap);
-}
-
-/*
  *  Various helpers
  */
 
@@ -128,7 +104,7 @@ namespace Helpers {
   }
 
   const char * getPlugName(int plugID) {
-    return SAFECHAR((char*) Ctrl->IMessageDirect(IM_PLUG_NAME, plugID));
+    return SAFECHAR((char*) Ctrl->IMessageDirect(IM_PLUG_NAME, (tPluginId) plugID));
   }
 
   void UIActionCall(int group, int act, int cntID) {
@@ -137,7 +113,7 @@ namespace Helpers {
   }
 
   void touchConfigWnd() {
-    SendMessage((HWND)UIGroupHandle(sUIAction(0, IMIG_CFGWND)), WM_USER + 18091, 0, 0);
+    SendMessage((HWND) UIGroupHandle(sUIAction(0, IMIG_CFGWND)), WM_USER + 18091, 0, 0);
   }
 
 #ifdef SHARED_TABLETKA_H

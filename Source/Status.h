@@ -20,6 +20,7 @@
 
 #include "Helpers.h"
 #include "NetList.h"
+#include "Config.h"
 
 class Status : public SharedObject<iSharedObject> {
 public:
@@ -48,7 +49,7 @@ public:
      * @param int status code
      * @param String status info message
      */
-    Item(tNet net, tStatus status, const StringRef& info = "") : 
+    Item(unsigned int net, tStatus status, const StringRef& info = "") : 
       _net(net), _status(status), _info(info) { }
 
     /**
@@ -63,7 +64,7 @@ public:
      * @return int
      */
     inline tNet getNet() const {
-      return _net;
+      return (tNet) _net;
     }
 
     /**
@@ -85,7 +86,7 @@ public:
     }
 
   protected:
-    tNet _net;
+    unsigned int _net;
     tStatus _status;
     String _info;
   };
@@ -94,18 +95,18 @@ public:
    * Structure holding status replacements for certain nets
    */
   struct sReplacement {
-    tNet net;
+    unsigned int net;
     tStatus before;
     tStatus after;
 
-    sReplacement(tNet net, tStatus before, tStatus after) : 
+    sReplacement(unsigned int net, tStatus before, tStatus after) : 
       net(net), before(before), after(after) { }
   };
 
   typedef std::deque<Item> tItems;
   typedef std::deque<sReplacement> tReplacements;
-  typedef stdext::hash_map<tNet, tItems> tOmittedInfos;
-  typedef stdext::hash_map<tNet, int> tNetInfoLimits;
+  typedef stdext::hash_map<unsigned int, tItems> tOmittedInfos;
+  typedef stdext::hash_map<unsigned int, unsigned int> tNetInfoLimits;
 
 public:
   Status(NetList* netList, int onHiddenCfgCol = 0, int dotsCfgCol = 0);

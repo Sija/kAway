@@ -47,10 +47,10 @@ namespace kAway2 {
       this->setCfgCols();
 
       if (this->isSummarizable) {
-        Ctrl->SetColumn(DTCFG, this->cfgCols["isSummaryActive"], DT_CT_INT, 0, ("kAway2/" + this->id + "/isSummaryActive").a_str());
+        Ctrl->SetColumn(tableConfig, this->cfgCols["isSummaryActive"], ctypeInt, 0, ("kAway2/" + this->id + "/isSummaryActive").a_str());
       }
       if (this->isForwardable) {
-        Ctrl->SetColumn(DTCFG, this->cfgCols["isForwardActive"], DT_CT_INT, 0, ("kAway2/" + this->id + "/isForwardActive").a_str());
+        Ctrl->SetColumn(tableConfig, this->cfgCols["isForwardActive"], ctypeInt, 0, ("kAway2/" + this->id + "/isForwardActive").a_str());
       }
     }
     inline void onIPrepare() {

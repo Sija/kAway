@@ -124,7 +124,7 @@ namespace kAway2 {
           Controller::getInstance()->wnd->prepareButtonImage(it->img, hWnd, net, it->id);
         }
         // int chkSt = IMessage(IM_GET_STATUS, net);
-        CheckDlgButton(hWnd, GETINT(cfg::wnd::onEnableSt), BST_CHECKED);
+        CheckDlgButton(hWnd, Config::get(cfg::wnd::onEnableSt).to_i(), BST_CHECKED);
 
         // pole combo - wybór opisu
         HWND hWndCombo = CreateWindow("combobox", "", WS_TABSTOP | WS_CHILD | WS_VISIBLE | CBS_AUTOHSCROLL | WS_EX_CONTROLPARENT | 
@@ -150,7 +150,7 @@ namespace kAway2 {
         ti.hwnd = hWndTmp;
         ti.lpszText = "Zmieñ status";
         SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM) &ti);
-        CheckDlgButton(hWnd, STATUS_CHANGE, GETINT(cfg::wnd::changeOnEnable) ? BST_CHECKED : 0);
+        CheckDlgButton(hWnd, STATUS_CHANGE, Config::get(cfg::wnd::changeOnEnable).to_i() ? BST_CHECKED : 0);
 
         // checkbox - zmieñ opis
         hWndTmp = CreateWindow("button", "opis", WS_TABSTOP | WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX,
@@ -160,7 +160,7 @@ namespace kAway2 {
         ti.hwnd = hWndTmp;
         ti.lpszText = "Zmieñ opis";
         SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM) &ti);
-        CheckDlgButton(hWnd, STATUS_CHANGE_INFO, GETINT(cfg::wnd::changeInfoOnEnable) ? BST_CHECKED : 0);
+        CheckDlgButton(hWnd, STATUS_CHANGE_INFO, Config::get(cfg::wnd::changeInfoOnEnable).to_i() ? BST_CHECKED : 0);
 
         // checkbox - wycisz
         hWndTmp = CreateWindow("button", "wycisz", WS_TABSTOP | WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX,
@@ -170,7 +170,7 @@ namespace kAway2 {
         ti.hwnd = hWndTmp;
         ti.lpszText = "Wycisz wszystkie dŸwiêki";
         SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM) &ti);
-        CheckDlgButton(hWnd, MUTE, GETINT(cfg::wnd::muteOnEnable) ? BST_CHECKED : 0);
+        CheckDlgButton(hWnd, MUTE, Config::get(cfg::wnd::muteOnEnable).to_i() ? BST_CHECKED : 0);
 
         // odczytujemy liste mru
         MRU::tItems list = Controller::getInstance()->mruList->get();
@@ -218,11 +218,11 @@ namespace kAway2 {
             if (IsDlgButtonChecked(hWnd, ST_OFFLINE)) st = ST_OFFLINE;
 
             if (st) {
-              SETINT(cfg::wnd::onEnableSt, st);
+              Config::get(cfg::wnd::onEnableSt).set(st);
             }
-            SETINT(cfg::wnd::changeOnEnable, (IsDlgButtonChecked(hWnd, STATUS_CHANGE) == BST_CHECKED) ? 1 : 0);
-            SETINT(cfg::wnd::changeInfoOnEnable, (IsDlgButtonChecked(hWnd, STATUS_CHANGE_INFO) == BST_CHECKED) ? 1 : 0);
-            SETINT(cfg::wnd::muteOnEnable, (IsDlgButtonChecked(hWnd, MUTE) == BST_CHECKED) ? 1 : 0);
+            Config::get(cfg::wnd::changeOnEnable).set((IsDlgButtonChecked(hWnd, STATUS_CHANGE) == BST_CHECKED) ? 1 : 0);
+            Config::get(cfg::wnd::changeInfoOnEnable).set((IsDlgButtonChecked(hWnd, STATUS_CHANGE_INFO) == BST_CHECKED) ? 1 : 0);
+            Config::get(cfg::wnd::muteOnEnable).set((IsDlgButtonChecked(hWnd, MUTE) == BST_CHECKED) ? 1 : 0);
 
             Controller::getInstance()->fromWnd(true);
             Controller::getInstance()->enable(msg);
@@ -263,10 +263,10 @@ namespace kAway2 {
 
     if (ICMessage(IMC_ISWINXP)) {
       hIml = ImageList_Create(16, 16, ILC_COLOR32 | ILC_MASK, 7, 0);
-      HICON hIco = (HICON) IMessage(IMI_ICONGET, 0, 0, UIIcon(IT_STATUS, net, status, 0), IML_ICO2);
+      HICON hIco = (HICON) Ctrl->ICMessage(IMI_ICONGET, UIIcon(IT_STATUS, net, status, 0), IML_ICO2);
 
       if (ImageList_ReplaceIcon(hIml, -1, hIco) == -1) { // normal
-        hIco = (HICON) IMessage(IMI_ICONGET, 0, 0, UIIcon(IT_STATUS, 0, status, 0), IML_16);
+        hIco = (HICON) Ctrl->ICMessage(IMI_ICONGET, UIIcon(IT_STATUS, 0, status, 0), IML_16);
         ImageList_ReplaceIcon(hIml, -1, hIco);
       }
 
@@ -288,7 +288,7 @@ namespace kAway2 {
       bil.uAlign = BUTTON_IMAGELIST_ALIGN_LEFT;
       Button_SetImageList(hWnd, &bil);
     } else {
-      SendMessage(hWnd, BM_SETIMAGE, IMAGE_ICON, (LPARAM) IMessage(IMI_ICONGET, 0, 0, UIIcon(IT_STATUS, net, status, 0), IML_ICO2));
+      SendMessage(hWnd, BM_SETIMAGE, IMAGE_ICON, (LPARAM) Ctrl->ICMessage(IMI_ICONGET, UIIcon(IT_STATUS, net, status, 0), IML_ICO2));
     }
   }
 }

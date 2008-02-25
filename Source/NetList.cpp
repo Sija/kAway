@@ -17,7 +17,7 @@
 #include "NetList.h"
 
 void NetList::load() {
-  String buff(GETSTR(cfgCol));
+  String buff = Config::get(cfgCol);
   tItems loaded_nets;
 
   if (!buff.empty()) {
@@ -34,29 +34,29 @@ void NetList::load() {
       off = pos + 1;
       pos = (int) buff.find("|", off);
 
-      logDebug("[NetList<%i>::load().saved-item]: net = %i, active = %s",
-        this, item.getNet(), btoa(item.isActive()));
+      Ctrl->log(logMisc, "NetList", "load-from-config", "net = %i, active = %s",
+        item.getNet(), btoa(item.isActive()));
 
       loaded_nets.push_back(item);
     }
   }
 
-  int plugs = Ctrl->IMessage(IMC_PLUG_COUNT);
+  int plugs = Ctrl->ICMessage(IMC_PLUG_COUNT);
   int id, type;
 
   Item item;
 
   for (int i = 1, n = 1; i < plugs; i++) {
-    id = Ctrl->IMessage(IMC_PLUG_ID, 0, 0, i);
-    type = Ctrl->IMessageDirect(IM_PLUG_TYPE, id);
+    id = Ctrl->ICMessage(IMC_PLUG_ID, i);
+    type = Ctrl->IMessageDirect(IM_PLUG_TYPE, (tPluginId) id);
 
-    if ((type & IMT_NET) != IMT_NET) {
+    if ((type & imtNet) != imtNet) {
       continue;
     }
-    item._net = (int) Ctrl->IMessageDirect(IM_PLUG_NET, id);
-    item._name = (char*) Ctrl->IMessageDirect(IM_PLUG_NETNAME, id);
+    item._net = (int) Ctrl->IMessageDirect(IM_PLUG_NET, (tPluginId) id);
+    item._name = (char*) Ctrl->IMessageDirect(IM_PLUG_NETNAME, (tPluginId) id);
 
-    if (item.getName().length() && !isIgnored(item.getNet())) {
+    if (item.getNet() && item.getName().length() && !isIgnored(item.getNet())) {
       item._action_id = dynActGroup + n++;
       item._parent_id = cfgGroup;
       item._active = defaultUse;
@@ -68,8 +68,8 @@ void NetList::load() {
       }
       _items.push_back(item);
 
-      logDebug("[NetList<%i>::load().item]: action id = %i, net = %i, name = %s, active = %s",
-        this, item.getActionID(), item.getNet(), item.getName().c_str(), btoa(item.isActive()));
+      Ctrl->log(logMisc, "NetList", "load", "action id = %i, net = %i, name = %s, active = %s",
+        item.getActionID(), item.getNet(), item.getName().c_str(), btoa(item.isActive()));
     }
   }
 }
@@ -84,10 +84,10 @@ void NetList::save() {
     buff += it->isActive() ? "1" : "0";
     buff += "|";
 
-    logDebug("[NetList<%i>::save().item]: name = %s, active = %s",
-      this, it->getName().c_str(), btoa(it->isActive()));
+    Ctrl->log(logMisc, "NetList", "save", "name = %s, active = %s",
+      it->getName().c_str(), btoa(it->isActive()));
   }
-  SETSTR(cfgCol, buff.c_str());
+  Config::get(cfgCol).set(buff);
 }
 
 void NetList::_groupListener(ActionEvent& ev) {
@@ -136,8 +136,8 @@ void NetList::refreshFromUI() {
   for (tItems::iterator it = _items.begin(); it != _items.end(); it++) {
     bool v = *UIActionCfgGetValue(sUIAction(cfgGroup, it->getActionID()), 0, 0, true) == '1';
 
-    logDebug("[NetList<%i>::refreshFromUI().item]: name = %s, active = %s [now: %s]",
-      this, it->getName().c_str(), btoa(it->isActive()), btoa(v));
+    Ctrl->log(logMisc, "NetList", "refreshFromUI", "name = %s, active = %s [now: %s]",
+      it->getName().c_str(), btoa(it->isActive()), btoa(v));
 
     if (it->isActive() != v) it->setActive(v);
   }
@@ -147,37 +147,37 @@ void NetList::refreshUI() {
   for (tItems::iterator it = _items.begin(); it != _items.end(); it++) {
     UIActionCfgSetValue(sUIAction(cfgGroup, it->getActionID()), (it->isActive() ? "1" : "0"), true);
 
-    logDebug("[NetList<%i>::refreshUI().item]: name = %s, active = %s",
-      this, it->getName().c_str(), btoa(it->isActive()));
+    Ctrl->log(logMisc, "NetList", "refreshUI", "name = %s, active = %s",
+      it->getName().c_str(), btoa(it->isActive()));
   }
 }
 
-bool NetList::hasItem(tNet net) const {
+bool NetList::hasItem(unsigned int net) const {
   for (tItems::const_iterator it = _items.begin(); it != _items.end(); it++) {
     if (it->getNet() == net) return true;
   }
   return false;
 }
 
-NetList::Item& NetList::getItem(tNet net) {
+NetList::Item& NetList::getItem(unsigned int net) {
   for (tItems::iterator it = _items.begin(); it != _items.end(); it++) {
     if (it->getNet() == net) return *it;
   }
   throw ExceptionString("Item was not found");
 }
 
-bool NetList::isIgnored(tNet net) const {
+bool NetList::isIgnored(unsigned int net) const {
   for (tIgnored::const_iterator it = _ignored.begin(); it != _ignored.end(); it++) {
     if (*it == net) return true;
   }
-  return Ctrl->IMessage(IM::hidePresence, net);
+  return Ctrl->IMessage(IM::hidePresence, (tNet) net);
 }
 
-void NetList::addIgnored(tNet net) {
+void NetList::addIgnored(unsigned int net) {
   _ignored.push_back(net);
 }
 
-void NetList::removeIgnored(tNet net) {
+void NetList::removeIgnored(unsigned int net) {
   for (tIgnored::iterator it = _ignored.begin(); it != _ignored.end(); it++) {
     if (*it == net) {
       _ignored.erase(it); return;
