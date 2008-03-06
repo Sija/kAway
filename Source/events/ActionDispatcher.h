@@ -4,13 +4,13 @@
   *  Licensed under The GNU Lesser General Public License
   *  Redistributions of files must retain the above copyright notice.
   *
-  *  @filesource
-  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
-  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
-  *  @version      $Revision$
-  *  @modifiedby   $LastChangedBy: sija $
-  *  @lastmodified $Date$
-  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  *  @file
+  *  @link          svn://konnekt.info/kaway2/ "SVN Repository"
+  *  @author        Sijawusz Pur Rahnama <sija@gibbon.pl>
+  *  @license       http://creativecommons.org/licenses/LGPL/2.1/
+  *  @version       $Revision$
+  *  @date          $Date$
+  *  @modifiedby    $LastChangedBy: sija $
   */
 
 #pragma once
@@ -44,9 +44,9 @@ namespace Konnekt {
       /**
        * Constructs a new SubclassInfo.
        *
-       * @param int   action id
-       * @param int   parent action id
-       * @param bool  automatically forwards action to it's parent if set to true
+       * @param id            action id
+       * @param parent        parent action id
+       * @param auto_forward  automatically forwards action to it's parent if set to true
        */
       SubclassInfo(int id, int parent, bool auto_forward):
         _id(id), _parent(parent), _prev_owner(pluginNotFound), _auto_forward(auto_forward), _registered(false) { }
@@ -59,8 +59,6 @@ namespace Konnekt {
     public:
       /**
        * Returns action ID
-       *
-       * @return int
        */
       inline int getID() const {
         return _id;
@@ -68,17 +66,13 @@ namespace Konnekt {
 
       /**
        * Returns parent action ID
-       *
-       * @return int
        */
       inline int getParent() const {
         return _parent;
       }
 
       /**
-       * Returns actual owner plugin ID
-       *
-       * @return int
+       * Returns the actual owner plugin ID
        */
       inline unsigned int getOwner() const {
         int owner = Ctrl->ICMessage(IMI_ACTION_GETOWNER, (int) &sUIAction(getParent(), getID()));
@@ -89,9 +83,7 @@ namespace Konnekt {
       }
 
       /**
-       * Returns previous owner plugin ID
-       *
-       * @return int
+       * Returns the previous owner plugin ID
        */
       inline tPluginId getPrevOwner() const {
         return _prev_owner;
@@ -99,8 +91,6 @@ namespace Konnekt {
 
       /**
        * Sets previous owner plugin ID
-       *
-       * @param int
        */
       inline void setPrevOwner(unsigned int prev_owner) {
         _prev_owner = (tPluginId) prev_owner;
@@ -108,8 +98,6 @@ namespace Konnekt {
 
       /**
        * Returns true if action should be forwarded to it's previous owner
-       *
-       * @return bool
        */
       inline bool isRegistered() const {
         return _registered;
@@ -117,8 +105,6 @@ namespace Konnekt {
 
       /**
        * Returns true if action should be forwarded to it's previous owner
-       *
-       * @return bool
        */
       inline bool autoForward() const {
         return _auto_forward;
@@ -126,8 +112,6 @@ namespace Konnekt {
 
       /**
        * Sets auto forward option
-       *
-       * @param bool
        */
       inline void setAutoForward(bool auto_forward) {
         _auto_forward = auto_forward;
@@ -177,9 +161,7 @@ namespace Konnekt {
 
     protected:
       /**
-       * Marks action as registered in Core
-       *
-       * @param bool
+       * Marks action as subclassed
        */
       inline void setRegistered(bool registered) {
         _registered = registered;
@@ -198,12 +180,12 @@ namespace Konnekt {
 
   public:
     /**
-     * Returns true if the given action is subclassed
+     * Checks if given action is marked for subclassing
      *
-     * @param int action id
-     * @param int parent action id
+     * @param id      action id
+     * @param parent  parent action id
      *
-     * @return bool
+     * @return true if the given action is subclassed
      */
     inline bool isSublassed(int id, int parent) const {
       for (tSubclassed::const_iterator it = _subclassed.begin(); it != _subclassed.end(); it++) {
@@ -213,12 +195,12 @@ namespace Konnekt {
     }
 
     /**
-     * Returns reference of SubclassInfo
+     * Gets information about subclassed action
      *
-     * @param int action id
-     * @param int parent action id
+     * @param id      action id
+     * @param parent  parent action id
      *
-     * @return SubclassInfo&
+     * @return reference to SubclassInfo
      */
     inline SubclassInfo& getSublassInfo(int id, int parent) {
       for (tSubclassed::iterator it = _subclassed.begin(); it != _subclassed.end(); it++) {
@@ -230,10 +212,10 @@ namespace Konnekt {
     /**
      * Subclasses the given action
      *
-     * @param int action id
-     * @param int parent action id
-     * @param bool true if given action should be forwarded to previous owner after execution
-     * @param bool true if registration of the given action should be deferred
+     * @param id            action id
+     * @param parent        parent action id
+     * @param auto_forward  true if given action should be forwarded to previous owner after execution
+     * @param defer         true if registration of the given action should be deferred
      */
     inline void subclass(int id, int parent, bool auto_forward = false, bool defer = true) {
       if (isSublassed(id, parent)) {
@@ -247,6 +229,9 @@ namespace Konnekt {
       _subclassed.push_back(info);
     }
 
+    /**
+     * @sa subclass
+     */
     inline void subclass(int id, bool auto_forward = false, bool defer = true) {
       subclass(id, 0, auto_forward, defer);
     }
@@ -254,16 +239,13 @@ namespace Konnekt {
     /**
      * Dispatches incoming Action IMessage
      *
-     * @param sIMessage_base*
-     *
-     * @return oEvent
+     * @param msgBase IMessage to dispatch
+     * @return oEvent object
      */
     oEvent dispatch(sIMessage_base* msgBase);
 
     /**
      * Subclasses all unprocessed/deferred actions
-     *
-     * @param IMEvent&
      */
     inline void doSubclass(IMEvent& ev) {
       for (tSubclassed::iterator it = _subclassed.begin(); it != _subclassed.end(); it++) {

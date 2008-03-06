@@ -4,13 +4,13 @@
   *  Licensed under The GNU Lesser General Public License
   *  Redistributions of files must retain the above copyright notice.
   *
-  *  @filesource
-  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
-  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
-  *  @version      $Revision$
-  *  @modifiedby   $LastChangedBy: sija $
-  *  @lastmodified $Date$
-  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  *  @file
+  *  @link          svn://konnekt.info/kaway2/ "SVN Repository"
+  *  @author        Sijawusz Pur Rahnama <sija@gibbon.pl>
+  *  @license       http://creativecommons.org/licenses/LGPL/2.1/
+  *  @version       $Revision$
+  *  @date          $Date$
+  *  @modifiedby    $LastChangedBy: sija $
   */
 
 #pragma once
@@ -32,6 +32,9 @@ using namespace std;
 using namespace stdext;
 
 namespace Konnekt {
+  /**
+   * Exception which stops chain execution
+   */
   class StopEventNotifyException : public ExceptionString {
   public:
     StopEventNotifyException() : ExceptionString("Event notification was interrupted") { }
@@ -65,9 +68,6 @@ namespace Konnekt {
     typedef hash_map<int, sListener*> tListeners;
 
   public:
-    /**
-     * Destroys EventDispatcher object
-     */
     inline ~EventDispatcher() {
       for (tListeners::iterator it = _listeners.begin(); it != _listeners.end(); it++) {
         delete it->second;
@@ -78,12 +78,12 @@ namespace Konnekt {
     /**
      * Connects a listener to a given event id.
      *
-     * @param int       An event id
-     * @param fListener Listener callback
-     * @param int       Listener priority
-     * @param signals::connect_position
+     * @param id        An event id
+     * @param f         Listener callback
+     * @param priority  Listener priority
+     * @param pos       Position in list
      *
-     * @return signals::connection 
+     * @return connection object
      */
     inline signals::connection connect(int id, const fListener& f, int priority = 0, signals::connect_position pos = signals::at_back) {
       if (f.empty()) {
@@ -107,10 +107,10 @@ namespace Konnekt {
      * Disconnects a listener for a given event id.
      * TODO: jak to obsluzyc ?
      *
-     * @param int       An event id
-     * @param fListener Listener callback
+     * @param id   An event id
+     * @param f    Listener callback
      *
-     * @return bool 
+     * @return  true if listener was successfuly diconnected
      */
     inline bool disconnect(int id, const fListener& f) {
       if (!hasListeners(id)) {
@@ -122,9 +122,8 @@ namespace Konnekt {
     /**
      * Notifies all listeners of a given event.
      *
-     * @param Event& A Event instance
-     *
-     * @return Event& The Event instance
+     * @param ev  An Event object
+     * @return    Modified @a ev object
      */
     inline E& notify(E& ev) {
       int id = ev.getID();
@@ -139,10 +138,7 @@ namespace Konnekt {
 
     /**
      * Returns true if the given event id has some listeners.
-     *
      * @param  id  The event id
-     *
-     * @return bool true if some listeners are connected, false otherwise
      */
     inline bool hasListeners(int id) {
       if (_listeners.find(id) == _listeners.end()) {

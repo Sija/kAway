@@ -4,13 +4,13 @@
   *  Licensed under The GNU Lesser General Public License
   *  Redistributions of files must retain the above copyright notice.
   *
-  *  @filesource
-  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
-  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
-  *  @version      $Revision$
-  *  @modifiedby   $LastChangedBy$
-  *  @lastmodified $Date$
-  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  *  @file
+  *  @link          svn://konnekt.info/kaway2/ "SVN Repository"
+  *  @author        Sijawusz Pur Rahnama <sija@gibbon.pl>
+  *  @license       http://creativecommons.org/licenses/LGPL/2.1/
+  *  @version       $Revision$
+  *  @date          $Date$
+  *  @modifiedby    $LastChangedBy$
   */
 
 #pragma once
@@ -39,9 +39,6 @@ namespace Konnekt {
     typedef SharedPtr<T> oInstance;
 
   protected:
-    /**
-     * Creates new PluginController object.
-     */
     inline PluginController() {
       IMessageDispatcher& dispatcher = getIMessageDispatcher();
       ActionDispatcher& action_dispatcher = getActionDispatcher();
@@ -55,11 +52,6 @@ namespace Konnekt {
     }
 
   public:
-    /**
-     * Returns instance of object T.
-     *
-     * @return T*
-     */
     inline static T* getInstance() {
       if (!_instance.isValid()) {
         _instance = new T;
@@ -69,26 +61,20 @@ namespace Konnekt {
 
     /**
      * Returns Config class instance.
-     *
-     * @return Config*
      */
     inline Config& getConfig() {
       return Context::getInstance()->getConfig();
     }
 
     /**
-     * Returns reference to IMessageDispatcher
-     *
-     * @return IMessageDispatcher&
+     * Returns reference to IMessageDispatcher.
      */
     inline IMessageDispatcher& getIMessageDispatcher() {
       return Context::getInstance()->getIMessageDispatcher();
     }
 
     /**
-     * Returns reference to IMActionDispatcher
-     *
-     * @return IMActionDispatcher&
+     * Returns reference to IMActionDispatcher.
      */
     inline ActionDispatcher& getActionDispatcher() {
       return Context::getInstance()->getActionDispatcher();
@@ -96,9 +82,7 @@ namespace Konnekt {
 
   public:
     /**
-     * Dispatch incoming IMessage
-     *
-     * @param sIMessage_base*
+     * Dispatch incoming IMessage.
      */
     inline int dispatch(sIMessage_base* msgBase) {
       // dispatch IMessage
@@ -113,9 +97,7 @@ namespace Konnekt {
 
   protected:
     /**
-     * Plugin initialization
-     *
-     * @param IMEvent&
+     * Plugin initialization callback
      */
     inline void _onPlugInit(IMEvent& ev) {
       Plug_Init(ev.getP1(), ev.getP2());
@@ -123,9 +105,7 @@ namespace Konnekt {
     }
 
     /**
-     * Plugin deinitialization
-     *
-     * @param IMEvent&
+     * Plugin deinitialization callback
      */
     inline void _onPlugDeInit(IMEvent& ev) {
       Plug_Deinit(ev.getP1(), ev.getP2());

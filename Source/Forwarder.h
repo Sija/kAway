@@ -40,7 +40,7 @@ namespace kAway2 {
     virtual void setCfgCols() = 0;
     virtual void send(const StringRef& msg) = 0;
 
-    virtual bool preForward(int cnt, cMessage *msg) = 0;
+    virtual bool preForward(int cnt, Message *msg) = 0;
     virtual bool preSummary() = 0;
 
     inline void onISetCols() {
@@ -62,7 +62,7 @@ namespace kAway2 {
       }
     }
     virtual void onNewMsg(IMEvent& ev) {
-      cMessage* msg = (cMessage*) ev.getP1();
+      Message* msg = (Message*) ev.getP1();
       int cnt = 0; // baaad
 
       if (this->isSummarizable) {
@@ -122,7 +122,7 @@ namespace kAway2 {
 
       void onEnable();
       void onDisable();
-      void onNewMsg(int cnt, cMessage *msg);
+      void onNewMsg(int cnt, Message *msg);
 
       String getMsgSendersList();
       String getBody();
@@ -145,8 +145,8 @@ namespace kAway2 {
 
     public:
       void cfgTplDraw();
-      void onNewMsg(int cnt, cMessage *msg);
-      String getBody(int cnt, cMessage *msg);
+      void onNewMsg(int cnt, Message *msg);
+      String getBody(int cnt, Message *msg);
 
       inline bool isActive() {
         return GETINT(this->parent->cfgCols["isForwardActive"]);

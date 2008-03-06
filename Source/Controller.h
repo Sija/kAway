@@ -32,27 +32,39 @@
 #include "AwayWnd.h"
 
 namespace kAway2 {
-  class MyMessageHandler : public MessageHandler {
+  class MyMessageHandler : public SharedObject<iMessageHandler> {
   public:
-    MyMessageHandler(): MessageHandler(mqReceive) { }
+    inline static MyMessageHandler* getInstance() {
+      if (!_instance.isValid()) {
+        _instance = new MyMessageHandler;
+      }
+      return _instance;
+    }
+
+  protected:
+    MyMessageHandler() { }
 
   public:
-    inline tMsgResult handleMessage(Message* msg, enMessageQueue queue, enPluginPriority priority) {
-      Ctrl->logMsg(logDebug, "MyMessageHandler", "handleMessage", msg->getBody().a_str());
-      return Message::resultOk;
-    }
     inline bool handlingMessage(enMessageQueue queue, Message* msg) {
-      Ctrl->logMsg(logDebug, "MessageHandler", "handlingMessage", MessageHandler::handlingMessage(queue, msg) ? "true" : "false");
+      if ((msg->getType() != Message::typeMessage) || msg->getOneFlag(Message::flagAutomated)) {
+        return false;
+      }
       return true;
     }
+    tMsgResult handleMessage(Message* msg, enMessageQueue queue, enPluginPriority priority);
 
   public:
     inline void attach() {
-      registerHandler(priorityHighest);
+      IM im (IM::imcRegisterMessageHandler, this, priorityHighest);
+      Ctrl->IMessage(&im);
     }
     inline void detach() {
-      unregisterHandler(priorityHighest);
+      IM im (IM::imcUnregisterMessageHandler, this, priorityHighest);
+      Ctrl->IMessage(&im);
     }
+
+  protected:
+    static SharedPtr<MyMessageHandler> _instance;
   };
 
   class ItemFallback : public Config::Item {
@@ -106,6 +118,7 @@ namespace kAway2 {
   class Controller : public PluginController<Controller> {
   public:
     friend class PluginController<Controller>;
+    friend class MyMessageHandler;
 
   public:
     /**
@@ -149,13 +162,13 @@ namespace kAway2 {
     void _prepare(IMEvent& ev);
     void _prepareUI(IMEvent& ev);
 
-    void onMsgRcv(IMEvent& ev);
     void onEnd(IMEvent& ev);
     void onPluginsLoaded(IMEvent& ev);
     void onExtAutoAway();
     void onAutoAway(IMEvent& ev);
     void onBack(IMEvent& ev);
 
+  public:
     // actions
     void _handleCntGroup(ActionEvent& ev);
     void _handleMsgTb(ActionEvent& ev);
@@ -165,6 +178,7 @@ namespace kAway2 {
     void _resetGlobalSettings(ActionEvent& ev);
     void _resetContactSettings(ActionEvent& ev);
 
+  public:
     /* API callback methods */
     void apiEnabled(IMEvent& ev);
     void apiEnable(IMEvent& ev);
@@ -250,7 +264,7 @@ namespace kAway2 {
 
     void switchBtns(bool state);
     void changeStatus(int status, bool changeInfo = false);
-    int _parseMsg(Message& m);
+    tMsgResult _parseMsg(Message* m);
 
   public:
     oNetList autoReplyList;
@@ -259,7 +273,7 @@ namespace kAway2 {
     // oFwdController fwdCtrl;
     oAwayWnd wnd;
     oMRU mruList;
-    MyMessageHandler mh;
+    MyMessageHandler* mh;
   };
 }
 

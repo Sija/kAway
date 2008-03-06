@@ -84,7 +84,7 @@ namespace Helpers {
   void showKNotify(char * text, int ico);
   int findParentAction(int group, int id);
 
-  void addItemToHistory(cMessage* msg, int cnt, const char * dir, const StringRef& name, int session = 0);
+  void addItemToHistory(Message* msg, int cnt, const char * dir, const StringRef& name, int session = 0);
 
   void chgBtn(int group, int id, int cnt, const char * name = 0, int ico = 0, int flags = -1);
   void chgBtn(int group, int id, const char * name, int ico = 0, int flags = 0);

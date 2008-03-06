@@ -4,13 +4,13 @@
   *  Licensed under The GNU Lesser General Public License
   *  Redistributions of files must retain the above copyright notice.
   *
-  *  @filesource
-  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
-  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
-  *  @version      $Revision$
-  *  @modifiedby   $LastChangedBy: sija $
-  *  @lastmodified $Date$
-  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  *  @file
+  *  @link          svn://konnekt.info/kaway2/ "SVN Repository"
+  *  @author        Sijawusz Pur Rahnama <sija@gibbon.pl>
+  *  @license       http://creativecommons.org/licenses/LGPL/2.1/
+  *  @version       $Revision$
+  *  @date          $Date$
+  *  @modifiedby    $LastChangedBy: sija $
   */
 
 #pragma once
@@ -33,13 +33,9 @@ namespace Konnekt {
     typedef hash_map<int, int> tStaticValues;
 
   public:
-    /**
-     * Constructs a new IMessageDispatcher object.
-     */
     inline IMessageDispatcher() {
       // set default values for common messages, some of them should be overriden
       setStaticValue(IM_PLUG_NETNAME, 0);
-      setStaticValue(IM_PLUG_PRIORITY, 0);
       setStaticValue(IM_PLUG_SDKVERSION, KONNEKT_SDK_V);
       setStaticValue(IM_PLUG_VERSION, 0);
       setStaticValue(IM_PLUG_CORE_V, (int) "W98");

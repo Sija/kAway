@@ -139,7 +139,7 @@ namespace Helpers {
     return Ctrl->ICMessage(IMI_ACTION_FINDPARENT, (int) &sUIAction(group, id));
   }
 
-  void addItemToHistory(cMessage* msg, int cnt, const char * dir, const StringRef& name, int session) {
+  void addItemToHistory(Message* msg, int cnt, const char * dir, const StringRef& name, int session) {
     sHISTORYADD item;
 
     item.cnt = cnt;

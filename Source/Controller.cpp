@@ -20,6 +20,8 @@
 // #include "Forwarders/SMSForwarder.h"
 
 namespace kAway2 {
+  SharedPtr<MyMessageHandler> MyMessageHandler::_instance = 0;
+
   Controller::Controller() : _active(false), muteStateSwitched(false), autoAway(typeDisabled), _plugins_group(0) {
     IMessageDispatcher& d = getIMessageDispatcher();
     ActionDispatcher& a = getActionDispatcher();
@@ -36,7 +38,6 @@ namespace kAway2 {
     d.connect(IM_UI_PREPARE, bind(&Controller::_prepare, this, _1));
     d.connect(IM_UI_PREPARE, bind(&Controller::_prepareUI, this, _1));
 
-    // d.connect(Message::IM::imReceiveMessage, bind(&Controller::onMsgRcv, this, _1));
     d.connect(IM_BEFOREEND, bind(&Controller::onEnd, this, _1));
     d.connect(IM_ALLPLUGINSINITIALIZED, bind(&Controller::onPluginsLoaded, this, _1));
     d.connect(IM_AWAY, bind(&Controller::onAutoAway, this, _1));
@@ -144,7 +145,7 @@ namespace kAway2 {
 
   void Controller::_prepare(IMEvent& ev) {
     // @debug
-    // mh.attach();
+    MyMessageHandler::getInstance()->attach();
 
     // get ActionDispatcher object
     ActionDispatcher& action_dispatcher = getActionDispatcher();
@@ -607,60 +608,60 @@ namespace kAway2 {
     ev.setSuccess();
   }
 
-  void Controller::onMsgRcv(IMEvent& ev) {
-    Message* m = (Message*) ev.getP1();
-
-    // hmmm, i have to remove it some sunny day...
-    if ((m->getType() != Message::typeMessage) || m->getOneFlag(Message::flagAutomated)) {
-      return ev.setReturnValue(0);
+  tMsgResult MyMessageHandler::handleMessage(Message* msg, enMessageQueue queue, enPluginPriority priority) {
+    /// @debug
+    {
+      Ctrl->logMsg(logDebug, "MyMessageHandler", "handleMessage", msg->getBody().a_str());
     }
+    Controller* c = Controller::getInstance();
 
     // we're searchin' for contact id
-    int cnt = Ctrl->ICMessage(IMC_CNT_FIND, m->getNet(), (int) (!m->getFromUid().empty() ? m->getFromUid() : m->getToUid()).a_str());
-    bool fromUser = m->getFromUid().empty() && m->getExtParam(cfg::extParamName).empty() && (m->getType() == Message::typeMessage);
+    int cnt = Ctrl->ICMessage(IMC_CNT_FIND, msg->getNet(), (int) ((queue & mqSend) ? msg->getFromUid() : msg->getToUid()).a_str());
+    bool fromUser = (queue & mqSend) && msg->getExtParam(cfg::extParamName).empty();
 
     // parse and return message in case irc-like commands
     if (fromUser) {
-      int retValue = _parseMsg(*m);
-      if (retValue) {
-        return ev.setReturnValue(retValue);
+      if (tMsgResult retValue = c->_parseMsg(msg)) {
+        return retValue;
       }
     }
 
-    if (this->isEnabled() && !this->cntProp(cnt)->ignored) {
+    if (c->isEnabled() && !c->cntProp(cnt)->ignored) {
       if (fromUser && ItemFallback(cfg::disableOnMsgSend, cnt).to_b()) {
-        this->disable(); return ev.setReturnValue(0);
+        c->disable();
+        return Message::resultNone;
       }
 
       if (ItemFallback(cfg::saveToHistory, cnt).to_b()) {
-        // Helpers::addItemToHistory(m, cnt, cfg::historyFolder, "", this->cntProp(cnt)->historySess);
-        this->cntProp(cnt)->historySess = 1;
+        Helpers::addItemToHistory(msg, cnt, cfg::historyFolder, "", c->cntProp(cnt)->historySess);
+        c->cntProp(cnt)->historySess = 1;
       }
 
-      // this->addMsg2CntQueue(cnt, m);
-      // fCtrl->onNewMsg(cnt, m);
+      // c->addMsg2CntQueue(cnt, m);
+      // c->fCtrl->onNewMsg(cnt, m);
 
       if (ItemFallback(cfg::reply::onMsg, cnt).to_b()) {
         int intType = ItemFallback(cfg::reply::minIntervalType, cnt).to_i();
-        __int64 msg_time = m->getTime();
+        __int64 msg_time = msg->getTime();
 
-        if (!m->getFromUid().empty()) {
-          int lastMsgTime = this->cntProp(cnt)->lastMsgTime;
+        if (!msg->getFromUid().empty()) {
+          int lastMsgTime = c->cntProp(cnt)->lastMsgTime;
           int interval = ItemFallback(cfg::reply::minInterval, cnt).to_i();
 
           if ((!interval && !lastMsgTime) || (interval && ((interval + lastMsgTime) < msg_time))) {
-            this->sendMsgTpl(cnt, Controller::tplReply);
+            c->sendMsgTpl(cnt, Controller::tplReply);
           }
           if ((intType == typeRcvTime) || (intType == typeBoth)) {
-            this->cntProp(cnt)->lastMsgTime = msg_time;
+            c->cntProp(cnt)->lastMsgTime = msg_time;
           }
         } else {
           if ((intType == typeSendTime) || (intType == typeBoth)) {
-            this->cntProp(cnt)->lastMsgTime = msg_time;
+            c->cntProp(cnt)->lastMsgTime = msg_time;
           }
         }
       }
     }
+    return Message::resultNone;
   }
 
   void Controller::_handleCntGroup(ActionEvent& ev) {
@@ -979,12 +980,12 @@ namespace kAway2 {
     }
   }
 
-  int Controller::_parseMsg(Message& m) {
-    tCntId cnt = Ctrl->ICMessage(IMC_CNT_FIND, m.getNet(), (int) (!m.getFromUid().empty() ? m.getFromUid() : m.getToUid()).a_str());
+  tMsgResult Controller::_parseMsg(Message* m) {
+    tCntId cnt = Ctrl->ICMessage(IMC_CNT_FIND, m->getNet(), (int) (!m->getFromUid().empty() ? m->getFromUid() : m->getToUid()).a_str());
 
-    String body = m.getBody();
+    String body = m->getBody();
     if (body.size() <= 1 || body.a_str()[0] != '/' || !ItemFallback(cfg::ircCmds, cnt).to_b()) {
-      return 0;
+      return Message::resultNone;
     }
 
     tStringVector params;
@@ -1032,17 +1033,17 @@ namespace kAway2 {
       if (!awayMsg.empty()) {
         body += stringf(" (<b>%s</b>)", awayMsg.c_str());
       }
-      m.setBody(body);
+      m->setBody(body);
 
-      m.setExtParam(Message::extAddInfo, "kAway2");
-      m.setExtParam(Message::extNoSound, "1");
+      m->setExtParam(Message::extAddInfo, "kAway2");
+      m->setExtParam(Message::extNoSound, "1");
 
-      m.setOneFlag(Message::flagHTML, true);
-      m.setOneFlag(Message::flagDontAddToHistory, true);
+      m->setOneFlag(Message::flagHTML, true);
+      m->setOneFlag(Message::flagDontAddToHistory, true);
 
       return Message::resultUpdate | Message::resultDelete;
     }
-    return 0;
+    return Message::resultNone;
   }
 
   void Controller::sendMsgTpl(int cnt, enAutoMsgTpl tpl, const StringRef& msgVal) {

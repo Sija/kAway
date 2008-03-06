@@ -76,7 +76,7 @@ namespace kAway2 {
       }
     }
 
-    inline bool preForward(int cnt, cMessage *msg) {
+    inline bool preForward(int cnt, Message *msg) {
       return this->preSummary();
     }
 

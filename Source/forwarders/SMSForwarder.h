@@ -64,7 +64,7 @@ namespace kAway2 {
       return strlen(GETSTR(cfg::sms::number)) && strlen(GETSTR(cfg::sms::gate));
     }
 
-    inline bool preForward(int cnt, cMessage *msg) {
+    inline bool preForward(int cnt, Message *msg) {
       return this->preSummary();
     }
 

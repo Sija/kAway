@@ -4,13 +4,13 @@
   *  Licensed under The GNU Lesser General Public License
   *  Redistributions of files must retain the above copyright notice.
   *
-  *  @filesource
-  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
-  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
-  *  @version      $Revision$
-  *  @modifiedby   $LastChangedBy$
-  *  @lastmodified $Date$
-  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  *  @file
+  *  @link          svn://konnekt.info/kaway2/ "SVN Repository"
+  *  @author        Sijawusz Pur Rahnama <sija@gibbon.pl>
+  *  @license       http://creativecommons.org/licenses/LGPL/2.1/
+  *  @version       $Revision$
+  *  @date          $Date$
+  *  @modifiedby    $LastChangedBy$
   */
 
 #pragma once
@@ -152,20 +152,12 @@ namespace Konnekt {
   public:
     /**
      * Creates new instance of Config class with column registration listeners attached.
-     *
-     * @param IMessageDispatcher& dispatcher object
      */
     inline Config(IMessageDispatcher& dispatcher) {
       attachListeners(dispatcher);
     }
-    /**
-     * Creates new instance of Config class.
-     */
     inline Config() { }
 
-    /**
-     * Destroys Config object.
-     */
     inline ~Config() { 
       for (tColumns::iterator it = _cols.begin(); it != _cols.end(); it++) {
         delete *it;
@@ -176,11 +168,9 @@ namespace Konnekt {
     /**
      * Gets configuration item.
      *
-     * @param tTable table id
-     * @param tColId column id
-     * @param tRowId row id
-     *
-     * @return Item
+     * @param table table id
+     * @param col   column id
+     * @param row   row id
      */
     static Item get(tTable table, tColId col, tRowId row) {
       return Item(table, col, row);
@@ -188,9 +178,7 @@ namespace Konnekt {
     /**
      * Gets configuration item from global configuration table.
      *
-     * @param tColId column id
-     *
-     * @return Item
+     * @param col column id
      */
     static Item get(tColId col) {
       return get(tableConfig, col, 0);
@@ -198,10 +186,8 @@ namespace Konnekt {
     /**
      * Gets configuration item from contact table.
      *
-     * @param tColId column id
-     * @param tCntId contact id
-     *
-     * @return Item
+     * @param col column id
+     * @param cnt contact id
      */
     static Item get(tColId col, tCntId cnt) {
       return get(tableContacts, col, cnt);
@@ -209,11 +195,9 @@ namespace Konnekt {
 
   public:
     /**
-     * Connects listeners to the IM_SETCOLS IMessage id.
+     * Connects listeners to the #IM_SETCOLS IMessage id.
      *
      * @see setColumn
-     *
-     * @param IMessageDispatcher&
      */
     inline void attachListeners(IMessageDispatcher& dispatcher) {
       dispatcher.connect(IM_SETCOLS, bind(&Config::_registerColumns, this, _1));
@@ -222,15 +206,18 @@ namespace Konnekt {
     /**
      * Registers column in the given table.
      *
-     * @param tTable      Table id
-     * @param tColId      Column id
-     * @param int         Column type
-     * @param const char* Column default value
-     * @param const char* Column name
+     * @param table   Table id
+     * @param id      Column id
+     * @param type    Column type
+     * @param def     Column default value
+     * @param name    Column name
      */
     inline void setColumn(tTable table, tColId id, int type, const char* def, const char* name) {
       _cols.push_back(new sIMessage_setColumn(table, id, type, def, name));
     }
+    /**
+     * @sa setColumn
+     */
     inline void setColumn(tTable table, tColId id, int type, int def, const char* name) {
       _cols.push_back(new sIMessage_setColumn(table, id, type, def, name));
     }
@@ -238,7 +225,7 @@ namespace Konnekt {
     /**
      * Sets all registered columns to their's default values.
      *
-     * @param tTable Table id to reset
+     * @param table Table id to reset
      */
     inline void resetColumns(tTable table) {
       int count = Ctrl->DTgetCount(table);
@@ -257,10 +244,10 @@ namespace Konnekt {
     /**
      * Sets the given column to it's default value.
      *
-     * @param tTable      Table id
-     * @param tColId      Column id
-     * @param tRowId      Row id
-     * @param sUIAction*
+     * @param table   Table id
+     * @param id      Column id
+     * @param row     Row id
+     * @param an      sUIAction if applicable
      */
     inline void resetColumn(tTable table, tColId id, tRowId row = 0, sUIAction* an = 0) {
       for (tColumns::iterator it = _cols.begin(); it != _cols.end(); it++) {
@@ -300,6 +287,9 @@ namespace Konnekt {
       }
     }
 
+    /**
+     * Bulk columns registration
+     */
     inline void _registerColumns(IMEvent& ev) {
       for (tColumns::iterator it = _cols.begin(); it != _cols.end(); it++) {
         Ctrl->IMessage(*it);
@@ -311,7 +301,7 @@ namespace Konnekt {
     tColumns _cols;
   };
 
-  // smart pointer type
+  /// smart pointer type
   typedef SharedPtr<Config> oConfig;
 }
 

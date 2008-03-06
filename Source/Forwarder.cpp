@@ -76,7 +76,7 @@ namespace kAway2 {
     this->clear();
   }
 
-  void Forwarder::Summary::onNewMsg(int cnt, cMessage *msg) {
+  void Forwarder::Summary::onNewMsg(int cnt, Message *msg) {
     if (!strlen(msg->fromUid)) return;
 
     this->lastMsgFrom = GETCNTC(cnt, CNT_DISPLAY);
@@ -137,7 +137,7 @@ namespace kAway2 {
     //
   }
 
-  String Forwarder::Forward::getBody(int cnt, cMessage *msg) {
+  String Forwarder::Forward::getBody(int cnt, Message *msg) {
     Date64 date(msg->time);
     Format format;
 
@@ -168,7 +168,7 @@ namespace kAway2 {
     UIActionCfgAdd(this->parent->cfgCols["cfgGroup"], 0, ACTT_GROUPEND);
   }
 
-  void Forwarder::Forward::onNewMsg(int cnt, cMessage *msg) {
+  void Forwarder::Forward::onNewMsg(int cnt, Message *msg) {
     if (!this->isActive() || !strlen(msg->fromUid) || (!GETINT(cfg::fwd::inAutoAway) && 
       Ctrl->IMessageDirect(api::isAutoAway, Ctrl->ID())) || !this->parent->preForward(cnt, msg)) {
       return;

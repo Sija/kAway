@@ -4,13 +4,13 @@
   *  Licensed under The GNU Lesser General Public License
   *  Redistributions of files must retain the above copyright notice.
   *
-  *  @filesource
-  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
-  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
-  *  @version      $Revision$
-  *  @modifiedby   $LastChangedBy: sija $
-  *  @lastmodified $Date$
-  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  *  @file
+  *  @link          svn://konnekt.info/kaway2/ "SVN Repository"
+  *  @author        Sijawusz Pur Rahnama <sija@gibbon.pl>
+  *  @license       http://creativecommons.org/licenses/LGPL/2.1/
+  *  @version       $Revision$
+  *  @date          $Date$
+  *  @modifiedby    $LastChangedBy: sija $
   */
 
 #pragma once
@@ -33,8 +33,8 @@ namespace Konnekt {
     /**
      * Constructs a new ActionEvent.
      *
-     * @param sIMessage_base*
-     * @param ActionDispatcher&
+     * @param msgBase     IMessage sent from Core
+     * @param dispatcher  ActionDispatcher object
      */
     ActionEvent(sIMessage_base* msgBase, ActionDispatcher& dispatcher): IMEvent(msgBase), _dispatcher(dispatcher) {
       // get pointer to sUIActionNotify structure
@@ -48,8 +48,6 @@ namespace Konnekt {
 
     /**
      * Returns string represantation of the event.
-     *
-     * @return string 
      */
     inline string toString() const {
       string str = stringf("id = %i, code = %i", getID(), getCode());
@@ -68,8 +66,6 @@ namespace Konnekt {
   public:
     /**
      * Returns pointer to sUIActionNotify structure.
-     *
-     * @return sUIActionNotify*
      */
     inline sUIActionNotify* getActionNotify() const {
       return _an;
@@ -77,8 +73,6 @@ namespace Konnekt {
 
     /**
      * Returns attached action.
-     *
-     * @return sUIAction
      */
     inline const sUIAction& getAction() const {
       return getActionNotify()->act;
@@ -86,8 +80,6 @@ namespace Konnekt {
 
     /**
      * Returns contact id.
-     *
-     * @return int
      */
     inline int getCnt() const {
       return getAction().cnt;
@@ -95,8 +87,6 @@ namespace Konnekt {
 
     /**
      * Returns parent action id.
-     *
-     * @return int
      */
     inline int getParent() const {
       return getAction().parent;
@@ -104,8 +94,6 @@ namespace Konnekt {
 
     /**
      * Returns action code.
-     *
-     * @return int
      */
     inline int getCode() const {
       return getActionNotify()->code;
@@ -113,8 +101,6 @@ namespace Konnekt {
 
     /**
      * Returns true if given code is the same as action's.
-     *
-     * @return bool
      */
     inline bool isCode(int code) const {
       return getCode() == code;
@@ -122,8 +108,6 @@ namespace Konnekt {
 
     /**
      * Returns reference to ActionDispatcher class.
-     *
-     * @return ActionDispatcher&
      */
     inline ActionDispatcher& getDispatcher() {
       return _dispatcher;
@@ -131,8 +115,6 @@ namespace Konnekt {
 
     /**
      * Returns true if action is subclassed
-     *
-     * @return bool
      */
     inline bool isSubclassed() const {
       return _dispatcher.isSublassed(getID(), getParent());
@@ -140,8 +122,6 @@ namespace Konnekt {
 
     /**
      * Returns SubclassInfo action info.
-     *
-     * @return ActionDispatcher::SubclassInfo&
      */
     inline ActionDispatcher::SubclassInfo& getSubclassInfo() {
       return getDispatcher().getSublassInfo(getID(), getParent());
@@ -161,8 +141,6 @@ namespace Konnekt {
   protected:
     /**
      * Sets action dispatcher for this event.
-     *
-     * @param ActionDispatcher&
      */
     inline void setDispatcher(ActionDispatcher& dispatcher) {
       _dispatcher = dispatcher;
@@ -170,8 +148,6 @@ namespace Konnekt {
 
     /**
      * Sets pointer to sUIActionNotify structure.
-     *
-     * @param sUIActionNotify*
      */
     inline void setActionNotify(sUIActionNotify* an) {
       _an = an;
@@ -182,7 +158,7 @@ namespace Konnekt {
     sUIActionNotify* _an;
   };
 
-  // smart pointer type
+  /// smart pointer type
   typedef SharedPtr<ActionEvent> oActionEvent;
 }
 

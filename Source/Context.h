@@ -4,13 +4,13 @@
   *  Licensed under The GNU Lesser General Public License
   *  Redistributions of files must retain the above copyright notice.
   *
-  *  @filesource
-  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
-  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
-  *  @version      $Revision$
-  *  @modifiedby   $LastChangedBy: sija $
-  *  @lastmodified $Date$
-  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  *  @file
+  *  @link          svn://konnekt.info/kaway2/ "SVN Repository"
+  *  @author        Sijawusz Pur Rahnama <sija@gibbon.pl>
+  *  @license       http://creativecommons.org/licenses/LGPL/2.1/
+  *  @version       $Revision$
+  *  @date          $Date$
+  *  @modifiedby    $LastChangedBy: sija $
   */
 
 #pragma once
@@ -35,9 +35,6 @@ namespace Konnekt {
     typedef SharedPtr<Context> oInstance;
 
   protected:
-    /**
-     * Creates new Context object.
-     */
     inline Context() {
       _config.attachListeners(getIMessageDispatcher());
     }
@@ -45,8 +42,6 @@ namespace Konnekt {
   public:
     /**
      * Returns instance of Context object.
-     *
-     * @return Context
      */
     inline static Context* getInstance() {
       if (!_instance.isValid()) {
@@ -57,26 +52,20 @@ namespace Konnekt {
 
     /**
      * Returns Config class instance.
-     *
-     * @return Config&
      */
     inline Config& getConfig() {
       return _config;
     }
 
     /**
-     * Returns reference to IMessageDispatcher
-     *
-     * @return IMessageDispatcher&
+     * Returns reference to IMessageDispatcher.
      */
     inline IMessageDispatcher& getIMessageDispatcher() {
       return _imessage_dispatcher;
     }
 
     /**
-     * Returns reference to IMActionDispatcher
-     *
-     * @return IMActionDispatcher&
+     * Returns reference to IMActionDispatcher.
      */
     inline ActionDispatcher& getActionDispatcher() {
       return _action_dispatcher;

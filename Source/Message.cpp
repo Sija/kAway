@@ -38,12 +38,10 @@ Message MessageEx::prepare(const StringRef& to, const StringRef& from, tNet net,
 }
 
 void MessageEx::send(Message& msg) {
-  int id = 0;
-  if (!msg.isBeingSent()) {
-    id = msg.addToQueue(true);
-  }
+  msg.addToQueue(true);
+
   Ctrl->log(logMisc, "Message", "send", "id = %i, net = %i, fromUid = %s, toUid = %s, body = %s", 
-    id, msg.getNet(), msg.getFromUid().a_str(), msg.getToUid().a_str(), msg.getBody().a_str());
+    msg.getId(), msg.getNet(), msg.getFromUid().a_str(), msg.getToUid().a_str(), msg.getBody().a_str());
 }
 
 void MessageEx::send(int cnt, const StringRef& from, const StringRef& body, Message::enType type, const StringRef& ext, bool html, bool inject) {

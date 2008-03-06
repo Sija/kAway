@@ -4,13 +4,13 @@
   *  Licensed under The GNU Lesser General Public License
   *  Redistributions of files must retain the above copyright notice.
   *
-  *  @filesource
-  *  @copyright    Copyright (c) 2005-2008 Sijawusz Pur Rahnama
-  *  @link         svn://konnekt.info/kaway2/ kAway2 plugin SVN Repo
-  *  @version      $Revision$
-  *  @modifiedby   $LastChangedBy: sija $
-  *  @lastmodified $Date$
-  *  @license      http://creativecommons.org/licenses/LGPL/2.1/
+  *  @file
+  *  @link          svn://konnekt.info/kaway2/ "SVN Repository"
+  *  @author        Sijawusz Pur Rahnama <sija@gibbon.pl>
+  *  @license       http://creativecommons.org/licenses/LGPL/2.1/
+  *  @version       $Revision$
+  *  @date          $Date$
+  *  @modifiedby    $LastChangedBy: sija $
   */
 
 #pragma once
@@ -31,16 +31,13 @@ namespace Konnekt {
   public:
     /**
      * Constructs a new IMEvent.
-     *
-     * @param sIMessage_base*
+     * @param msgBase Base #IMessage structure sent by the Core
      */
     IMEvent(sIMessage_base* msgBase): Event(msgBase->id, msgBase), _im(static_cast<sIMessage*>(msgBase)) { }
 
   public:
     /**
-     * Returns pointer to sIMessage structure.
-     *
-     * @return sIMessage*
+     * Returns pointer to #sIMessage structure.
      */
     inline sIMessage* getIMessage() const {
       return _im;
@@ -48,8 +45,6 @@ namespace Konnekt {
 
     /**
      * Returns sender plugin ID.
-     *
-     * @return tPluginId
      */
     inline tPluginId getSender() const {
       return getIMessage()->sender;
@@ -57,8 +52,6 @@ namespace Konnekt {
 
     /**
      * Returns sender plugin name.
-     *
-     * @return String
      */
     inline String getSenderName() const {
       return SAFECHAR((char*) Ctrl->IMessageDirect(IM_PLUG_NAME, getSender()));
@@ -66,8 +59,6 @@ namespace Konnekt {
 
     /**
      * Returns param 1.
-     *
-     * @return int
      */
     inline int getP1() const {
       return getIMessage()->p1;
@@ -75,8 +66,6 @@ namespace Konnekt {
 
     /**
      * Returns param 2.
-     *
-     * @return int
      */
     inline int getP2() const {
       return getIMessage()->p2;
@@ -112,8 +101,6 @@ namespace Konnekt {
 
     /**
      * Sets the return value for this event.
-     *
-     * @param int The return value
      */
     inline void setReturnValue(int value) {
       Event::setReturnValue(value);
@@ -123,10 +110,10 @@ namespace Konnekt {
     /**
      * Sets the return value for this event.
      *
-     * @param const StringRef& The return value
+     * @param value The return value
      *
      * @warning this method uses internal buffer which can be overridden by
-     * commonly used functions like @c GETSTR in all flavors.
+     *          commonly used functions like @c GETSTR() in all flavors.
      */
     inline void setReturnValue(const StringRef& value) {
       // creating temp buffer
@@ -144,9 +131,9 @@ namespace Konnekt {
 
   protected:
     /**
-     * Sets pointer to sIMessage structure.
+     * Sets pointer to the given #sIMessage structure.
      *
-     * @param sIMessage*
+     * @todo
      */
     inline void setIMessage(sIMessage* im) {
       _im = im;
@@ -156,7 +143,7 @@ namespace Konnekt {
     sIMessage* _im;
   };
 
-  // smart pointer type
+  /// smart pointer type
   typedef SharedPtr<IMEvent> oIMEvent;
 }
 
