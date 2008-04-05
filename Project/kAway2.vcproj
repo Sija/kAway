@@ -257,18 +257,6 @@
 				</FileConfiguration>
 			</File>
 			<Filter
-				Name="events"
-				>
-				<File
-					RelativePath="..\Source\events\ActionDispatcher.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\Source\events\IMessageDispatcher.cpp"
-					>
-				</File>
-			</Filter>
-			<Filter
 				Name="forwarders"
 				>
 				<File
@@ -371,14 +359,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Source\Config.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Source\Context.h"
-				>
-			</File>
-			<File
 				RelativePath="..\Source\EditFix.h"
 				>
 			</File>
@@ -423,34 +403,6 @@
 				>
 			</File>
 			<Filter
-				Name="events"
-				>
-				<File
-					RelativePath="..\Source\events\ActionDispatcher.h"
-					>
-				</File>
-				<File
-					RelativePath="..\Source\events\ActionEvent.h"
-					>
-				</File>
-				<File
-					RelativePath="..\Source\events\Event.h"
-					>
-				</File>
-				<File
-					RelativePath="..\Source\events\EventDispatcher.h"
-					>
-				</File>
-				<File
-					RelativePath="..\Source\events\IMessageDispatcher.h"
-					>
-				</File>
-				<File
-					RelativePath="..\Source\events\IMEvent.h"
-					>
-				</File>
-			</Filter>
-			<Filter
 				Name="forwarders"
 				>
 				<File
@@ -475,10 +427,6 @@
 				</File>
 				<File
 					RelativePath="..\Source\FwdController.h"
-					>
-				</File>
-				<File
-					RelativePath="..\Source\PluginController.h"
 					>
 				</File>
 			</Filter>

@@ -20,7 +20,7 @@
 
 #include "Helpers.h"
 #include "NetList.h"
-#include "Config.h"
+#include <konnekt/contrib/Config.h>
 
 class Status : public SharedObject<iSharedObject> {
 public:

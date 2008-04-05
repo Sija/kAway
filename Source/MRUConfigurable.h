@@ -19,7 +19,7 @@
 #define __MRU_CONFIGURABLE_H__
 
 #include "MRU.h"
-#include "Config.h"
+#include <konnekt/contrib/Config.h>
 
 class MRUConfigurable : public MRU {
 public:

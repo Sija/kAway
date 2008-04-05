@@ -17,6 +17,7 @@
 #include "Message.h"
 
 #include <konnekt/sms.h>
+#include <konnekt/core_contact.h>
 
 void MessageEx::reply(Message& msg, const StringRef& body, const StringRef& ext, bool html) {
   MessageEx::send(msg.getFromUid(), "", msg.getNet(), body, msg.getType(), ext, html);
@@ -45,8 +46,8 @@ void MessageEx::send(Message& msg) {
 }
 
 void MessageEx::send(int cnt, const StringRef& from, const StringRef& body, Message::enType type, const StringRef& ext, bool html, bool inject) {
-  String to = GETCNTC(cnt, CNT_UID);
-  Message msg = MessageEx::prepare(to, from, (tNet) GETCNTI(cnt, CNT_NET), body, type, ext, (tMsgFlags) (Message::flagSend | (html ? Message::flagHTML : 0)));
+  Contact c = Contact(cnt);
+  Message msg = MessageEx::prepare(c.getUid(), from, c.getNet(), body, type, ext, (tMsgFlags) (Message::flagSend | (html ? Message::flagHTML : 0)));
 
   if (inject) {
     MessageEx::inject(msg, cnt);

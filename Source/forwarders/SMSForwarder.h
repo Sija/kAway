@@ -23,7 +23,7 @@
 #include "../Forwarder.h"
 #include "../Message.h"
 
-#include "../Events/ActionEvent.h"
+#include <konnekt/contrib/Events/ActionEvent.h>
 
 namespace kAway2 {
   namespace ui {

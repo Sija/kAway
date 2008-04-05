@@ -18,11 +18,11 @@
 #ifndef __CONTROLLER_H__
 #define __CONTROLLER_H__
 
+#include <konnekt/contrib/iController.h>
+
 #include "kAway2.h"
 
-#include "Config.h"
 #include "Helpers.h"
-#include "PluginController.h"
 #include "FwdController.h"
 #include "MRUConfigurable.h"
 #include "NetList.h"
@@ -115,16 +115,15 @@ namespace kAway2 {
     }
   };
 
-  class Controller : public PluginController<Controller> {
+  class Controller : public iController {
   public:
-    friend class PluginController<Controller>;
     friend class MyMessageHandler;
 
   public:
     /**
      * Class version macro
      */
-    STAMINA_OBJECT_CLASS_VERSION(Controller, PluginController, Version(1,3,0,0));
+    STAMINA_OBJECT_CLASS_VERSION(Controller, iController, Version(1,3,0,0));
 
   public:
     typedef std::deque<MessageOld*> tMsgQueue;
@@ -154,7 +153,7 @@ namespace kAway2 {
 
     typedef std::map<tCntId, sCnt> tCnts;
 
-  protected:
+  public:
     Controller();
 
   protected:

@@ -91,17 +91,17 @@ void NetList::save() {
 }
 
 void NetList::_groupListener(ActionEvent& ev) {
-  if (ev.isCode(ACTN_CREATEWINDOW)) {
+  if (ev.withCode(ACTN_CREATEWINDOW)) {
     _opened = true;
     refreshUI();
   }
-  if (ev.isCode(ACTN_DESTROYWINDOW)) {
+  if (ev.withCode(ACTN_DESTROYWINDOW)) {
     _opened = false;
   }
 }
 
 void NetList::_onAction(ActionEvent& ev) {
-  if (ev.isCode(ACTN_SAVE) && _opened) {
+  if (ev.withCode(ACTN_SAVE) && _opened) {
     refreshFromUI();
     save();
   }

@@ -65,7 +65,9 @@ namespace kAway2 {
   }
 
   LRESULT CALLBACK AwayWnd::wndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
-    switch(iMsg) {
+    Controller* controller = Singleton<Controller>::getInstance();
+
+    switch (iMsg) {
       case WM_CREATE: {
         SendMessage(hWnd, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) ICMessage(IMI_ICONGET, ico::logoSmall, IML_16));
         SendMessage(hWnd, WM_SETICON, (WPARAM) ICON_SMALL, (LPARAM) ICMessage(IMI_ICONGET, ico::logoSmall, IML_16));
@@ -75,7 +77,7 @@ namespace kAway2 {
         AwayWnd::sWndData *data = new AwayWnd::sWndData(net);
         SetWindowLong(hWnd, GWL_USERDATA, (LONG) data);
 
-        Controller::getInstance()->wnd->addInstance(net, hWnd);
+        controller->wnd->addInstance(net, hWnd);
 
         HFONT font = CreateFont(-11, 0, 0, 0, 0, 0, 0, 0, EASTEUROPE_CHARSET, OUT_DEFAULT_PRECIS, 
           CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, "Tahoma");
@@ -121,7 +123,7 @@ namespace kAway2 {
           ti.hwnd = hWndTmp;
           ti.lpszText = (LPSTR) it->name;
           SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM) &ti);
-          Controller::getInstance()->wnd->prepareButtonImage(it->img, hWnd, net, it->id);
+          controller->wnd->prepareButtonImage(it->img, hWnd, net, it->id);
         }
         // int chkSt = IMessage(IM_GET_STATUS, net);
         CheckDlgButton(hWnd, Config::get(cfg::wnd::onEnableSt).to_i(), BST_CHECKED);
@@ -173,7 +175,7 @@ namespace kAway2 {
         CheckDlgButton(hWnd, MUTE, Config::get(cfg::wnd::muteOnEnable).to_i() ? BST_CHECKED : 0);
 
         // odczytujemy liste mru
-        MRU::tItems list = Controller::getInstance()->mruList->get();
+        MRU::tItems list = controller->mruList->get();
 
         // wype³niamy combobox
         for (MRU::tItems::iterator it = list.begin(); it != list.end(); it++) {
@@ -192,7 +194,7 @@ namespace kAway2 {
 
       case WM_DESTROY: {
         AwayWnd::sWndData *data = (AwayWnd::sWndData *) GetWindowLong(hWnd, GWL_USERDATA);
-        Controller::getInstance()->wnd->removeInstance(data->net);
+        controller->wnd->removeInstance(data->net);
 
         delete data;
         return 0;
@@ -207,7 +209,7 @@ namespace kAway2 {
             char * msg = new char[len];
             
             GetWindowText(GetDlgItem(hWnd, STATUS_EDIT_INFO), msg, len);
-            Controller::getInstance()->mruList->append(msg);
+            controller->mruList->append(msg);
 
             if (IsDlgButtonChecked(hWnd, ST_ONLINE)) st = ST_ONLINE;
             if (IsDlgButtonChecked(hWnd, ST_CHAT)) st = ST_CHAT;
@@ -224,8 +226,8 @@ namespace kAway2 {
             Config::get(cfg::wnd::changeInfoOnEnable).set((IsDlgButtonChecked(hWnd, STATUS_CHANGE_INFO) == BST_CHECKED) ? 1 : 0);
             Config::get(cfg::wnd::muteOnEnable).set((IsDlgButtonChecked(hWnd, MUTE) == BST_CHECKED) ? 1 : 0);
 
-            Controller::getInstance()->fromWnd(true);
-            Controller::getInstance()->enable(msg);
+            controller->fromWnd(true);
+            controller->enable(msg);
 
             delete [] msg;
             DestroyWindow(hWnd);

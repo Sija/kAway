@@ -22,7 +22,7 @@
 #include "Helpers.h"
 #include "Format.h"
 
-#include "Events/IMEvent.h"
+#include <konnekt/contrib/Events/IMEvent.h>
 
 namespace kAway2 {
   class Forwarder : public signals::trackable {

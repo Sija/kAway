@@ -14,6 +14,8 @@
   */
 
 #include "stdafx.h"
+
+#include <konnekt/core_contact.h>
 #include "Controller.h"
 
 // #include "Forwarders/CntForwarder.h"
@@ -613,7 +615,7 @@ namespace kAway2 {
     {
       Ctrl->logMsg(logDebug, "MyMessageHandler", "handleMessage", msg->getBody().a_str());
     }
-    Controller* c = Controller::getInstance();
+    Controller* c = Singleton<Controller>::getInstance();
 
     // we're searchin' for contact id
     int cnt = Ctrl->ICMessage(IMC_CNT_FIND, msg->getNet(), (int) ((queue & mqSend) ? msg->getFromUid() : msg->getToUid()).a_str());
@@ -665,13 +667,13 @@ namespace kAway2 {
   }
 
   void Controller::_handleCntGroup(ActionEvent& ev) {
-    if (ev.isCode(ACTN_CREATE)) {
+    if (ev.withCode(ACTN_CREATE)) {
       UIActionSetStatus(ev.getAction(), !Ctrl->DTgetPos(tableContacts, ev.getCnt()) ? -1 : 0, ACTS_HIDDEN);
     }
   }
 
   void Controller::_handleMsgTb(ActionEvent& ev) {
-    if (ev.isCode(ACTN_CREATEGROUP)) {
+    if (ev.withCode(ACTN_CREATEGROUP)) {
       bool isIgnored = this->cntProp(ev.getCnt())->ignored;
 
       Helpers::chgBtn(ui::msgTbGrp, ui::ignoreBtn, AC_CURRENT, 
@@ -695,19 +697,19 @@ namespace kAway2 {
   }
 
   void Controller::_handleIgnoreBtn(ActionEvent& ev) {
-    if (ev.isCode(ACTN_ACTION) && this->isEnabled()) {
+    if (ev.withCode(ACTN_ACTION) && this->isEnabled()) {
       this->cntProp(ev.getCnt())->ignored = !this->cntProp(ev.getCnt())->ignored;
     }
   }
 
   void Controller::_clearMRU(ActionEvent& ev) {
-    if (ev.isCode(ACTN_ACTION)) {
+    if (ev.withCode(ACTN_ACTION)) {
       mruList->clear();
     }
   }
 
   void Controller::_resetGlobalSettings(ActionEvent& ev) {
-    if (ev.isCode(ACTN_ACTION)) {
+    if (ev.withCode(ACTN_ACTION)) {
       getConfig().resetColumns(tableConfig);
 
       autoReplyList->load();
@@ -716,7 +718,7 @@ namespace kAway2 {
   }
 
   void Controller::_resetContactSettings(ActionEvent& ev) {
-    if (ev.isCode(ACTN_ACTION)) {
+    if (ev.withCode(ACTN_ACTION)) {
       getConfig().resetColumns(tableContacts);
     }
   }
@@ -1047,23 +1049,25 @@ namespace kAway2 {
   }
 
   void Controller::sendMsgTpl(int cnt, enAutoMsgTpl tpl, const StringRef& msgVal) {
-    int session, net = Config::get(CNT_NET, cnt).to_i();
+    Contact c(cnt);
+    int net = c.getNet();
+    int session = 0;
 
     if (((statusCtrl->getActualStatus(net) == ST_HIDDEN) && !ItemFallback(cfg::reply::whenInvisible, cnt).to_b()) || 
       !autoReplyList->getItem(net).isActive() || !autoReplyList->getItem(net).isConnected())
       return;
 
-    String ext, uid(Config::get(CNT_UID, cnt));
+    String ext;
     ext = SetExtParam(ext, cfg::extParamName, inttostr(tpl));
     ext = SetExtParam(ext, Message::extAddInfo, "kAway2");
     ext = SetExtParam(ext, Message::extNoSound, "1");
 
     Format format;
-    format.addVar("uid", uid);
-    format.addVar("display", Config::get(CNT_DISPLAY, cnt));
-    format.addVar("name", Config::get(CNT_NAME, cnt));
-    format.addVar("nick", Config::get(CNT_NICK, cnt));
-    format.addVar("surname", Config::get(CNT_SURNAME, cnt));
+    format.addVar("uid", c.getUid());
+    format.addVar("display", c.getDisplay());
+    format.addVar("name", c.getName());
+    format.addVar("nick", c.getNick());
+    format.addVar("surname", c.getSurname());
     format.addVar("date", Helpers::isToday(this->awayTime) ? "" : this->awayTime.strftime(Config::get(cfg::dateFormat).to_s().a_str()));
     format.addVar("time", this->awayTime.strftime(Config::get(cfg::timeFormat).to_s().a_str()));
     format.addVar("msg", (tpl == tplDisable) ? msgVal : this->awayMsg);

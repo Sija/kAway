@@ -23,5 +23,5 @@ int __stdcall DllMain(void* hinstDLL, unsigned long fdwReason, void* lpvReserved
 }
 
 int __stdcall IMessageProc(sIMessage_base* msgBase) {
-  return Controller::getInstance()->dispatch(msgBase);
+  return Singleton<Controller>::getInstance()->dispatch(msgBase);
 }

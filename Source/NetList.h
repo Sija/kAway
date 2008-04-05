@@ -18,11 +18,11 @@
 #ifndef __NETLIST_H__
 #define __NETLIST_H__
 
-#include "Events/ActionDispatcher.h"
-#include "Events/ActionEvent.h"
+#include <konnekt/contrib/Events/ActionDispatcher.h>
+#include <konnekt/contrib/Events/ActionEvent.h>
+#include <konnekt/contrib/Config.h>
 
 #include "Helpers.h"
-#include "Config.h"
 
 class NetList : public SharedObject<iSharedObject> {
 public:
